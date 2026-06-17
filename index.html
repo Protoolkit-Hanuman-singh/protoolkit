@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+    <title>⚡ ProToolkit — Coming Soon</title>
+    <style>
+        /* ============================================================
+                   RESET & BASE
+                   ============================================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0a0a12;
+            color: #e8eaf6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ============================================================
+                   ANIMATED BACKGROUND — Premium Gradient Orbs
+                   ============================================================ */
+        .bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: #0a0a12;
+        }
+
+        .bg-orbs {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .bg-orbs .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.4;
+            animation: orbFloat 30s infinite ease-in-out alternate;
+        }
+
+        .bg-orbs .orb:nth-child(1) {
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, #6c63ff, #3b2f8a);
+            top: -200px;
+            left: -200px;
+            animation-duration: 25s;
+        }
+
+        .bg-orbs .orb:nth-child(2) {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, #22d3ee, #0e7490);
+            bottom: -150px;
+            right: -150px;
+            animation-duration: 30s;
+            animation-delay: -5s;
+        }
+
+        .bg-orbs .orb:nth-child(3) {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, #a78bfa, #5b21b6);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-duration: 35s;
+            animation-delay: -10s;
+        }
+
+        .bg-orbs .orb:nth-child(4) {
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle, #f472b6, #be185d);
+            top: 20%;
+            right: 5%;
+            animation-duration: 20s;
+            animation-delay: -3s;
+        }
+
+        .bg-orbs .orb:nth-child(5) {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, #fbbf24, #b45309);
+            bottom: 20%;
+            left: 5%;
+            animation-duration: 28s;
+            animation-delay: -8s;
+        }
+
+        @keyframes orbFloat {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+            25% {
+                transform: translate(80px, -60px) scale(1.15);
+            }
+            50% {
+                transform: translate(-40px, 80px) scale(0.9);
+            }
+            75% {
+                transform: translate(60px, 40px) scale(1.08);
+            }
+            100% {
+                transform: translate(-30px, -30px) scale(0.95);
+            }
+        }
+
+        /* ============================================================
+                   GRID LINES (Subtle)
+                   ============================================================ */
+        .grid-lines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.03;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+
+        /* ============================================================
+                   PARTICLES
+                   ============================================================ */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.06);
+            animation: particleFloat 8s infinite alternate ease-in-out;
+        }
+
+        @keyframes particleFloat {
+            0% {
+                transform: translate(0, 0) scale(0.5);
+                opacity: 0.1;
+            }
+            100% {
+                transform: translate(40px, -50px) scale(1.5);
+                opacity: 0.6;
+            }
+        }
+
+        /* ============================================================
+                   HEADER
+                   ============================================================ */
+        .header {
+            background: rgba(10, 10, 18, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            padding: 0 28px;
+            height: 72px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            transition: 0.4s;
+        }
+
+        .logo {
+            font-size: 1.7rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #6c63ff, #22d3ee, #a78bfa, #f472b6);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientShift 6s ease infinite;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: default;
+        }
+
+        @keyframes gradientShift {
+            0%,
+            100% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        .logo-badge {
+            font-size: 0.55rem;
+            -webkit-text-fill-color: #6b70a0;
+            background: rgba(255, 255, 255, 0.06);
+            padding: 2px 12px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            letter-spacing: 1px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-btn {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            color: #8b90b8;
+            padding: 8px 18px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.4s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+        }
+
+        .header-btn:hover {
+            background: rgba(108, 99, 255, 0.15);
+            border-color: rgba(108, 99, 255, 0.3);
+            color: #a78bfa;
+            transform: translateY(-2px);
+        }
+
+        /* ============================================================
+                   HERO
+                   ============================================================ */
+        .hero {
+            text-align: center;
+            padding: 90px 24px 50px;
+            max-width: 1100px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .hero .status-badge {
+            display: inline-block;
+            background: rgba(251, 191, 36, 0.1);
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+            padding: 6px 24px;
+            border-radius: 50px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 24px;
+            animation: pulseBadge 2.5s infinite;
+        }
+
+        @keyframes pulseBadge {
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.1);
+            }
+            50% {
+                box-shadow: 0 0 0 15px rgba(251, 191, 36, 0);
+            }
+        }
+
+        .hero h1 {
+            font-size: 4.2rem;
+            font-weight: 900;
+            line-height: 1.05;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #ffffff 0%, #a78bfa 30%, #22d3ee 60%, #f472b6 100%);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientShift 8s ease infinite;
+        }
+
+        .hero h1 .highlight {
+            background: linear-gradient(135deg, #6c63ff, #22d3ee);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero .subtitle {
+            font-size: 1.2rem;
+            color: #6b70a0;
+            max-width: 550px;
+            margin: 0 auto 30px;
+            line-height: 1.8;
+        }
+
+        .hero .subtitle strong {
+            color: #a78bfa;
+            font-weight: 600;
+        }
+
+        /* ============================================================
+                   STATS
+                   ============================================================ */
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+            flex-wrap: wrap;
+            margin: 30px 0 40px;
+        }
+
+        .stat-item {
+            text-align: center;
+            opacity: 0;
+            animation: fadeUp 0.8s ease forwards;
+        }
+
+        .stat-item:nth-child(1) {
+            animation-delay: 0.2s;
+        }
+        .stat-item:nth-child(2) {
+            animation-delay: 0.4s;
+        }
+        .stat-item:nth-child(3) {
+            animation-delay: 0.6s;
+        }
+
+        @keyframes fadeUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stat-item .num {
+            font-size: 2.8rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #fff, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-item .num .accent {
+            color: #6c63ff;
+            -webkit-text-fill-color: #6c63ff;
+        }
+
+        .stat-item .label {
+            font-size: 0.8rem;
+            color: #4a4f7a;
+            margin-top: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        /* ============================================================
+                   CTA BUTTONS
+                   ============================================================ */
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6c63ff, #5a52e0);
+            color: #fff;
+            padding: 16px 42px;
+            border-radius: 50px;
+            border: none;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 30px rgba(108, 99, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-4px) scale(1.04);
+            box-shadow: 0 12px 50px rgba(108, 99, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.04);
+            color: #e8eaf6;
+            padding: 16px 42px;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-4px) scale(1.02);
+        }
+
+        /* ============================================================
+                   SCROLL INDICATOR
+                   ============================================================ */
+        .scroll-indicator {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #3a3f6a;
+            font-size: 1.8rem;
+            cursor: pointer;
+            animation: bounceDown 2.5s infinite;
+            transition: 0.3s;
+        }
+
+        .scroll-indicator:hover {
+            color: #6c63ff;
+        }
+
+        @keyframes bounceDown {
+            0%,
+            100% {
+                transform: translateX(-50%) translateY(0);
+            }
+            50% {
+                transform: translateX(-50%) translateY(12px);
+            }
+        }
+
+        /* ============================================================
+                   TOOLS SECTION — Coming Soon Grid
+                   ============================================================ */
+        .tools-section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 24px 80px;
+        }
+
+        .tools-section .section-title {
+            text-align: center;
+            font-size: 2.6rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #a78bfa, #22d3ee, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .tools-section .section-subtitle {
+            text-align: center;
+            color: #4a4f7a;
+            font-size: 1rem;
+            margin-bottom: 40px;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        /* ============================================================
+                   TOOL CARD — Premium Glassmorphism
+                   ============================================================ */
+        .tool-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 18px;
+            padding: 24px 18px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-decoration: none;
+            color: #e8eaf6;
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(50px) scale(0.95);
+            animation: cardReveal 0.7s ease forwards;
+        }
+
+        .tool-card:nth-child(1) {
+            animation-delay: 0.05s;
+        }
+        .tool-card:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+        .tool-card:nth-child(3) {
+            animation-delay: 0.15s;
+        }
+        .tool-card:nth-child(4) {
+            animation-delay: 0.2s;
+        }
+        .tool-card:nth-child(5) {
+            animation-delay: 0.25s;
+        }
+        .tool-card:nth-child(6) {
+            animation-delay: 0.3s;
+        }
+        .tool-card:nth-child(7) {
+            animation-delay: 0.35s;
+        }
+        .tool-card:nth-child(8) {
+            animation-delay: 0.4s;
+        }
+        .tool-card:nth-child(9) {
+            animation-delay: 0.45s;
+        }
+        .tool-card:nth-child(10) {
+            animation-delay: 0.5s;
+        }
+        .tool-card:nth-child(11) {
+            animation-delay: 0.55s;
+        }
+        .tool-card:nth-child(12) {
+            animation-delay: 0.6s;
+        }
+        .tool-card:nth-child(13) {
+            animation-delay: 0.65s;
+        }
+        .tool-card:nth-child(14) {
+            animation-delay: 0.7s;
+        }
+        .tool-card:nth-child(15) {
+            animation-delay: 0.75s;
+        }
+        .tool-card:nth-child(16) {
+            animation-delay: 0.8s;
+        }
+        .tool-card:nth-child(17) {
+            animation-delay: 0.85s;
+        }
+        .tool-card:nth-child(18) {
+            animation-delay: 0.9s;
+        }
+        .tool-card:nth-child(19) {
+            animation-delay: 0.95s;
+        }
+
+        @keyframes cardReveal {
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .tool-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(108, 99, 255, 0.06), rgba(34, 211, 238, 0.02));
+            opacity: 0;
+            transition: 0.6s;
+        }
+
+        .tool-card:hover::before {
+            opacity: 1;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-10px) scale(1.04);
+            border-color: rgba(108, 99, 255, 0.25);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .tool-card .icon {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            display: block;
+            transition: 0.5s;
+        }
+
+        .tool-card:hover .icon {
+            transform: scale(1.2) rotate(-6deg);
+        }
+
+        .tool-card .name {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .tool-card .desc {
+            font-size: 0.75rem;
+            color: #4a4f7a;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ============================================================
+                   STATUS BADGE
+                   ============================================================ */
+        .status-badge-card {
+            display: inline-block;
+            font-size: 0.55rem;
+            font-weight: 700;
+            padding: 4px 14px;
+            border-radius: 20px;
+            margin-top: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .status-coming {
+            background: rgba(251, 191, 36, 0.1);
+            color: #fbbf24;
+            border: 1px solid rgba(251, 191, 36, 0.15);
+        }
+
+        .status-available {
+            background: rgba(52, 211, 153, 0.12);
+            color: #34d399;
+            border: 1px solid rgba(52, 211, 153, 0.2);
+            animation: glowGreen 2s infinite;
+        }
+
+        @keyframes glowGreen {
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.1);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(52, 211, 153, 0.15);
+            }
+        }
+
+        .tool-card .badge-new {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: linear-gradient(135deg, #f59e0b, #f97316);
+            color: #fff;
+            font-size: 0.45rem;
+            font-weight: 700;
+            padding: 2px 10px;
+            border-radius: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            z-index: 2;
+        }
+
+        .tool-card .badge-popular {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: linear-gradient(135deg, #6c63ff, #22d3ee);
+            color: #fff;
+            font-size: 0.45rem;
+            font-weight: 700;
+            padding: 2px 10px;
+            border-radius: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            z-index: 2;
+        }
+
+        .tool-card .badge-live {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: linear-gradient(135deg, #34d399, #059669);
+            color: #fff;
+            font-size: 0.45rem;
+            font-weight: 700;
+            padding: 2px 10px;
+            border-radius: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            z-index: 2;
+            animation: pulseBadge 2s infinite;
+        }
+
+        /* ============================================================
+                   QR CODE SPECIAL CARD — Glowing
+                   ============================================================ */
+        .tool-card.qr-special {
+            border-color: rgba(52, 211, 153, 0.15);
+            background: rgba(52, 211, 153, 0.03);
+        }
+
+        .tool-card.qr-special:hover {
+            border-color: rgba(52, 211, 153, 0.4);
+            box-shadow: 0 20px 60px rgba(52, 211, 153, 0.1);
+        }
+
+        .tool-card.qr-special .icon {
+            animation: qrPulse 3s infinite;
+        }
+
+        @keyframes qrPulse {
+            0%,
+            100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        /* ============================================================
+                   FOOTER
+                   ============================================================ */
+        .footer {
+            text-align: center;
+            padding: 30px 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.03);
+            color: #3a3f6a;
+            font-size: 0.85rem;
+        }
+
+        .footer a {
+            color: #6c63ff;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .footer a:hover {
+            color: #a78bfa;
+        }
+
+        .footer .heart {
+            color: #f87171;
+            display: inline-block;
+            animation: heartBeat 1.5s infinite;
+        }
+
+        @keyframes heartBeat {
+            0%,
+            100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.25);
+            }
+        }
+
+        /* ============================================================
+                   TOAST NOTIFICATION
+                   ============================================================ */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(120px);
+            background: rgba(10, 10, 18, 0.92);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            color: #e8eaf6;
+            padding: 20px 32px;
+            border-radius: 18px;
+            font-size: 1rem;
+            font-weight: 600;
+            z-index: 9999;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+            text-align: center;
+            max-width: 90%;
+            opacity: 0;
+            transition: all 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+            min-width: 280px;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+            pointer-events: all;
+        }
+
+        .toast .toast-icon {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .toast .toast-title {
+            display: block;
+            font-size: 1.1rem;
+        }
+
+        .toast .toast-sub {
+            display: block;
+            font-size: 0.75rem;
+            color: #4a4f7a;
+            font-weight: 400;
+            margin-top: 4px;
+        }
+
+        .toast .toast-action {
+            display: inline-block;
+            margin-top: 10px;
+            background: linear-gradient(135deg, #6c63ff, #5a52e0);
+            color: #fff;
+            padding: 6px 24px;
+            border-radius: 25px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .toast .toast-action:hover {
+            transform: scale(1.05);
+        }
+
+        .toast .toast-close {
+            position: absolute;
+            top: 8px;
+            right: 14px;
+            background: none;
+            border: none;
+            color: #4a4f7a;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .toast .toast-close:hover {
+            color: #e8eaf6;
+            transform: rotate(90deg);
+        }
+
+        /* ============================================================
+                   RESPONSIVE
+                   ============================================================ */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.6rem;
+            }
+
+            .hero .subtitle {
+                font-size: 1rem;
+            }
+
+            .header {
+                padding: 0 16px;
+                height: 62px;
+            }
+
+            .logo {
+                font-size: 1.2rem;
+            }
+
+            .logo-badge {
+                display: none;
+            }
+
+            .tools-grid {
+                grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+                gap: 12px;
+            }
+
+            .tool-card {
+                padding: 18px 14px;
+            }
+
+            .tool-card .icon {
+                font-size: 2.2rem;
+            }
+
+            .stats {
+                gap: 24px;
+            }
+
+            .stat-item .num {
+                font-size: 2rem;
+            }
+
+            .btn-primary,
+            .btn-secondary {
+                padding: 12px 24px;
+                font-size: 0.9rem;
+            }
+
+            .tools-section .section-title {
+                font-size: 2rem;
+            }
+
+            .hero {
+                padding: 60px 16px 30px;
+            }
+
+            .toast {
+                padding: 16px 20px;
+                font-size: 0.85rem;
+                min-width: unset;
+                bottom: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .tools-grid {
+                grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
+            }
+
+            .tool-card .name {
+                font-size: 0.8rem;
+            }
+
+            .tool-card .desc {
+                font-size: 0.65rem;
+            }
+
+            .tool-card .icon {
+                font-size: 1.8rem;
+            }
+
+            .stat-item .num {
+                font-size: 1.6rem;
+            }
+
+            .header-right .header-btn {
+                padding: 6px 12px;
+                font-size: 0.7rem;
+            }
+        }
+
+        /* ============================================================
+                   SCROLLBAR
+                   ============================================================ */
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0a0a12;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #6c63ff, #22d3ee);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #5a52e0, #0e7490);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== BACKGROUND ===== -->
+    <div class="bg-canvas"></div>
+    <div class="grid-lines"></div>
+
+    <div class="bg-orbs">
+        <div class="orb"></div>
+        <div class="orb"></div>
+        <div class="orb"></div>
+        <div class="orb"></div>
+        <div class="orb"></div>
+    </div>
+
+    <div class="particles" id="particles"></div>
+
+    <!-- ===== HEADER ===== -->
+    <header class="header">
+        <div class="logo">
+            ⚡ ProToolkit
+            <span class="logo-badge">v2.0</span>
+        </div>
+        <div class="header-right">
+            <a href="https://github.com/Protoolkit-Hanuman-singh/protoolkit" target="_blank" class="header-btn">
+                🐙 GitHub
+            </a>
+            <button class="header-btn" id="themeToggle">☀️</button>
+        </div>
+    </header>
+
+    <!-- ===== HERO ===== -->
+    <section class="hero" id="home">
+        <div class="status-badge">🚀 Launching Soon</div>
+
+        <h1>
+            Your Complete<br>
+            <span class="highlight">Office Suite</span>
+        </h1>
+
+        <p class="subtitle">
+            <strong>19+ Professional Tools</strong> — Resume, Invoice, Bio-Data, Visiting Card,
+            Certificate, ID Card, QR/Barcode, Stock Manager, PDF Tools &amp; more.
+            <br>Coming very soon!
+        </p>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="num">19<span class="accent">+</span></div>
+                <div class="label">Professional Tools</div>
+            </div>
+            <div class="stat-item">
+                <div class="num">100<span class="accent">%</span></div>
+                <div class="label">Offline &amp; Free</div>
+            </div>
+            <div class="stat-item">
+                <div class="num">0<span class="accent">₹</span></div>
+                <div class="label">Cost — Absolutely Free</div>
+            </div>
+        </div>
+
+        <div class="cta-buttons">
+            <a href="#tools" class="btn-primary">🚀 Explore Tools</a>
+            <a href="https://github.com/Protoolkit-Hanuman-singh/protoolkit" target="_blank" class="btn-secondary">
+                ⭐ Star on GitHub
+            </a>
+        </div>
+
+        <div class="scroll-indicator" onclick="document.getElementById('tools').scrollIntoView({behavior:'smooth'})">
+            ⌄
+        </div>
+    </section>
+
+    <!-- ===== TOOLS ===== -->
+    <section class="tools-section" id="tools">
+        <h2 class="section-title">🛠️ All Tools</h2>
+        <p class="section-subtitle">Click any tool — QR Code is <strong style="color:#34d399;">LIVE</strong>, rest coming soon!</p>
+
+        <div class="tools-grid" id="toolsGrid"></div>
+    </section>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="footer">
+        <p>
+            Made with <span class="heart">❤️</span> by
+            <a href="https://github.com/Protoolkit-Hanuman-singh" target="_blank">Hanuman Singh</a>
+            &bull; © 2024 ProToolkit
+        </p>
+        <p style="margin-top:4px; font-size:0.7rem; color:#2a2f5a;">
+            All tools work offline • No data collected • Open Source
+        </p>
+    </footer>
+
+    <!-- ===== TOAST ===== -->
+    <div class="toast" id="toast">
+        <span class="toast-icon" id="toastIcon">🚀</span>
+        <span class="toast-title" id="toastTitle">Tool Name</span>
+        <span class="toast-sub" id="toastSub">Coming soon!</span>
+        <button class="toast-action" id="toastAction">Open Tool</button>
+        <button class="toast-close" onclick="closeToast()">✕</button>
+    </div>
+
+    <script>
+        // ============================================================
+        // TOOLS DATA — Only QR Code Available
+        // ============================================================
+        const tools = [
+            { icon: '📄', name: 'Resume / CV', desc: 'Professional resume maker', status: 'coming' },
+            { icon: '📋', name: 'Bio-Data', desc: '5 premium templates', status: 'coming' },
+            { icon: '🧾', name: 'Invoice', desc: 'GST ready invoices', status: 'coming' },
+            { icon: '📋', name: 'Quotation', desc: 'Professional quotes', status: 'coming' },
+            { icon: '💰', name: 'Salary Slip', desc: 'Auto calculation', status: 'coming' },
+            { icon: '🖨️', name: 'Visiting Card', desc: '12 dark templates', status: 'coming' },
+            { icon: '✅', name: 'To-Do List', desc: 'Priority + due date', status: 'coming' },
+            { icon: '🎓', name: 'Certificate', desc: '5 templates', status: 'coming' },
+            { icon: '🪪', name: 'ID Card', desc: '5 premium templates', status: 'coming' },
+            // ===== QR CODE — AVAILABLE =====
+            { icon: '📱', name: 'QR Code', desc: 'With corner markers', status: 'available', link: '#qrcode',
+            isQR: true },
+            { icon: '📊', name: 'Barcode', desc: 'EAN-13 generator', status: 'coming' },
+            { icon: '📦', name: 'Stock Manager', desc: 'Inventory tracking', status: 'coming' },
+            { icon: '📋', name: 'Form Builder', desc: 'Surveys & responses', status: 'coming' },
+            { icon: '🖼️', name: 'Image Compressor', desc: 'Reduce size', status: 'coming' },
+            { icon: '🖼️', name: 'Image to PDF', desc: 'Convert images', status: 'coming' },
+            { icon: '📄', name: 'PDF Merger', desc: 'Combine PDFs', status: 'coming' },
+            { icon: '🔒', name: 'PDF Lock', desc: 'Password protect', status: 'coming' },
+            { icon: '📄', name: 'PDF Compressor', desc: 'Reduce file size', status: 'coming' },
+            { icon: '📝', name: 'Text to PDF', desc: 'Convert text', status: 'coming' },
+        ];
+
+        // ============================================================
+        // RENDER TOOLS
+        // ============================================================
+        const grid = document.getElementById('toolsGrid');
+
+        tools.forEach((tool) => {
+            const card = document.createElement('a');
+            card.className = 'tool-card';
+
+            // Special class for QR
+            if (tool.isQR) {
+                card.classList.add('qr-special');
+            }
+
+            // Status badge
+            let statusHtml = '';
+            let badgeHtml = '';
+
+            if (tool.status === 'available') {
+                statusHtml = '<span class="status-badge-card status-available">✅ Available</span>';
+                badgeHtml = '<span class="badge-live">🔴 LIVE</span>';
+            } else {
+                statusHtml = '<span class="status-badge-card status-coming">⏳ Coming Soon</span>';
+            }
+
+            card.innerHTML = `
+                        ${badgeHtml}
+                        <span class="icon">${tool.icon}</span>
+                        <div class="name">${tool.name}</div>
+                        <div class="desc">${tool.desc}</div>
+                        ${statusHtml}
+                    `;
+
+            // Click handler
+            card.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                if (tool.isQR) {
+                    // QR Code — Open the QR tool directly
+                    showToast('📱 QR Code', 'Opening QR Code Generator...', 'Open QR', function() {
+                        window.location.href = tool.link;
+                    });
+                } else {
+                    // Coming Soon — Show notification
+                    showToast('⏳ ' + tool.name, 'This tool is coming soon! Stay tuned.', 'Notify Me',
+                    function() {
+                        alert('🔔 We\'ll notify you when ' + tool.name + ' is ready!');
+                    });
+                }
+            });
+
+            grid.appendChild(card);
+        });
+
+        // ============================================================
+        // TOAST SYSTEM
+        // ============================================================
+        let toastTimeout;
+
+        function showToast(icon, title, actionText, actionCallback) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastIcon').textContent = icon || '🚀';
+            document.getElementById('toastTitle').textContent = title || 'Tool';
+            document.getElementById('toastSub').textContent = actionText === 'Open QR' ? 'Click to open QR Code Generator' :
+                'Coming soon!';
+
+            const actionBtn = document.getElementById('toastAction');
+            actionBtn.textContent = actionText || 'Close';
+
+            // Remove old listeners
+            const newBtn = actionBtn.cloneNode(true);
+            actionBtn.parentNode.replaceChild(newBtn, actionBtn);
+
+            newBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (actionCallback) actionCallback();
+                closeToast();
+            });
+
+            toast.classList.add('show');
+
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 5000);
+        }
+
+        function closeToast() {
+            document.getElementById('toast').classList.remove('show');
+            clearTimeout(toastTimeout);
+        }
+
+        // Click on toast background to close
+        document.getElementById('toast').addEventListener('click', function(e) {
+            if (e.target === this || e.target.classList.contains('toast-close')) {
+                closeToast();
+            }
+        });
+
+        // ============================================================
+        // PARTICLES
+        // ============================================================
+        (function createParticles() {
+            const container = document.getElementById('particles');
+            const colors = ['rgba(108,99,255,0.08)', 'rgba(34,211,238,0.06)', 'rgba(167,139,250,0.05)',
+                'rgba(244,114,182,0.05)'
+            ];
+            for (let i = 0; i < 60; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.left = Math.random() * 100 + '%';
+                p.style.top = Math.random() * 100 + '%';
+                p.style.width = (Math.random() * 5 + 1) + 'px';
+                p.style.height = p.style.width;
+                p.style.background = colors[Math.floor(Math.random() * colors.length)];
+                p.style.animationDelay = (Math.random() * 10) + 's';
+                p.style.animationDuration = (Math.random() * 8 + 5) + 's';
+                container.appendChild(p);
+            }
+        })();
+
+        // ============================================================
+        // THEME TOGGLE (Light/Dark)
+        // ============================================================
+        let isDark = true;
+        document.getElementById('themeToggle').addEventListener('click', function() {
+            isDark = !isDark;
+            if (isDark) {
+                document.body.style.background = '#0a0a12';
+                document.body.style.color = '#e8eaf6';
+                document.querySelector('.bg-canvas').style.background = '#0a0a12';
+                document.querySelectorAll('.tool-card').forEach(c => {
+                    c.style.background = 'rgba(255,255,255,0.03)';
+                    c.style.color = '#e8eaf6';
+                });
+                document.querySelectorAll('.tool-card .desc').forEach(d => d.style.color = '#4a4f7a');
+                document.querySelector('.footer').style.color = '#3a3f6a';
+                this.textContent = '☀️';
+            } else {
+                document.body.style.background = '#f0f2ff';
+                document.body.style.color = '#1a1d27';
+                document.querySelector('.bg-canvas').style.background = '#f0f2ff';
+                document.querySelectorAll('.tool-card').forEach(c => {
+                    c.style.background = 'rgba(255,255,255,0.6)';
+                    c.style.color = '#1a1d27';
+                });
+                document.querySelectorAll('.tool-card .desc').forEach(d => d.style.color = '#5a5f7e');
+                document.querySelector('.footer').style.color = '#5a5f7e';
+                this.textContent = '🌙';
+            }
+        });
+
+        // ============================================================
+        // KEYBOARD SHORTCUTS
+        // ============================================================
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeToast();
+            if (e.key === 't' || e.key === 'T') {
+                document.getElementById('themeToggle').click();
+            }
+        });
+
+        console.log('⚡ ProToolkit Advanced Home Page Loaded!');
+        console.log('📱 QR Code is LIVE — Click to open!');
+        console.log('⌨️ Press "T" for theme toggle, "Esc" to close toast');
+        console.log('❤️ Created by Hanuman Singh');
+    </script>
+
+</body>
+</html>
