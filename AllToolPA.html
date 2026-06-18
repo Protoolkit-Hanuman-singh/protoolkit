@@ -1,0 +1,2239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ProToolkit — Your Complete Office Suite</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --border: #2e3248;
+    --accent: #6c63ff;
+    --accent2: #a78bfa;
+    --accent3: #22d3ee;
+    --text: #e8eaf6;
+    --text2: #8b90b8;
+    --danger: #f87171;
+    --success: #34d399;
+    --warning: #fbbf24;
+    --radius: 12px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+  .light {
+    --bg: #f0f2ff;
+    --surface: #ffffff;
+    --surface2: #e8eaf6;
+    --border: #c7cde8;
+    --text: #1a1d27;
+    --text2: #5a5f7e;
+    --shadow: 0 4px 24px rgba(108,99,255,0.1);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; transition: background 0.3s, color 0.3s; }
+
+  /* HEADER */
+  .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 20px; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow); }
+  .logo { font-size: 1.4rem; font-weight: 800; background: linear-gradient(135deg, var(--accent), var(--accent3)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .header-right { display: flex; gap: 10px; align-items: center; }
+  .theme-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 6px 14px; border-radius: 20px; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; }
+  .theme-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  /* LAYOUT */
+  .layout { display: flex; min-height: calc(100vh - 60px); }
+  .sidebar { width: 260px; background: var(--surface); border-right: 1px solid var(--border); padding: 16px 10px; flex-shrink: 0; overflow-y: auto; max-height: calc(100vh - 60px); position: sticky; top: 60px; }
+  .sidebar-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text2); padding: 8px 12px 6px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; cursor: pointer; color: var(--text2); font-size: 0.9rem; transition: all 0.2s; margin-bottom: 2px; }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: linear-gradient(135deg, rgba(108,99,255,0.2), rgba(34,211,238,0.1)); color: var(--accent2); font-weight: 600; border-left: 3px solid var(--accent); }
+  .nav-icon { font-size: 1.1rem; width: 22px; text-align: center; }
+
+  /* MAIN */
+  .main { flex: 1; padding: 24px; overflow-y: auto; }
+  .tool-panel { display: none; }
+  .tool-panel.active { display: block; }
+  .tool-header { margin-bottom: 24px; }
+  .tool-header h2 { font-size: 1.6rem; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+  .tool-header p { color: var(--text2); margin-top: 4px; font-size: 0.95rem; }
+
+  /* CARDS & FORMS */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; }
+  .card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 14px; color: var(--accent2); }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .col { flex: 1; min-width: 180px; }
+  label { display: block; font-size: 0.82rem; color: var(--text2); margin-bottom: 5px; font-weight: 500; }
+  input, select, textarea { width: 100%; background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 9px 12px; border-radius: 8px; font-size: 0.9rem; outline: none; transition: border 0.2s; font-family: inherit; }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 80px; }
+  select option { background: var(--surface); }
+
+  /* BUTTONS */
+  .btn { padding: 9px 18px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #5a52e0; transform: translateY(-1px); }
+  .btn-success { background: var(--success); color: #0a2a1e; }
+  .btn-success:hover { background: #28b882; }
+  .btn-danger { background: var(--danger); color: #fff; }
+  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text2); }
+  .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-sm { padding: 5px 12px; font-size: 0.8rem; }
+  .btn-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+
+  /* PREVIEW */
+  .preview-frame { background: #fff; color: #111; border-radius: var(--radius); padding: 32px; box-shadow: var(--shadow); font-family: 'Segoe UI', sans-serif; min-height: 200px; }
+  .preview-wrap { margin-top: 16px; }
+
+  /* TABLES */
+  table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  th { background: var(--surface2); color: var(--text2); font-weight: 600; padding: 10px 12px; text-align: left; }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover td { background: rgba(108,99,255,0.04); }
+
+  /* BADGES */
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+  .badge-green { background: rgba(52,211,153,0.15); color: var(--success); }
+  .badge-red { background: rgba(248,113,113,0.15); color: var(--danger); }
+  .badge-yellow { background: rgba(251,191,36,0.15); color: var(--warning); }
+
+  /* UPLOAD ZONE */
+  .upload-zone { border: 2px dashed var(--border); border-radius: var(--radius); padding: 40px 20px; text-align: center; cursor: pointer; transition: all 0.2s; }
+  .upload-zone:hover, .upload-zone.drag { border-color: var(--accent); background: rgba(108,99,255,0.05); }
+  .upload-zone svg { opacity: 0.4; margin-bottom: 10px; }
+  .upload-zone p { color: var(--text2); font-size: 0.9rem; }
+
+  /* TABS */
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+  .tab { padding: 8px 16px; cursor: pointer; font-size: 0.88rem; color: var(--text2); border-bottom: 2px solid transparent; transition: all 0.2s; }
+  .tab.active { color: var(--accent2); border-bottom-color: var(--accent); font-weight: 600; }
+
+  /* PROGRESS */
+  .progress-bar { height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; margin: 8px 0; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent3)); border-radius: 3px; transition: width 0.3s; }
+
+  /* ALERT */
+  .alert { padding: 10px 14px; border-radius: 8px; font-size: 0.88rem; margin-bottom: 10px; }
+  .alert-warning { background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.3); color: var(--warning); }
+  .alert-success { background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.3); color: var(--success); }
+  .alert-info { background: rgba(108,99,255,0.1); border: 1px solid rgba(108,99,255,0.3); color: var(--accent2); }
+
+  /* DRAG LIST */
+  .drag-list { list-style: none; }
+  .drag-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--surface2); border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border); cursor: grab; }
+  .drag-item:active { cursor: grabbing; }
+  .drag-handle { color: var(--text2); font-size: 1.2rem; }
+
+  /* RANGE */
+  input[type=range] { padding: 0; accent-color: var(--accent); }
+
+  /* CARD PREVIEW */
+  .vcard-preview { width: 90mm; height: 54mm; background: #fff; color: #111; border-radius: 8px; padding: 16px 20px; box-shadow: var(--shadow); display: flex; flex-direction: column; justify-content: center; margin: 16px auto; font-family: 'Segoe UI', sans-serif; position: relative; overflow: hidden; }
+
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .sidebar.mobile-open { display: block; position: fixed; top: 60px; left: 0; z-index: 99; height: calc(100vh - 60px); width: 260px; }
+    .main { padding: 16px; }
+    .hamburger { display: flex !important; }
+    .preview-frame { padding: 16px; }
+  }
+  .hamburger { display: none; background: none; border: none; color: var(--text); cursor: pointer; font-size: 1.5rem; }
+
+  /* PRINT STYLES */
+  @media print {
+    .sidebar, .header, .btn, .card > h3, .no-print { display: none !important; }
+    .main { padding: 0; }
+    .tool-panel { display: block !important; }
+    body { background: #fff; color: #111; }
+  }
+
+  /* GRID */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 600px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  /* STATS */
+  .stat-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; text-align: center; }
+  .stat-num { font-size: 2rem; font-weight: 800; color: var(--accent2); }
+  .stat-label { font-size: 0.8rem; color: var(--text2); margin-top: 4px; }
+
+  /* COLOR PICKER */
+  input[type=color] { width: 40px; height: 34px; padding: 2px; border-radius: 6px; cursor: pointer; }
+
+  /* OVERFLOW FIXES */
+  .card { overflow: auto; }
+  .preview-frame { overflow: auto; }
+  .tool-panel { overflow-x: hidden; }
+  .main { overflow-x: hidden; }
+  img { max-width: 100%; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <button class="hamburger" onclick="toggleSidebar()" id="hamburger">☰</button>
+    <span class="logo">⚡ ProToolkit</span>
+  </div>
+  <div class="header-right">
+    <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">☀️ Light</button>
+  </div>
+</div>
+
+<div class="layout">
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-title">Documents</div>
+    <div class="nav-item active" onclick="showTool('resume')"><span class="nav-icon">📄</span> Resume / CV Maker</div>
+    <div class="nav-item" onclick="showTool('invoice')"><span class="nav-icon">🧾</span> Invoice Generator</div>
+    <div class="nav-item" onclick="showTool('quotation')"><span class="nav-icon">📋</span> Quotation Maker</div>
+    <div class="nav-item" onclick="showTool('salary')"><span class="nav-icon">💰</span> Salary Slip</div>
+    <div class="nav-item" onclick="showTool('vcard')"><span class="nav-icon">🖨️</span> Visiting Card Maker</div>
+    <div class="sidebar-title" style="margin-top:8px;">Business</div>
+    <div class="nav-item" onclick="showTool('stock')"><span class="nav-icon">📦</span> Stock / Inventory</div>
+    <div class="nav-item" onclick="showTool('formbuilder')"><span class="nav-icon">📋</span> Form / Survey Builder</div>
+    <div class="sidebar-title" style="margin-top:8px;">Image Tools</div>
+    <div class="nav-item" onclick="showTool('imgcompress')"><span class="nav-icon">🖼️</span> Image Compressor</div>
+    <div class="nav-item" onclick="showTool('img2pdf')"><span class="nav-icon">🖼️</span> Image to PDF</div>
+    <div class="sidebar-title" style="margin-top:8px;">PDF Tools</div>
+    <div class="nav-item" onclick="showTool('pdfmerge')"><span class="nav-icon">📄</span> PDF Merger</div>
+    <div class="nav-item" onclick="showTool('pdflock')"><span class="nav-icon">🔒</span> PDF Lock/Unlock</div>
+    <div class="nav-item" onclick="showTool('pdfcompress')"><span class="nav-icon">📄</span> PDF Compressor</div>
+    <div class="nav-item" onclick="showTool('text2pdf')"><span class="nav-icon">📝</span> Text to PDF</div>
+  </nav>
+
+  <main class="main" id="mainArea">
+
+    <!-- 1. RESUME MAKER -->
+    <div class="tool-panel active" id="tool-resume">
+      <div class="tool-header"><h2>📄 Resume / CV Maker</h2><p>Professional resume banao — live preview ke saath</p></div>
+      <div class="row">
+        <div style="flex:1;min-width:280px;">
+          <div class="card">
+            <h3>Personal Info</h3>
+            <div class="row">
+              <div class="col"><label>Full Name</label><input id="r-name" oninput="buildResume()" placeholder="Rahul Kumar"></div>
+              <div class="col"><label>Job Title</label><input id="r-title" oninput="buildResume()" placeholder="Software Developer"></div>
+            </div>
+            <div class="row" style="margin-top:10px;">
+              <div class="col"><label>Email</label><input id="r-email" oninput="buildResume()" placeholder="rahul@email.com"></div>
+              <div class="col"><label>Phone</label><input id="r-phone" oninput="buildResume()" placeholder="+91 9876543210"></div>
+            </div>
+            <div style="margin-top:10px;"><label>Address</label><input id="r-addr" oninput="buildResume()" placeholder="Mumbai, Maharashtra"></div>
+            <div style="margin-top:10px;"><label>LinkedIn / Website</label><input id="r-web" oninput="buildResume()" placeholder="linkedin.com/in/rahul"></div>
+          </div>
+          <div class="card">
+            <h3>Summary</h3>
+            <textarea id="r-summary" oninput="buildResume()" placeholder="2-3 line professional summary..." rows="3"></textarea>
+          </div>
+          <div class="card">
+            <h3>Education</h3>
+            <div id="edu-list"></div>
+            <button class="btn btn-outline btn-sm" onclick="addEdu()">+ Add Education</button>
+          </div>
+          <div class="card">
+            <h3>Experience</h3>
+            <div id="exp-list"></div>
+            <button class="btn btn-outline btn-sm" onclick="addExp()">+ Add Experience</button>
+          </div>
+          <div class="card">
+            <h3>Skills</h3>
+            <textarea id="r-skills" oninput="buildResume()" placeholder="JavaScript, React, Node.js, Python..." rows="2"></textarea>
+          </div>
+          <div class="card">
+            <h3>Projects</h3>
+            <div id="proj-list"></div>
+            <button class="btn btn-outline btn-sm" onclick="addProj()">+ Add Project</button>
+          </div>
+          <div class="card">
+            <h3>Template</h3>
+            <div class="row">
+              <div><label>Style</label>
+              <select id="r-template" onchange="buildResume()">
+                <option value="classic">Classic (White)</option>
+                <option value="modern">Modern (Blue Accent)</option>
+                <option value="minimal">Minimal (Clean)</option>
+              </select></div>
+            </div>
+          </div>
+        </div>
+        <div style="flex:1;min-width:280px;">
+          <div class="card">
+            <h3>Live Preview</h3>
+            <div id="resume-preview" class="preview-frame" style="min-height:400px;font-size:0.85rem;"></div>
+            <div class="btn-group">
+              <button class="btn btn-primary" onclick="printResume()">🖨️ Print / Save PDF</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. INVOICE -->
+    <div class="tool-panel" id="tool-invoice">
+      <div class="tool-header"><h2>🧾 Invoice Generator (GST Ready)</h2><p>Professional GST invoice banao — print ready</p></div>
+      <div class="row">
+        <div style="flex:1;min-width:280px;">
+          <div class="card">
+            <h3>Business Details</h3>
+            <div class="row">
+              <div class="col"><label>Business Name</label><input id="inv-biz" oninput="buildInvoice()" placeholder="Rahul Enterprises"></div>
+              <div class="col"><label>GST Number</label><input id="inv-gst" oninput="buildInvoice()" placeholder="27AABCU9603R1ZX"></div>
+            </div>
+            <div style="margin-top:10px;"><label>Business Address</label><textarea id="inv-biz-addr" oninput="buildInvoice()" rows="2" placeholder="Plot 12, MG Road, Mumbai - 400001"></textarea></div>
+            <div class="row" style="margin-top:10px;">
+              <div class="col"><label>Phone</label><input id="inv-phone" oninput="buildInvoice()" placeholder="+91 9876543210"></div>
+              <div class="col"><label>Email</label><input id="inv-email" oninput="buildInvoice()" placeholder="info@business.com"></div>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Client Details</h3>
+            <div class="row">
+              <div class="col"><label>Client Name</label><input id="inv-client" oninput="buildInvoice()" placeholder="XYZ Company Pvt Ltd"></div>
+              <div class="col"><label>Client GST (Optional)</label><input id="inv-cgst" oninput="buildInvoice()" placeholder="GST of client"></div>
+            </div>
+            <div style="margin-top:10px;"><label>Client Address</label><textarea id="inv-client-addr" oninput="buildInvoice()" rows="2" placeholder="Delhi - 110001"></textarea></div>
+          </div>
+          <div class="card">
+            <h3>Invoice Info</h3>
+            <div class="row">
+              <div class="col"><label>Invoice #</label><input id="inv-num" oninput="buildInvoice()" placeholder="Auto-generated" readonly style="opacity:0.6;"></div>
+              <div class="col"><label>Date</label><input type="date" id="inv-date" oninput="buildInvoice()"></div>
+            </div>
+            <div class="row" style="margin-top:10px;">
+              <div class="col"><label>Due Date</label><input type="date" id="inv-due" oninput="buildInvoice()"></div>
+              <div class="col"><label>GST Rate %</label>
+                <select id="inv-gst-rate" onchange="buildInvoice()">
+                  <option value="0">0% (Exempt)</option>
+                  <option value="5">5%</option>
+                  <option value="12">12%</option>
+                  <option value="18" selected>18%</option>
+                  <option value="28">28%</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Items</h3>
+            <div id="inv-items"></div>
+            <button class="btn btn-outline btn-sm" onclick="addInvItem()">+ Add Item</button>
+          </div>
+        </div>
+        <div style="flex:1;min-width:280px;">
+          <div class="card">
+            <h3>Preview</h3>
+            <div id="invoice-preview" class="preview-frame" style="min-height:400px;font-size:0.82rem;"></div>
+            <div class="btn-group">
+              <button class="btn btn-primary" onclick="printInvoice()">🖨️ Print / Save PDF</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. STOCK INVENTORY -->
+    <div class="tool-panel" id="tool-stock">
+      <div class="tool-header"><h2>📦 Stock / Inventory Manager</h2><p>Apna stock track karo — data browser mein save rahega</p></div>
+      <div class="card">
+        <h3>Add / Update Item</h3>
+        <div class="row">
+          <div class="col"><label>Item Name</label><input id="s-name" placeholder="Product name"></div>
+          <div class="col"><label>Category</label><input id="s-cat" placeholder="Category"></div>
+          <div class="col"><label>Quantity</label><input type="number" id="s-qty" placeholder="0" min="0"></div>
+          <div class="col"><label>Price (₹)</label><input type="number" id="s-price" placeholder="0" min="0"></div>
+          <div class="col"><label>Low Stock Alert</label><input type="number" id="s-alert" placeholder="5" min="0"></div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="addStockItem()">+ Add Item</button>
+          <input id="s-search" placeholder="🔍 Search items..." style="max-width:220px;" oninput="renderStock()">
+        </div>
+      </div>
+      <div id="stock-alerts"></div>
+      <div class="card" style="padding:0;overflow:hidden;">
+        <table id="stock-table">
+          <thead><tr><th>Item</th><th>Category</th><th>Qty</th><th>Price</th><th>Value</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="stock-body"></tbody>
+        </table>
+      </div>
+      <div class="row" style="margin-top:16px;">
+        <div class="stat-box col"><div class="stat-num" id="s-total-items">0</div><div class="stat-label">Total Items</div></div>
+        <div class="stat-box col"><div class="stat-num" id="s-total-val">₹0</div><div class="stat-label">Total Value</div></div>
+        <div class="stat-box col"><div class="stat-num" id="s-low-count">0</div><div class="stat-label">Low Stock</div></div>
+      </div>
+    </div>
+
+    <!-- 4. QUOTATION -->
+    <div class="tool-panel" id="tool-quotation">
+      <div class="tool-header"><h2>📋 Quotation Maker</h2><p>Professional quotation banao — terms ke saath</p></div>
+      <div class="row">
+        <div style="flex:1;min-width:280px;">
+          <div class="card">
+            <h3>Business Details</h3>
+            <div class="row">
+              <div class="col"><label>Business Name</label><input id="q-biz" oninput="buildQuotation()"></div>
+              <div class="col"><label>GST Number</label><input id="q-gst" oninput="buildQuotation()"></div>
+            </div>
+            <div style="margin-top:10px;"><label>Address</label><textarea id="q-addr" oninput="buildQuotation()" rows="2"></textarea></div>
+          </div>
+          <div class="card">
+            <h3>Client & Quote Info</h3>
+            <div class="row">
+              <div class="col"><label>Client Name</label><input id="q-client" oninput="buildQuotation()"></div>
+              <div class="col"><label>Quote #</label><input id="q-num" oninput="buildQuotation()" placeholder="QUO-001"></div>
+            </div>
+            <div class="row" style="margin-top:10px;">
+              <div class="col"><label>Date</label><input type="date" id="q-date" oninput="buildQuotation()"></div>
+              <div class="col"><label>Valid Till</label><input type="date" id="q-valid" oninput="buildQuotation()"></div>
+              <div class="col"><label>GST %</label>
+                <select id="q-gst-rate" onchange="buildQuotation()">
+                  <option value="0">0%</option><option value="5">5%</option>
+                  <option value="12">12%</option><option value="18" selected>18%</option>
+                  <option value="28">28%</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Items</h3>
+            <div id="q-items"></div>
+            <button class="btn btn-outline btn-sm" onclick="addQItem()">+ Add Item</button>
+          </div>
+          <div class="card">
+            <h3>Terms & Conditions</h3>
+            <textarea id="q-terms" oninput="buildQuotation()" rows="3" placeholder="1. 50% advance payment required.&#10;2. Delivery within 7 working days.&#10;3. GST as applicable."></textarea>
+          </div>
+        </div>
+        <div style="flex:1;min-width:280px;">
+          <div class="card">
+            <h3>Preview</h3>
+            <div id="quotation-preview" class="preview-frame" style="min-height:400px;font-size:0.82rem;"></div>
+            <div class="btn-group">
+              <button class="btn btn-primary" onclick="printQuotation()">🖨️ Print / Save PDF</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. IMAGE COMPRESSOR -->
+    <div class="tool-panel" id="tool-imgcompress">
+      <div class="tool-header"><h2>🖼️ Image Compressor</h2><p>Image size kam karo — quality maintain rakhte hue</p></div>
+      <div class="card">
+        <label class="upload-zone" for="img-upload" id="img-zone">
+          <svg width="40" height="40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <p>Click to upload or drag & drop image here</p>
+          <p style="font-size:0.8rem;margin-top:4px;">JPG, PNG, WebP supported</p>
+        </label>
+        <input type="file" id="img-upload" accept="image/*" style="display:none;" onchange="loadImage(this)">
+      </div>
+      <div class="card" id="img-controls" style="display:none;">
+        <h3>Compression Settings</h3>
+        <div class="row">
+          <div class="col">
+            <label>Mode</label>
+            <select id="img-mode" onchange="updateImgMode()">
+              <option value="low">Low (best quality ~80%)</option>
+              <option value="medium" selected>Medium (balanced ~60%)</option>
+              <option value="high">High (max compress ~30%)</option>
+              <option value="custom">Custom</option>
+            </select>
+          </div>
+          <div class="col" id="custom-quality-wrap" style="display:none;">
+            <label>Quality: <span id="quality-val">60</span>%</label>
+            <input type="range" id="img-quality" min="5" max="95" value="60" oninput="document.getElementById('quality-val').textContent=this.value;compressImage()">
+          </div>
+          <div class="col">
+            <label>Output Format</label>
+            <select id="img-fmt" onchange="compressImage()">
+              <option value="image/jpeg">JPEG</option>
+              <option value="image/webp">WebP</option>
+              <option value="image/png">PNG</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid-2" style="margin-top:16px;">
+          <div>
+            <p style="font-size:0.8rem;color:var(--text2);margin-bottom:6px;">Original</p>
+            <img id="img-orig" style="max-width:100%;border-radius:8px;border:1px solid var(--border);">
+            <p id="img-orig-size" style="font-size:0.8rem;color:var(--text2);margin-top:4px;"></p>
+          </div>
+          <div>
+            <p style="font-size:0.8rem;color:var(--text2);margin-bottom:6px;">Compressed</p>
+            <img id="img-compressed" style="max-width:100%;border-radius:8px;border:1px solid var(--border);">
+            <p id="img-comp-size" style="font-size:0.8rem;margin-top:4px;"></p>
+          </div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-success" onclick="downloadCompressedImage()">⬇️ Download Compressed</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. FORM BUILDER -->
+    <div class="tool-panel" id="tool-formbuilder">
+      <div class="tool-header"><h2>📋 Form / Survey Builder</h2><p>Custom forms banao — responses locally save honge</p></div>
+      <div class="row">
+        <div style="flex:1;min-width:260px;">
+          <div class="card">
+            <h3>Add Fields</h3>
+            <div class="row">
+              <div class="col"><label>Field Label</label><input id="fb-label" placeholder="e.g. Full Name"></div>
+              <div class="col"><label>Field Type</label>
+                <select id="fb-type">
+                  <option value="text">Text Input</option>
+                  <option value="textarea">Long Text</option>
+                  <option value="email">Email</option>
+                  <option value="number">Number</option>
+                  <option value="tel">Phone</option>
+                  <option value="date">Date</option>
+                  <option value="checkbox">Checkbox</option>
+                  <option value="select">Dropdown</option>
+                  <option value="radio">Radio Buttons</option>
+                </select>
+              </div>
+            </div>
+            <div id="fb-options-wrap" style="display:none;margin-top:10px;">
+              <label>Options (comma separated)</label>
+              <input id="fb-options" placeholder="Option 1, Option 2, Option 3">
+            </div>
+            <div style="margin-top:10px;display:flex;gap:8px;align-items:center;">
+              <input type="checkbox" id="fb-required" style="width:auto;"> <label style="margin:0;">Required field</label>
+            </div>
+            <div class="btn-group"><button class="btn btn-primary" onclick="addFormField()">+ Add Field</button></div>
+          </div>
+          <div class="card">
+            <h3>Form Title</h3>
+            <input id="fb-title" placeholder="My Survey Form" oninput="renderFormPreview()">
+          </div>
+          <div class="card">
+            <h3>Fields (drag to reorder)</h3>
+            <ul class="drag-list" id="fb-field-list"></ul>
+          </div>
+        </div>
+        <div style="flex:1;min-width:260px;">
+          <div class="card">
+            <div class="tabs">
+              <div class="tab active" onclick="fbTab('preview')">Form Preview</div>
+              <div class="tab" onclick="fbTab('responses')">Responses</div>
+            </div>
+            <div id="fb-preview-panel">
+              <div id="fb-form-preview" style="min-height:200px;"></div>
+              <div class="btn-group">
+                <button class="btn btn-primary" onclick="submitFormPreview()">Submit Response</button>
+                <button class="btn btn-outline" onclick="window.print()">🖨️ Print Form</button>
+              </div>
+            </div>
+            <div id="fb-responses-panel" style="display:none;">
+              <div id="fb-responses-list"></div>
+              <div class="btn-group"><button class="btn btn-danger btn-sm" onclick="clearFbResponses()">Clear All Responses</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. VISITING CARD -->
+    <div class="tool-panel" id="tool-vcard">
+      <div class="tool-header"><h2>🖨️ Visiting Card Maker</h2><p>12 premium dark templates — QR code, download PNG/PDF, print ready</p></div>
+      <div class="row">
+        <div style="flex:1;min-width:260px;overflow:auto;">
+          <div class="card">
+            <h3>Card Details</h3>
+            <div class="row">
+              <div class="col"><label>Full Name</label><input id="vc-name" oninput="buildVCard()" placeholder="Rahul Kumar"></div>
+              <div class="col"><label>Designation</label><input id="vc-title" oninput="buildVCard()" placeholder="CEO / Manager"></div>
+            </div>
+            <div style="margin-top:10px;"><label>Company</label><input id="vc-company" oninput="buildVCard()" placeholder="Rahul Enterprises"></div>
+            <div class="row" style="margin-top:10px;">
+              <div class="col"><label>Phone</label><input id="vc-phone" oninput="buildVCard()" placeholder="+91 9876543210"></div>
+              <div class="col"><label>Email</label><input id="vc-email" oninput="buildVCard()" placeholder="rahul@company.com"></div>
+            </div>
+            <div style="margin-top:10px;"><label>Website</label><input id="vc-web" oninput="buildVCard()" placeholder="www.rahulenterprises.com"></div>
+            <div style="margin-top:10px;"><label>Address</label><input id="vc-addr" oninput="buildVCard()" placeholder="Mumbai, Maharashtra"></div>
+            <div style="margin-top:10px;"><label>Tagline / Slogan (optional)</label><input id="vc-tagline" oninput="buildVCard()" placeholder="Building Tomorrow's Solutions"></div>
+          </div>
+          <div class="card">
+            <h3>Style</h3>
+            <div class="row">
+              <div class="col">
+                <label>Template</label>
+                <select id="vc-template" onchange="buildVCard()" style="font-size:0.82rem;">
+                  <option value="t1">1. Nebula Dark — Left accent bar</option>
+                  <option value="t2">2. Midnight Split — Left info / Right name</option>
+                  <option value="t3">3. Neon Edge — Top glow line</option>
+                  <option value="t4">4. Obsidian — Name centered, info bottom</option>
+                  <option value="t5">5. Carbon — Diagonal color slash</option>
+                  <option value="t6">6. Void — Minimal dark + monogram</option>
+                  <option value="t7">7. Aurora — Gradient dark top band</option>
+                  <option value="t8">8. Steel — Gray metallic with badge</option>
+                  <option value="t9">9. Cosmos — Dark + color right panel</option>
+                  <option value="t10">10. Prism — Dark bottom accent bar</option>
+                  <option value="t11">11. Shadow — Full gradient diagonal</option>
+                  <option value="t12">12. Eclipse — Dark + QR center focus</option>
+                </select>
+              </div>
+              <div class="col"><label>Accent Color</label><input type="color" id="vc-color" value="#6c63ff" oninput="buildVCard()"></div>
+            </div>
+            <div style="margin-top:10px;display:flex;align-items:center;gap:10px;">
+              <input type="checkbox" id="vc-show-qr" checked onchange="buildVCard()" style="width:auto;">
+              <label style="margin:0;font-size:0.88rem;">Show QR Code (auto-generated from details)</label>
+            </div>
+          </div>
+        </div>
+        <div style="flex:1;min-width:260px;overflow:auto;">
+          <div class="card">
+            <h3>Preview</h3>
+            <div id="vc-preview-wrap" style="overflow:auto;"></div>
+            <div class="btn-group" style="margin-top:12px;flex-wrap:wrap;">
+              <button class="btn btn-primary" onclick="downloadVCardPNG()">⬇️ Download PNG (2400px)</button>
+              <button class="btn btn-success" onclick="downloadVCardPDF()">📄 Download PDF</button>
+              <button class="btn btn-outline" onclick="printVCard()">🖨️ Print 8 Cards</button>
+            </div>
+            <p style="font-size:0.78rem;color:var(--text2);margin-top:8px;">💡 QR scan karne pe contact details seedha phone mein save honge</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 8. SALARY SLIP -->
+    <div class="tool-panel" id="tool-salary">
+      <div class="tool-header"><h2>💰 Salary Slip Generator</h2><p>Employee salary slip banao — auto calculation ke saath</p></div>
+      <div class="row">
+        <div style="flex:1;min-width:260px;">
+          <div class="card">
+            <h3>Company Info</h3>
+            <div class="row">
+              <div class="col"><label>Company Name</label><input id="ss-company" oninput="buildSalary()" placeholder="ABC Pvt Ltd"></div>
+              <div class="col"><label>Month/Year</label><input type="month" id="ss-month" oninput="buildSalary()"></div>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Employee Info</h3>
+            <div class="row">
+              <div class="col"><label>Employee Name</label><input id="ss-name" oninput="buildSalary()" placeholder="Rahul Kumar"></div>
+              <div class="col"><label>Employee ID</label><input id="ss-id" oninput="buildSalary()" placeholder="EMP-001"></div>
+            </div>
+            <div class="row" style="margin-top:10px;">
+              <div class="col"><label>Designation</label><input id="ss-desg" oninput="buildSalary()" placeholder="Software Developer"></div>
+              <div class="col"><label>Department</label><input id="ss-dept" oninput="buildSalary()" placeholder="IT"></div>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Earnings (₹)</h3>
+            <div class="row">
+              <div class="col"><label>Basic Salary</label><input type="number" id="ss-basic" oninput="buildSalary()" placeholder="20000"></div>
+              <div class="col"><label>HRA</label><input type="number" id="ss-hra" oninput="buildSalary()" placeholder="8000"></div>
+            </div>
+            <div class="row" style="margin-top:10px;">
+              <div class="col"><label>DA</label><input type="number" id="ss-da" oninput="buildSalary()" placeholder="2000"></div>
+              <div class="col"><label>Other Allowances</label><input type="number" id="ss-other" oninput="buildSalary()" placeholder="1000"></div>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Deductions (₹)</h3>
+            <div class="row">
+              <div class="col"><label>PF</label><input type="number" id="ss-pf" oninput="buildSalary()" placeholder="2400"></div>
+              <div class="col"><label>ESI</label><input type="number" id="ss-esi" oninput="buildSalary()" placeholder="0"></div>
+            </div>
+            <div class="row" style="margin-top:10px;">
+              <div class="col"><label>TDS</label><input type="number" id="ss-tds" oninput="buildSalary()" placeholder="0"></div>
+              <div class="col"><label>Other Deductions</label><input type="number" id="ss-ded-other" oninput="buildSalary()" placeholder="0"></div>
+            </div>
+          </div>
+        </div>
+        <div style="flex:1;min-width:260px;">
+          <div class="card">
+            <h3>Salary Slip Preview</h3>
+            <div id="salary-preview" class="preview-frame" style="min-height:400px;font-size:0.82rem;"></div>
+            <div class="btn-group">
+              <button class="btn btn-primary" onclick="printSalary()">🖨️ Print Salary Slip</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 9. IMAGE TO PDF -->
+    <div class="tool-panel" id="tool-img2pdf">
+      <div class="tool-header"><h2>🖼️ Image to PDF</h2><p>Multiple images ko ek PDF mein convert karo</p></div>
+      <div class="card">
+        <label class="upload-zone" for="i2p-upload">
+          <svg width="40" height="40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <p>Click to upload images (multiple allowed)</p>
+          <p style="font-size:0.8rem;margin-top:4px;">JPG, PNG, WebP — drag to reorder</p>
+        </label>
+        <input type="file" id="i2p-upload" accept="image/*" multiple style="display:none;" onchange="loadI2PImages(this)">
+      </div>
+      <div class="card" id="i2p-controls" style="display:none;">
+        <h3>Images (drag to reorder)</h3>
+        <div id="i2p-list" style="display:flex;flex-wrap:wrap;gap:12px;"></div>
+        <div class="row" style="margin-top:16px;">
+          <div class="col"><label>Page Size</label><select id="i2p-size"><option value="a4">A4</option><option value="letter">Letter</option><option value="fit">Fit to Image</option></select></div>
+          <div class="col"><label>Orientation</label><select id="i2p-orient"><option value="portrait">Portrait</option><option value="landscape">Landscape</option></select></div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="convertI2P()">📄 Convert to PDF</button>
+          <button class="btn btn-outline" onclick="clearI2P()">Clear All</button>
+        </div>
+        <div id="i2p-status" style="margin-top:10px;"></div>
+      </div>
+    </div>
+
+    <!-- 10. PDF MERGER -->
+    <div class="tool-panel" id="tool-pdfmerge">
+      <div class="tool-header"><h2>📄 PDF Merger</h2><p>Multiple PDFs ko ek mein merge karo</p></div>
+      <div class="alert alert-info">⚠️ PDF merge ke liye <strong>PDF-Lib</strong> library use hogi — yeh pura offline kaam karta hai, koi data upload nahi hota.</div>
+      <div class="card">
+        <label class="upload-zone" for="pm-upload">
+          <svg width="40" height="40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <p>Click to upload PDFs (multiple)</p>
+        </label>
+        <input type="file" id="pm-upload" accept=".pdf" multiple style="display:none;" onchange="loadPDFs(this)">
+      </div>
+      <div class="card" id="pm-list-card" style="display:none;">
+        <h3>PDF Files (drag to reorder)</h3>
+        <ul class="drag-list" id="pm-list"></ul>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="mergePDFs()">🔗 Merge All PDFs</button>
+          <button class="btn btn-outline" onclick="clearPDFs()">Clear</button>
+        </div>
+        <div id="pm-status" style="margin-top:10px;"></div>
+      </div>
+    </div>
+
+    <!-- 11. PDF LOCK/UNLOCK -->
+    <div class="tool-panel" id="tool-pdflock">
+      <div class="tool-header"><h2>🔒 PDF Lock / Unlock</h2><p>PDF mein password lagao ya hatao</p></div>
+      <div class="alert alert-info">🔒 Sab kuch browser mein hota hai — koi file server pe nahi jaati. PDF-Lib library use hoti hai.</div>
+      <div class="card">
+        <label class="upload-zone" for="pl-upload">
+          <svg width="40" height="40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <p>Upload PDF file</p>
+        </label>
+        <input type="file" id="pl-upload" accept=".pdf" style="display:none;" onchange="loadPDFLock(this)">
+      </div>
+      <div class="card" id="pl-controls" style="display:none;">
+        <div class="tabs">
+          <div class="tab active" onclick="plTab('lock')">🔒 Add Password</div>
+          <div class="tab" onclick="plTab('unlock')">🔓 Remove Password</div>
+        </div>
+        <div id="pl-lock-panel">
+          <div class="row">
+            <div class="col"><label>Owner Password</label><input type="password" id="pl-owner-pw" placeholder="Strong password"></div>
+            <div class="col"><label>User Password</label><input type="password" id="pl-user-pw" placeholder="Password to open PDF"></div>
+          </div>
+          <div class="btn-group"><button class="btn btn-primary" onclick="lockPDF()">🔒 Lock PDF</button></div>
+        </div>
+        <div id="pl-unlock-panel" style="display:none;">
+          <div class="alert alert-warning">⚠️ Note: PDF-Lib does not support removing passwords from already-encrypted PDFs. This feature will re-save the PDF as-is (useful for reorganizing unencrypted PDFs).</div>
+          <div class="btn-group"><button class="btn btn-success" onclick="unlockPDF()">🔓 Save as Unlocked</button></div>
+        </div>
+        <div id="pl-status" style="margin-top:10px;"></div>
+      </div>
+    </div>
+
+    <!-- 12. PDF COMPRESSOR -->
+    <div class="tool-panel" id="tool-pdfcompress">
+      <div class="tool-header"><h2>📄 PDF Compressor</h2><p>PDF file size kam karo</p></div>
+      <div class="alert alert-info">ℹ️ PDF compression browser mein images ko re-encode karke hoti hai. Pure text PDFs mein limited compression hogi.</div>
+      <div class="card">
+        <label class="upload-zone" for="pc-upload">
+          <svg width="40" height="40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <p>Upload PDF to compress</p>
+        </label>
+        <input type="file" id="pc-upload" accept=".pdf" style="display:none;" onchange="loadPDFCompress(this)">
+      </div>
+      <div class="card" id="pc-controls" style="display:none;">
+        <h3>Compression Settings</h3>
+        <div class="row">
+          <div class="col">
+            <label>Mode</label>
+            <select id="pc-mode" onchange="updatePCMode()">
+              <option value="low">Low (Best Quality)</option>
+              <option value="medium" selected>Medium (Balanced)</option>
+              <option value="high">High (Max Compress)</option>
+              <option value="custom">Custom (KB/MB target)</option>
+            </select>
+          </div>
+          <div class="col" id="pc-custom-wrap" style="display:none;">
+            <label>Target Size</label>
+            <div style="display:flex;gap:8px;">
+              <input type="number" id="pc-target" placeholder="500" style="flex:1;">
+              <select id="pc-unit" style="width:70px;"><option>KB</option><option>MB</option></select>
+            </div>
+          </div>
+        </div>
+        <div id="pc-status" style="margin-top:12px;"></div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="compressPDF()">📦 Compress PDF</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 13. TEXT TO PDF -->
+    <div class="tool-panel" id="tool-text2pdf">
+      <div class="tool-header"><h2>📝 Text to PDF</h2><p>Text likhyo aur PDF download karo</p></div>
+      <div class="row">
+        <div style="flex:1;min-width:260px;">
+          <div class="card">
+            <h3>Text Content</h3>
+            <textarea id="t2p-text" rows="12" placeholder="Yahan apna text likhein...
+Heading banane ke liye line ko == se start karein.
+Eg: == Mera Heading
+Normal text aisa likhein."></textarea>
+          </div>
+          <div class="card">
+            <h3>Styling</h3>
+            <div class="row">
+              <div class="col"><label>Font Family</label>
+                <select id="t2p-font">
+                  <option value="Arial">Arial</option>
+                  <option value="Georgia">Georgia</option>
+                  <option value="Times New Roman">Times New Roman</option>
+                  <option value="Courier New">Courier New</option>
+                  <option value="Verdana">Verdana</option>
+                </select>
+              </div>
+              <div class="col"><label>Font Size</label>
+                <select id="t2p-size">
+                  <option value="12">12pt</option>
+                  <option value="14" selected>14pt</option>
+                  <option value="16">16pt</option>
+                  <option value="18">18pt</option>
+                  <option value="20">20pt</option>
+                </select>
+              </div>
+            </div>
+            <div class="row" style="margin-top:10px;">
+              <div class="col"><label>Text Color</label><input type="color" id="t2p-color" value="#111111"></div>
+              <div class="col"><label>Background</label><input type="color" id="t2p-bg" value="#ffffff"></div>
+              <div class="col"><label>Line Spacing</label>
+                <select id="t2p-spacing">
+                  <option value="1.4">Single</option>
+                  <option value="1.8" selected>1.5x</option>
+                  <option value="2.2">Double</option>
+                </select>
+              </div>
+            </div>
+            <div style="margin-top:10px;"><label>PDF Title</label><input id="t2p-title" placeholder="My Document"></div>
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-primary" onclick="generateT2P()">📄 Generate PDF</button>
+          </div>
+        </div>
+        <div style="flex:1;min-width:260px;">
+          <div class="card">
+            <h3>Preview</h3>
+            <div id="t2p-preview" style="background:#fff;color:#111;padding:24px;border-radius:8px;min-height:300px;font-size:14px;line-height:1.8;white-space:pre-wrap;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- PRINT STYLES FOR SPECIFIC TOOLS -->
+<style id="print-style"></style>
+
+<script>
+// ===== THEME =====
+let isDark = true;
+function toggleTheme() {
+  isDark = !isDark;
+  document.body.classList.toggle('light', !isDark);
+  document.getElementById('themeBtn').textContent = isDark ? '☀️ Light' : '🌙 Dark';
+}
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('mobile-open');
+}
+
+// ===== NAVIGATION =====
+let currentTool = 'resume';
+function showTool(id) {
+  document.querySelectorAll('.tool-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('tool-' + id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => { if(n.textContent.trim().toLowerCase().includes(id.replace('-',' ').split(' ')[0])) {} });
+  event.currentTarget && event.currentTarget.classList.add('active');
+  currentTool = id;
+  // Close mobile sidebar
+  document.getElementById('sidebar').classList.remove('mobile-open');
+  // Init on first show
+  if(id==='invoice') { initInvoice(); }
+  if(id==='quotation') { initQuotation(); }
+  if(id==='salary') { initSalary(); }
+  if(id==='vcard') { buildVCard(); }
+  if(id==='resume') { buildResume(); }
+}
+
+// ===== UTILS =====
+function fmtMoney(n) { return '₹' + parseFloat(n||0).toLocaleString('en-IN', {minimumFractionDigits:2}); }
+function today() { return new Date().toISOString().split('T')[0]; }
+function genId(prefix) { return prefix + '-' + String(Math.floor(Math.random()*9000)+1000); }
+
+// ===== RESUME =====
+let eduItems = [], expItems = [], projItems = [];
+function addEdu() {
+  const id = Date.now();
+  eduItems.push({id, degree:'', school:'', year:''});
+  renderEduList(); buildResume();
+}
+function addExp() {
+  const id = Date.now();
+  expItems.push({id, role:'', company:'', period:'', desc:''});
+  renderExpList(); buildResume();
+}
+function addProj() {
+  const id = Date.now();
+  projItems.push({id, name:'', tech:'', link:'', desc:''});
+  renderProjList(); buildResume();
+}
+function renderEduList() {
+  const c = document.getElementById('edu-list');
+  c.innerHTML = eduItems.map((e,i) => `
+    <div style="border:1px solid var(--border);padding:10px;border-radius:8px;margin-bottom:8px;">
+      <div class="row">
+        <div class="col"><label>Degree/Course</label><input value="${e.degree}" oninput="eduItems[${i}].degree=this.value;buildResume()" placeholder="B.Tech, MBA..."></div>
+        <div class="col"><label>School/University</label><input value="${e.school}" oninput="eduItems[${i}].school=this.value;buildResume()" placeholder="IIT Delhi"></div>
+        <div class="col"><label>Year</label><input value="${e.year}" oninput="eduItems[${i}].year=this.value;buildResume()" placeholder="2018-2022"></div>
+        <div><button class="btn btn-danger btn-sm" style="margin-top:18px;" onclick="eduItems.splice(${i},1);renderEduList();buildResume()">✕</button></div>
+      </div>
+    </div>`).join('');
+}
+function renderExpList() {
+  const c = document.getElementById('exp-list');
+  c.innerHTML = expItems.map((e,i) => `
+    <div style="border:1px solid var(--border);padding:10px;border-radius:8px;margin-bottom:8px;">
+      <div class="row">
+        <div class="col"><label>Role</label><input value="${e.role}" oninput="expItems[${i}].role=this.value;buildResume()" placeholder="Software Developer"></div>
+        <div class="col"><label>Company</label><input value="${e.company}" oninput="expItems[${i}].company=this.value;buildResume()" placeholder="TCS"></div>
+        <div class="col"><label>Period</label><input value="${e.period}" oninput="expItems[${i}].period=this.value;buildResume()" placeholder="Jan 2022 - Present"></div>
+        <div><button class="btn btn-danger btn-sm" style="margin-top:18px;" onclick="expItems.splice(${i},1);renderExpList();buildResume()">✕</button></div>
+      </div>
+      <div style="margin-top:8px;"><label>Description</label><textarea oninput="expItems[${i}].desc=this.value;buildResume()" placeholder="Key responsibilities..." rows="2">${e.desc}</textarea></div>
+    </div>`).join('');
+}
+function renderProjList() {
+  const c = document.getElementById('proj-list');
+  c.innerHTML = projItems.map((p,i) => `
+    <div style="border:1px solid var(--border);padding:10px;border-radius:8px;margin-bottom:8px;">
+      <div class="row">
+        <div class="col"><label>Project Name</label><input value="${p.name}" oninput="projItems[${i}].name=this.value;buildResume()" placeholder="E-commerce App"></div>
+        <div class="col"><label>Tech Stack</label><input value="${p.tech}" oninput="projItems[${i}].tech=this.value;buildResume()" placeholder="React, Node, MongoDB"></div>
+        <div class="col"><label>Link (optional)</label><input value="${p.link}" oninput="projItems[${i}].link=this.value;buildResume()" placeholder="github.com/..."></div>
+        <div><button class="btn btn-danger btn-sm" style="margin-top:18px;" onclick="projItems.splice(${i},1);renderProjList();buildResume()">✕</button></div>
+      </div>
+      <div style="margin-top:8px;"><label>Description</label><textarea oninput="projItems[${i}].desc=this.value;buildResume()" placeholder="What this project does..." rows="2">${p.desc}</textarea></div>
+    </div>`).join('');
+}
+function buildResume() {
+  const name = document.getElementById('r-name').value || 'Your Name';
+  const title = document.getElementById('r-title').value || 'Professional Title';
+  const email = document.getElementById('r-email').value;
+  const phone = document.getElementById('r-phone').value;
+  const addr = document.getElementById('r-addr').value;
+  const web = document.getElementById('r-web').value;
+  const summary = document.getElementById('r-summary').value;
+  const skills = document.getElementById('r-skills').value;
+  const tmpl = document.getElementById('r-template').value;
+  const accent = tmpl==='modern' ? '#2563eb' : tmpl==='minimal' ? '#111' : '#1a1a2e';
+  const headerBg = tmpl==='modern' ? '#1e3a8a' : tmpl==='minimal' ? '#f8f8f8' : '#1a1a2e';
+  const headerColor = tmpl==='minimal' ? '#111' : '#fff';
+  let html = `<div style="font-family:'Segoe UI',sans-serif;color:#111;max-width:700px;margin:0 auto;">
+    <div style="background:${headerBg};color:${headerColor};padding:24px 28px;border-radius:8px 8px 0 0;">
+      <div style="font-size:1.8rem;font-weight:800;">${name}</div>
+      <div style="font-size:1rem;opacity:0.85;margin-top:4px;">${title}</div>
+      <div style="margin-top:10px;font-size:0.8rem;opacity:0.8;display:flex;flex-wrap:wrap;gap:16px;">
+        ${email ? `<span>✉️ ${email}</span>`:''}${phone ? `<span>📞 ${phone}</span>`:''}
+        ${addr ? `<span>📍 ${addr}</span>`:''}${web ? `<span>🌐 ${web}</span>`:''}
+      </div>
+    </div>
+    <div style="padding:20px 28px;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 8px 8px;">`;
+  if(summary) html += `<div style="margin-bottom:16px;"><div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:1.5px;color:${accent};font-weight:700;margin-bottom:6px;border-bottom:2px solid ${accent};padding-bottom:4px;">Summary</div><p style="font-size:0.88rem;line-height:1.6;color:#444;">${summary}</p></div>`;
+  if(expItems.length) {
+    html += `<div style="margin-bottom:16px;"><div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:1.5px;color:${accent};font-weight:700;margin-bottom:8px;border-bottom:2px solid ${accent};padding-bottom:4px;">Experience</div>`;
+    expItems.forEach(e => {
+      html += `<div style="margin-bottom:10px;"><div style="display:flex;justify-content:space-between;"><strong style="font-size:0.9rem;">${e.role}</strong><span style="font-size:0.8rem;color:#666;">${e.period}</span></div><div style="font-size:0.85rem;color:${accent};">${e.company}</div>${e.desc?`<p style="font-size:0.82rem;color:#555;margin-top:4px;line-height:1.5;">${e.desc}</p>`:''}</div>`;
+    });
+    html += `</div>`;
+  }
+  if(eduItems.length) {
+    html += `<div style="margin-bottom:16px;"><div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:1.5px;color:${accent};font-weight:700;margin-bottom:8px;border-bottom:2px solid ${accent};padding-bottom:4px;">Education</div>`;
+    eduItems.forEach(e => {
+      html += `<div style="margin-bottom:6px;display:flex;justify-content:space-between;"><div><strong style="font-size:0.88rem;">${e.degree}</strong><div style="font-size:0.82rem;color:#666;">${e.school}</div></div><span style="font-size:0.8rem;color:#666;">${e.year}</span></div>`;
+    });
+    html += `</div>`;
+  }
+  if(skills) html += `<div style="margin-bottom:16px;"><div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:1.5px;color:${accent};font-weight:700;margin-bottom:8px;border-bottom:2px solid ${accent};padding-bottom:4px;">Skills</div><div style="display:flex;flex-wrap:wrap;gap:6px;">${skills.split(',').map(s=>`<span style="background:#f1f5f9;padding:3px 10px;border-radius:20px;font-size:0.8rem;color:#374151;">${s.trim()}</span>`).join('')}</div></div>`;
+  if(projItems.length) {
+    html += `<div><div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:1.5px;color:${accent};font-weight:700;margin-bottom:8px;border-bottom:2px solid ${accent};padding-bottom:4px;">Projects</div>`;
+    projItems.forEach(p => {
+      html += `<div style="margin-bottom:10px;"><div style="display:flex;justify-content:space-between;align-items:center;"><strong style="font-size:0.88rem;">${p.name}</strong>${p.link?`<a href="${p.link}" style="font-size:0.75rem;color:${accent};">🔗 ${p.link}</a>`:''}</div>${p.tech?`<div style="font-size:0.78rem;color:${accent};margin-top:1px;">🛠 ${p.tech}</div>`:''} ${p.desc?`<p style="font-size:0.82rem;color:#555;margin-top:4px;line-height:1.5;">${p.desc}</p>`:''}</div>`;
+    });
+    html += `</div>`;
+  }
+  html += `</div></div>`;
+  document.getElementById('resume-preview').innerHTML = html;
+}
+function printResume() {
+  const c = document.getElementById('resume-preview').innerHTML;
+  const w = window.open('','_blank');
+  w.document.write(`<html><head><title>Resume</title><style>body{margin:0;font-family:'Segoe UI',sans-serif;}@media print{body{margin:0;}}</style></head><body>${c}</body></html>`);
+  w.document.close(); w.focus(); w.print();
+}
+
+// ===== INVOICE =====
+let invItems = [];
+function initInvoice() {
+  if(!document.getElementById('inv-date').value) document.getElementById('inv-date').value = today();
+  if(!document.getElementById('inv-num').value) document.getElementById('inv-num').value = genId('INV');
+  if(!invItems.length) { invItems = [{desc:'',qty:1,rate:0}]; renderInvItems(); }
+  buildInvoice();
+}
+function addInvItem() { invItems.push({desc:'',qty:1,rate:0}); renderInvItems(); buildInvoice(); }
+function renderInvItems() {
+  document.getElementById('inv-items').innerHTML = invItems.map((item,i) => `
+    <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:8px;flex-wrap:wrap;">
+      <div style="flex:3;min-width:120px;"><label>Description</label><input value="${item.desc}" oninput="invItems[${i}].desc=this.value;buildInvoice()" placeholder="Service/Product name"></div>
+      <div style="flex:1;min-width:70px;"><label>Qty</label><input type="number" value="${item.qty}" min="1" oninput="invItems[${i}].qty=this.value;buildInvoice()"></div>
+      <div style="flex:1;min-width:90px;"><label>Rate (₹)</label><input type="number" value="${item.rate}" min="0" oninput="invItems[${i}].rate=this.value;buildInvoice()"></div>
+      <button class="btn btn-danger btn-sm" onclick="invItems.splice(${i},1);renderInvItems();buildInvoice()">✕</button>
+    </div>`).join('');
+}
+function calcInvTotals(items, gstRate) {
+  const subtotal = items.reduce((s,it) => s + (parseFloat(it.qty)||0)*(parseFloat(it.rate)||0), 0);
+  const gst = subtotal * (parseFloat(gstRate)||0) / 100;
+  return { subtotal, gst, total: subtotal+gst };
+}
+function buildInvoice() {
+  const biz = document.getElementById('inv-biz').value || 'Your Business Name';
+  const bizAddr = document.getElementById('inv-biz-addr').value || '';
+  const bizGst = document.getElementById('inv-gst').value;
+  const phone = document.getElementById('inv-phone').value;
+  const email = document.getElementById('inv-email').value;
+  const client = document.getElementById('inv-client').value || 'Client Name';
+  const clientAddr = document.getElementById('inv-client-addr').value;
+  const clientGst = document.getElementById('inv-cgst').value;
+  const num = document.getElementById('inv-num').value;
+  const date = document.getElementById('inv-date').value;
+  const due = document.getElementById('inv-due').value;
+  const gstRate = document.getElementById('inv-gst-rate').value;
+  const {subtotal, gst, total} = calcInvTotals(invItems, gstRate);
+  let rows = invItems.map((it,i) => {
+    const amt = (parseFloat(it.qty)||0)*(parseFloat(it.rate)||0);
+    return `<tr><td>${i+1}</td><td>${it.desc||'Item'}</td><td style="text-align:center;">${it.qty}</td><td style="text-align:right;">${fmtMoney(it.rate)}</td><td style="text-align:right;">${fmtMoney(amt)}</td></tr>`;
+  }).join('');
+  document.getElementById('invoice-preview').innerHTML = `
+    <div style="font-family:'Segoe UI',sans-serif;color:#111;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
+        <div><div style="font-size:1.6rem;font-weight:800;color:#1e3a8a;">${biz}</div>
+          ${bizAddr ? `<div style="font-size:0.8rem;color:#555;margin-top:4px;">${bizAddr.replace(/\n/g,'<br>')}</div>`:''}
+          ${bizGst ? `<div style="font-size:0.78rem;color:#666;margin-top:2px;">GSTIN: ${bizGst}</div>`:''}
+          ${phone ? `<div style="font-size:0.78rem;color:#666;">📞 ${phone}</div>`:''}
+          ${email ? `<div style="font-size:0.78rem;color:#666;">✉️ ${email}</div>`:''}
+        </div>
+        <div style="text-align:right;">
+          <div style="background:#1e3a8a;color:#fff;padding:8px 18px;border-radius:6px;font-size:1.2rem;font-weight:700;">TAX INVOICE</div>
+          <div style="margin-top:8px;font-size:0.82rem;color:#555;">Invoice #: <strong>${num}</strong></div>
+          <div style="font-size:0.82rem;color:#555;">Date: <strong>${date}</strong></div>
+          ${due ? `<div style="font-size:0.82rem;color:#555;">Due: <strong>${due}</strong></div>`:''}
+        </div>
+      </div>
+      <div style="background:#f8fafc;padding:12px 16px;border-radius:6px;margin-bottom:16px;">
+        <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:4px;">Bill To</div>
+        <strong>${client}</strong>
+        ${clientAddr ? `<div style="font-size:0.8rem;color:#555;margin-top:2px;">${clientAddr.replace(/\n/g,'<br>')}</div>`:''}
+        ${clientGst ? `<div style="font-size:0.78rem;color:#666;">GSTIN: ${clientGst}</div>`:''}
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:0.82rem;margin-bottom:12px;">
+        <thead><tr style="background:#1e3a8a;color:#fff;">
+          <th style="padding:8px;text-align:left;">#</th><th style="padding:8px;text-align:left;">Description</th>
+          <th style="padding:8px;text-align:center;">Qty</th><th style="padding:8px;text-align:right;">Rate</th>
+          <th style="padding:8px;text-align:right;">Amount</th>
+        </tr></thead><tbody>${rows}</tbody>
+      </table>
+      <div style="display:flex;justify-content:flex-end;">
+        <div style="min-width:220px;">
+          <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:0.85rem;border-top:1px solid #e2e8f0;"><span>Subtotal:</span><span>${fmtMoney(subtotal)}</span></div>
+          <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:0.85rem;"><span>CGST (${gstRate/2}%) + SGST (${gstRate/2}%):</span><span>${fmtMoney(gst)}</span></div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:1rem;font-weight:800;border-top:2px solid #1e3a8a;color:#1e3a8a;"><span>Total:</span><span>${fmtMoney(total)}</span></div>
+        </div>
+      </div>
+      <div style="margin-top:20px;padding-top:12px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;font-size:0.78rem;color:#888;">
+        <span>Thank you for your business!</span>
+        <span>Authorized Signature: ___________________</span>
+      </div>
+    </div>`;
+}
+function printInvoice() {
+  const c = document.getElementById('invoice-preview').innerHTML;
+  const w = window.open('','_blank');
+  w.document.write(`<html><head><title>Invoice</title><style>body{margin:20px;font-family:'Segoe UI',sans-serif;}@media print{body{margin:10mm;}}</style></head><body>${c}</body></html>`);
+  w.document.close(); w.focus(); w.print();
+}
+
+// ===== QUOTATION (similar to Invoice) =====
+let qItems = [];
+function initQuotation() {
+  if(!document.getElementById('q-date').value) document.getElementById('q-date').value = today();
+  if(!document.getElementById('q-num').value) document.getElementById('q-num').value = genId('QUO');
+  if(!qItems.length) { qItems = [{desc:'',qty:1,rate:0}]; renderQItems(); }
+  buildQuotation();
+}
+function addQItem() { qItems.push({desc:'',qty:1,rate:0}); renderQItems(); buildQuotation(); }
+function renderQItems() {
+  document.getElementById('q-items').innerHTML = qItems.map((item,i) => `
+    <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:8px;flex-wrap:wrap;">
+      <div style="flex:3;min-width:120px;"><label>Description</label><input value="${item.desc}" oninput="qItems[${i}].desc=this.value;buildQuotation()" placeholder="Item/Service"></div>
+      <div style="flex:1;min-width:70px;"><label>Qty</label><input type="number" value="${item.qty}" min="1" oninput="qItems[${i}].qty=this.value;buildQuotation()"></div>
+      <div style="flex:1;min-width:90px;"><label>Rate (₹)</label><input type="number" value="${item.rate}" min="0" oninput="qItems[${i}].rate=this.value;buildQuotation()"></div>
+      <button class="btn btn-danger btn-sm" onclick="qItems.splice(${i},1);renderQItems();buildQuotation()">✕</button>
+    </div>`).join('');
+}
+function buildQuotation() {
+  const biz = document.getElementById('q-biz').value || 'Your Business';
+  const bizAddr = document.getElementById('q-addr').value;
+  const bizGst = document.getElementById('q-gst').value;
+  const client = document.getElementById('q-client').value || 'Client Name';
+  const num = document.getElementById('q-num').value;
+  const date = document.getElementById('q-date').value;
+  const valid = document.getElementById('q-valid').value;
+  const gstRate = document.getElementById('q-gst-rate').value;
+  const terms = document.getElementById('q-terms').value;
+  const {subtotal, gst, total} = calcInvTotals(qItems, gstRate);
+  let rows = qItems.map((it,i) => {
+    const amt = (parseFloat(it.qty)||0)*(parseFloat(it.rate)||0);
+    return `<tr><td>${i+1}</td><td>${it.desc||'Item'}</td><td style="text-align:center;">${it.qty}</td><td style="text-align:right;">${fmtMoney(it.rate)}</td><td style="text-align:right;">${fmtMoney(amt)}</td></tr>`;
+  }).join('');
+  document.getElementById('quotation-preview').innerHTML = `
+    <div style="font-family:'Segoe UI',sans-serif;color:#111;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
+        <div><div style="font-size:1.5rem;font-weight:800;color:#065f46;">${biz}</div>
+          ${bizAddr ? `<div style="font-size:0.8rem;color:#555;margin-top:4px;">${bizAddr.replace(/\n/g,'<br>')}</div>`:''}
+          ${bizGst ? `<div style="font-size:0.78rem;color:#666;">GSTIN: ${bizGst}</div>`:''}
+        </div>
+        <div style="text-align:right;">
+          <div style="background:#065f46;color:#fff;padding:8px 18px;border-radius:6px;font-size:1.2rem;font-weight:700;">QUOTATION</div>
+          <div style="margin-top:8px;font-size:0.82rem;color:#555;">Quote #: <strong>${num}</strong></div>
+          <div style="font-size:0.82rem;color:#555;">Date: <strong>${date}</strong></div>
+          ${valid ? `<div style="font-size:0.82rem;color:#d97706;">Valid Till: <strong>${valid}</strong></div>`:''}
+        </div>
+      </div>
+      <div style="background:#f0fdf4;padding:12px 16px;border-radius:6px;margin-bottom:16px;">
+        <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:4px;">Quoted To</div>
+        <strong>${client}</strong>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:0.82rem;margin-bottom:12px;">
+        <thead><tr style="background:#065f46;color:#fff;">
+          <th style="padding:8px;">#</th><th style="padding:8px;text-align:left;">Description</th>
+          <th style="padding:8px;text-align:center;">Qty</th><th style="padding:8px;text-align:right;">Rate</th>
+          <th style="padding:8px;text-align:right;">Amount</th>
+        </tr></thead><tbody>${rows}</tbody>
+      </table>
+      <div style="display:flex;justify-content:flex-end;">
+        <div style="min-width:220px;">
+          <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:0.85rem;border-top:1px solid #e2e8f0;"><span>Subtotal:</span><span>${fmtMoney(subtotal)}</span></div>
+          <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:0.85rem;"><span>GST (${gstRate}%):</span><span>${fmtMoney(gst)}</span></div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:1rem;font-weight:800;border-top:2px solid #065f46;color:#065f46;"><span>Total:</span><span>${fmtMoney(total)}</span></div>
+        </div>
+      </div>
+      ${terms ? `<div style="margin-top:16px;padding:12px;background:#f0fdf4;border-radius:6px;"><div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:6px;">Terms & Conditions</div><pre style="font-size:0.8rem;color:#374151;white-space:pre-wrap;font-family:inherit;">${terms}</pre></div>`:''}
+    </div>`;
+}
+function printQuotation() {
+  const c = document.getElementById('quotation-preview').innerHTML;
+  const w = window.open('','_blank');
+  w.document.write(`<html><head><title>Quotation</title><style>body{margin:20px;font-family:'Segoe UI',sans-serif;}</style></head><body>${c}</body></html>`);
+  w.document.close(); w.focus(); w.print();
+}
+
+// ===== STOCK MANAGER =====
+function loadStock() { try { return JSON.parse(localStorage.getItem('protoolkit-stock') || '[]'); } catch(e) { return []; } }
+function saveStock(d) { localStorage.setItem('protoolkit-stock', JSON.stringify(d)); }
+function addStockItem() {
+  const name = document.getElementById('s-name').value.trim();
+  if(!name) { alert('Item name required!'); return; }
+  const data = loadStock();
+  data.push({ id: Date.now(), name, cat: document.getElementById('s-cat').value, qty: parseInt(document.getElementById('s-qty').value)||0, price: parseFloat(document.getElementById('s-price').value)||0, alert: parseInt(document.getElementById('s-alert').value)||5 });
+  saveStock(data);
+  ['s-name','s-cat','s-qty','s-price','s-alert'].forEach(id => document.getElementById(id).value='');
+  renderStock();
+}
+function deleteStock(id) { saveStock(loadStock().filter(i=>i.id!==id)); renderStock(); }
+function renderStock() {
+  const q = document.getElementById('s-search').value.toLowerCase();
+  const data = loadStock().filter(i => i.name.toLowerCase().includes(q) || i.cat.toLowerCase().includes(q));
+  const tbody = document.getElementById('stock-body');
+  tbody.innerHTML = data.map(item => {
+    const val = item.qty * item.price;
+    const low = item.qty <= item.alert;
+    const status = item.qty===0 ? `<span class="badge badge-red">Out of Stock</span>` : low ? `<span class="badge badge-yellow">Low Stock</span>` : `<span class="badge badge-green">In Stock</span>`;
+    return `<tr><td><strong>${item.name}</strong></td><td>${item.cat||'-'}</td><td style="${low?'color:var(--warning);font-weight:700;':''}"><input type="number" value="${item.qty}" style="width:70px;background:transparent;border:1px solid var(--border);color:var(--text);" onchange="updateStockQty(${item.id},this.value)"></td><td>${fmtMoney(item.price)}</td><td>${fmtMoney(val)}</td><td>${status}</td><td><button class="btn btn-danger btn-sm" onclick="deleteStock(${item.id})">✕</button></td></tr>`;
+  }).join('');
+  const all = loadStock();
+  const totalVal = all.reduce((s,i)=>s+i.qty*i.price,0);
+  const lowCount = all.filter(i=>i.qty<=i.alert).length;
+  document.getElementById('s-total-items').textContent = all.length;
+  document.getElementById('s-total-val').textContent = fmtMoney(totalVal);
+  document.getElementById('s-low-count').textContent = lowCount;
+  const alerts = loadStock().filter(i=>i.qty<=i.alert&&i.qty>0);
+  document.getElementById('stock-alerts').innerHTML = alerts.length ? `<div class="alert alert-warning">⚠️ Low stock alert: ${alerts.map(i=>i.name).join(', ')}</div>` : '';
+  const outOf = loadStock().filter(i=>i.qty===0);
+  if(outOf.length) document.getElementById('stock-alerts').innerHTML += `<div class="alert" style="background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:var(--danger);">❌ Out of stock: ${outOf.map(i=>i.name).join(', ')}</div>`;
+}
+function updateStockQty(id, val) {
+  const data = loadStock();
+  const item = data.find(i=>i.id===id);
+  if(item) { item.qty = parseInt(val)||0; saveStock(data); renderStock(); }
+}
+
+// ===== SALARY SLIP =====
+function initSalary() {
+  if(!document.getElementById('ss-month').value) {
+    const now = new Date();
+    document.getElementById('ss-month').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  }
+  buildSalary();
+}
+function buildSalary() {
+  const company = document.getElementById('ss-company').value || 'Company Name';
+  const name = document.getElementById('ss-name').value || 'Employee Name';
+  const empId = document.getElementById('ss-id').value || 'EMP-001';
+  const desg = document.getElementById('ss-desg').value || 'Designation';
+  const dept = document.getElementById('ss-dept').value || 'Department';
+  const month = document.getElementById('ss-month').value;
+  const basic = parseFloat(document.getElementById('ss-basic').value)||0;
+  const hra = parseFloat(document.getElementById('ss-hra').value)||0;
+  const da = parseFloat(document.getElementById('ss-da').value)||0;
+  const other = parseFloat(document.getElementById('ss-other').value)||0;
+  const pf = parseFloat(document.getElementById('ss-pf').value)||0;
+  const esi = parseFloat(document.getElementById('ss-esi').value)||0;
+  const tds = parseFloat(document.getElementById('ss-tds').value)||0;
+  const dedOther = parseFloat(document.getElementById('ss-ded-other').value)||0;
+  const grossEarnings = basic+hra+da+other;
+  const totalDed = pf+esi+tds+dedOther;
+  const net = grossEarnings-totalDed;
+  const monthName = month ? new Date(month+'-01').toLocaleDateString('en-IN',{month:'long',year:'numeric'}) : 'Month Year';
+  document.getElementById('salary-preview').innerHTML = `
+    <div style="font-family:'Segoe UI',sans-serif;color:#111;border:2px solid #1e3a8a;border-radius:8px;overflow:hidden;">
+      <div style="background:#1e3a8a;color:#fff;padding:16px 20px;text-align:center;">
+        <div style="font-size:1.3rem;font-weight:800;">${company}</div>
+        <div style="font-size:0.9rem;margin-top:2px;">SALARY SLIP — ${monthName}</div>
+      </div>
+      <div style="padding:16px 20px;border-bottom:1px solid #e2e8f0;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:0.82rem;">
+          <div><strong>Employee Name:</strong> ${name}</div>
+          <div><strong>Employee ID:</strong> ${empId}</div>
+          <div><strong>Designation:</strong> ${desg}</div>
+          <div><strong>Department:</strong> ${dept}</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;font-size:0.82rem;">
+        <div style="padding:16px 20px;border-right:1px solid #e2e8f0;">
+          <div style="font-weight:700;color:#1e3a8a;margin-bottom:10px;text-transform:uppercase;font-size:0.75rem;letter-spacing:1px;">Earnings</div>
+          ${[['Basic Salary',basic],['HRA',hra],['DA',da],['Other Allowances',other]].map(([l,v])=>v?`<div style="display:flex;justify-content:space-between;padding:3px 0;"><span>${l}</span><span>${fmtMoney(v)}</span></div>`:``).join('')}
+          <div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid #e2e8f0;font-weight:700;margin-top:6px;"><span>Gross Earnings</span><span>${fmtMoney(grossEarnings)}</span></div>
+        </div>
+        <div style="padding:16px 20px;">
+          <div style="font-weight:700;color:#dc2626;margin-bottom:10px;text-transform:uppercase;font-size:0.75rem;letter-spacing:1px;">Deductions</div>
+          ${[['PF',pf],['ESI',esi],['TDS',tds],['Other',dedOther]].map(([l,v])=>v?`<div style="display:flex;justify-content:space-between;padding:3px 0;"><span>${l}</span><span>${fmtMoney(v)}</span></div>`:``).join('')}
+          <div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid #e2e8f0;font-weight:700;margin-top:6px;"><span>Total Deductions</span><span>${fmtMoney(totalDed)}</span></div>
+        </div>
+      </div>
+      <div style="background:#1e3a8a;color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:1rem;font-weight:700;">NET SALARY</span>
+        <span style="font-size:1.3rem;font-weight:800;">${fmtMoney(net)}</span>
+      </div>
+      <div style="padding:12px 20px;font-size:0.78rem;color:#666;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;">
+        <span>This is a computer generated salary slip</span>
+        <span>Authorized Signatory: ___________</span>
+      </div>
+    </div>`;
+}
+function printSalary() {
+  const c = document.getElementById('salary-preview').innerHTML;
+  const w = window.open('','_blank');
+  w.document.write(`<html><head><title>Salary Slip</title><style>body{margin:20px;font-family:'Segoe UI',sans-serif;}</style></head><body>${c}</body></html>`);
+  w.document.close(); w.focus(); w.print();
+}
+
+// ===== VISITING CARD — 12 PREMIUM DARK TEMPLATES =====
+function vcQRData() {
+  const n=document.getElementById('vc-name').value||'';
+  const p=document.getElementById('vc-phone').value||'';
+  const e=document.getElementById('vc-email').value||'';
+  const w=document.getElementById('vc-web').value||'';
+  const c=document.getElementById('vc-company').value||'';
+  const a=document.getElementById('vc-addr').value||'';
+  return `BEGIN:VCARD\nVERSION:3.0\nFN:${n}\nORG:${c}\nTEL:${p}\nEMAIL:${e}\nURL:${w}\nADR:;;${a};;;;\nEND:VCARD`;
+}
+function buildVCard() {
+  const name=document.getElementById('vc-name').value||'Your Name';
+  const title=document.getElementById('vc-title').value||'Designation';
+  const company=document.getElementById('vc-company').value||'Company';
+  const phone=document.getElementById('vc-phone').value||'';
+  const email=document.getElementById('vc-email').value||'';
+  const web=document.getElementById('vc-web').value||'';
+  const addr=document.getElementById('vc-addr').value||'';
+  const tagline=document.getElementById('vc-tagline').value||'';
+  const tmpl=document.getElementById('vc-template').value;
+  const c=document.getElementById('vc-color').value;
+  const showQR=document.getElementById('vc-show-qr').checked;
+  const qrSrc = showQR ? generateQRDataURL(vcQRData(),80,c,'transparent') : '';
+  const qrImg = qrSrc ? `<img src="${qrSrc}" style="width:64px;height:64px;border-radius:4px;" title="Scan for contact">` : '';
+  const infoLines = [
+    phone?`<div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;"><span style="font-size:10px;opacity:0.7;">📞</span><span>${phone}</span></div>`:'',
+    email?`<div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;"><span style="font-size:10px;opacity:0.7;">✉️</span><span>${email}</span></div>`:'',
+    web?`<div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;"><span style="font-size:10px;opacity:0.7;">🌐</span><span>${web}</span></div>`:'',
+    addr?`<div style="display:flex;align-items:center;gap:5px;"><span style="font-size:10px;opacity:0.7;">📍</span><span>${addr}</span></div>`:''
+  ].join('');
+  const initials=(name.split(' ').map(w=>w[0]||'').join('').substring(0,2)).toUpperCase();
+  const W='340px', H='204px';
+  const base=`width:${W};height:${H};box-sizing:border-box;overflow:hidden;font-family:'Segoe UI',sans-serif;position:relative;border-radius:10px;flex-shrink:0;`;
+  let html='';
+  // ---- TEMPLATE SWITCH ----
+  if(tmpl==='t1') { // Nebula Dark — Left accent bar
+    html=`<div style="${base}background:#0d0d1a;color:#fff;display:flex;box-shadow:0 8px 32px rgba(0,0,0,0.6);">
+      <div style="width:6px;background:${c};border-radius:10px 0 0 10px;flex-shrink:0;"></div>
+      <div style="flex:1;padding:18px 16px;display:flex;flex-direction:column;justify-content:space-between;">
+        <div>
+          <div style="font-size:18px;font-weight:800;letter-spacing:0.5px;color:#fff;">${name}</div>
+          <div style="font-size:11px;color:${c};margin-top:3px;font-weight:600;text-transform:uppercase;letter-spacing:1px;">${title}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.5);margin-top:2px;">${company}</div>
+          ${tagline?`<div style="font-size:9px;color:rgba(255,255,255,0.35);margin-top:4px;font-style:italic;">"${tagline}"</div>`:''}
+        </div>
+        <div style="font-size:9.5px;color:rgba(255,255,255,0.7);line-height:1.8;">${infoLines}</div>
+      </div>
+      ${showQR?`<div style="padding:16px 14px 16px 0;display:flex;align-items:flex-end;">${qrImg}</div>`:''}
+    </div>`;
+  } else if(tmpl==='t2') { // Midnight Split — name right, info left
+    html=`<div style="${base}background:#111827;color:#fff;display:flex;box-shadow:0 8px 32px rgba(0,0,0,0.6);">
+      <div style="flex:1.2;padding:20px 16px;display:flex;flex-direction:column;justify-content:space-between;">
+        <div style="font-size:9.5px;color:rgba(255,255,255,0.6);line-height:2;">${infoLines}</div>
+        ${showQR?`<div>${qrImg}</div>`:''}
+      </div>
+      <div style="width:1px;background:${c};opacity:0.4;margin:20px 0;"></div>
+      <div style="flex:1;padding:20px 18px;display:flex;flex-direction:column;justify-content:center;background:rgba(255,255,255,0.02);">
+        <div style="font-size:20px;font-weight:900;line-height:1.1;color:#fff;">${name.split(' ')[0]}</div>
+        <div style="font-size:20px;font-weight:900;line-height:1.1;color:${c};">${name.split(' ').slice(1).join(' ')||''}</div>
+        <div style="margin-top:8px;font-size:10px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1.5px;">${title}</div>
+        <div style="font-size:9px;color:rgba(255,255,255,0.3);margin-top:3px;">${company}</div>
+        ${tagline?`<div style="font-size:9px;color:${c};opacity:0.7;margin-top:6px;font-style:italic;">${tagline}</div>`:''}
+      </div>
+    </div>`;
+  } else if(tmpl==='t3') { // Neon Edge — top glow line
+    html=`<div style="${base}background:#080c14;color:#fff;box-shadow:0 8px 32px rgba(0,0,0,0.7);display:flex;flex-direction:column;">
+      <div style="height:3px;background:linear-gradient(90deg,transparent,${c},transparent);"></div>
+      <div style="flex:1;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-size:20px;font-weight:800;color:#fff;text-shadow:0 0 20px ${c}66;">${name}</div>
+          <div style="font-size:10px;color:${c};margin-top:2px;text-transform:uppercase;letter-spacing:2px;">${title}</div>
+          <div style="font-size:9px;color:rgba(255,255,255,0.4);margin-top:2px;">${company}</div>
+          ${tagline?`<div style="font-size:9px;color:rgba(255,255,255,0.3);margin-top:8px;font-style:italic;">"${tagline}"</div>`:''}
+        </div>
+        ${showQR?`<div>${qrImg}</div>`:''}
+      </div>
+      <div style="padding:0 20px 14px;font-size:9px;color:rgba(255,255,255,0.55);display:flex;gap:16px;flex-wrap:wrap;">
+        ${phone?`<span>📞 ${phone}</span>`:''}${email?`<span>✉️ ${email}</span>`:''}
+        ${web?`<span>🌐 ${web}</span>`:''}${addr?`<span>📍 ${addr}</span>`:''}
+      </div>
+      <div style="height:3px;background:linear-gradient(90deg,${c},transparent);"></div>
+    </div>`;
+  } else if(tmpl==='t4') { // Obsidian — name centered top, info bottom grid
+    html=`<div style="${base}background:#0a0a0a;color:#fff;display:flex;flex-direction:column;box-shadow:0 8px 32px rgba(0,0,0,0.8);">
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:16px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.06);">
+        <div style="width:36px;height:36px;border-radius:50%;background:${c};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;margin-bottom:8px;">${initials}</div>
+        <div style="font-size:17px;font-weight:800;">${name}</div>
+        <div style="font-size:9.5px;color:${c};margin-top:2px;text-transform:uppercase;letter-spacing:1.5px;">${title} • ${company}</div>
+        ${tagline?`<div style="font-size:8.5px;color:rgba(255,255,255,0.35);margin-top:4px;font-style:italic;">${tagline}</div>`:''}
+      </div>
+      <div style="padding:10px 20px;display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-size:8.5px;color:rgba(255,255,255,0.6);line-height:1.9;">${infoLines}</div>
+        ${showQR?`<div>${qrImg}</div>`:''}
+      </div>
+    </div>`;
+  } else if(tmpl==='t5') { // Carbon — diagonal slash
+    html=`<div style="${base}background:#141414;color:#fff;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.7);">
+      <div style="position:absolute;top:-30px;right:90px;width:180px;height:280px;background:${c};opacity:0.12;transform:rotate(20deg);"></div>
+      <div style="position:absolute;top:0;right:0;width:3px;height:100%;background:${c};"></div>
+      <div style="position:relative;z-index:1;padding:20px 22px;height:100%;display:flex;flex-direction:column;justify-content:space-between;">
+        <div>
+          <div style="font-size:9px;color:${c};text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;">${company}</div>
+          <div style="font-size:22px;font-weight:900;line-height:1.1;">${name}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.55);margin-top:4px;">${title}</div>
+          ${tagline?`<div style="font-size:8.5px;color:${c};opacity:0.8;margin-top:6px;font-style:italic;">"${tagline}"</div>`:''}
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+          <div style="font-size:8.5px;color:rgba(255,255,255,0.6);line-height:1.9;">${infoLines}</div>
+          ${showQR?`<div>${qrImg}</div>`:''}
+        </div>
+      </div>
+    </div>`;
+  } else if(tmpl==='t6') { // Void — Minimal + large monogram
+    html=`<div style="${base}background:#0f0f0f;color:#fff;box-shadow:0 8px 32px rgba(0,0,0,0.8);display:flex;align-items:stretch;">
+      <div style="flex:1;padding:20px;display:flex;flex-direction:column;justify-content:space-between;">
+        <div>
+          <div style="font-size:8px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:3px;margin-bottom:8px;">— ${company} —</div>
+          <div style="font-size:18px;font-weight:800;">${name}</div>
+          <div style="font-size:10px;color:${c};margin-top:3px;letter-spacing:1px;">${title}</div>
+          ${tagline?`<div style="font-size:8.5px;color:rgba(255,255,255,0.3);margin-top:8px;font-style:italic;">${tagline}</div>`:''}
+        </div>
+        <div style="font-size:8.5px;color:rgba(255,255,255,0.55);line-height:2;">${infoLines}</div>
+      </div>
+      <div style="width:80px;background:${c}18;display:flex;flex-direction:column;align-items:center;justify-content:space-evenly;border-left:1px solid ${c}33;">
+        <div style="font-size:36px;font-weight:900;color:${c};opacity:0.6;letter-spacing:-2px;">${initials}</div>
+        ${showQR?`<div>${qrImg}</div>`:''}
+      </div>
+    </div>`;
+  } else if(tmpl==='t7') { // Aurora — gradient dark top band
+    html=`<div style="${base}background:#0e0e1a;color:#fff;box-shadow:0 8px 32px rgba(0,0,0,0.7);display:flex;flex-direction:column;">
+      <div style="background:linear-gradient(135deg,${c}cc,${c}44,transparent);padding:16px 20px 12px;">
+        <div style="font-size:19px;font-weight:800;color:#fff;">${name}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.8);margin-top:2px;">${title} · ${company}</div>
+      </div>
+      <div style="flex:1;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          ${tagline?`<div style="font-size:8.5px;color:${c};margin-bottom:8px;font-style:italic;">"${tagline}"</div>`:''}
+          <div style="font-size:8.5px;color:rgba(255,255,255,0.6);line-height:2;">${infoLines}</div>
+        </div>
+        ${showQR?`<div style="margin-left:12px;">${qrImg}</div>`:''}
+      </div>
+    </div>`;
+  } else if(tmpl==='t8') { // Steel — metallic gray
+    html=`<div style="${base}background:linear-gradient(160deg,#1e1e1e,#2a2a2a);color:#fff;box-shadow:0 8px 32px rgba(0,0,0,0.6);">
+      <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent);"></div>
+      <div style="position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,${c}88,transparent);"></div>
+      <div style="padding:18px 20px;height:100%;display:flex;flex-direction:column;justify-content:space-between;box-sizing:border-box;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <div style="font-size:7px;color:${c};text-transform:uppercase;letter-spacing:2.5px;margin-bottom:5px;">${company}</div>
+            <div style="font-size:18px;font-weight:700;">${name}</div>
+            <div style="font-size:9.5px;color:rgba(255,255,255,0.5);margin-top:2px;">${title}</div>
+            ${tagline?`<div style="font-size:8px;color:rgba(255,255,255,0.3);margin-top:4px;font-style:italic;">${tagline}</div>`:''}
+          </div>
+          <div style="background:${c};color:#fff;padding:5px 10px;border-radius:4px;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;white-space:nowrap;">${title.split(' ')[0]}</div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+          <div style="font-size:8.5px;color:rgba(255,255,255,0.6);line-height:2;">${infoLines}</div>
+          ${showQR?`<div>${qrImg}</div>`:''}
+        </div>
+      </div>
+    </div>`;
+  } else if(tmpl==='t9') { // Cosmos — dark left + color right panel
+    html=`<div style="${base}background:#0a0a12;color:#fff;display:flex;box-shadow:0 8px 32px rgba(0,0,0,0.7);">
+      <div style="flex:1.4;padding:18px 16px;display:flex;flex-direction:column;justify-content:space-between;">
+        <div>
+          <div style="font-size:18px;font-weight:800;">${name}</div>
+          <div style="font-size:9.5px;color:rgba(255,255,255,0.45);margin-top:3px;">${title}</div>
+          ${tagline?`<div style="font-size:8.5px;color:${c};margin-top:8px;font-style:italic;opacity:0.9;">"${tagline}"</div>`:''}
+        </div>
+        <div style="font-size:8.5px;color:rgba(255,255,255,0.6);line-height:2;">${infoLines}</div>
+      </div>
+      <div style="width:90px;background:${c};display:flex;flex-direction:column;align-items:center;justify-content:space-evenly;padding:12px 8px;border-radius:0 10px 10px 0;">
+        <div style="font-size:28px;font-weight:900;color:rgba(255,255,255,0.9);letter-spacing:-1px;text-align:center;line-height:1;">${initials}</div>
+        <div style="font-size:7.5px;color:rgba(255,255,255,0.8);text-align:center;text-transform:uppercase;letter-spacing:1px;">${company}</div>
+        ${showQR?`<div><img src="${qrSrc}" style="width:54px;height:54px;border-radius:3px;background:rgba(255,255,255,0.9);padding:2px;"></div>`:''}
+      </div>
+    </div>`;
+  } else if(tmpl==='t10') { // Prism — dark + bottom accent bar
+    html=`<div style="${base}background:#101018;color:#fff;box-shadow:0 8px 32px rgba(0,0,0,0.7);display:flex;flex-direction:column;">
+      <div style="flex:1;padding:20px 22px;display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-size:8px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:3px;margin-bottom:8px;">${company}</div>
+          <div style="font-size:20px;font-weight:900;">${name}</div>
+          <div style="font-size:10px;color:${c};margin-top:3px;text-transform:uppercase;letter-spacing:1px;">${title}</div>
+          ${tagline?`<div style="font-size:8.5px;color:rgba(255,255,255,0.35);margin-top:6px;font-style:italic;">"${tagline}"</div>`:''}
+        </div>
+        ${showQR?`<div>${qrImg}</div>`:''}
+      </div>
+      <div style="background:${c};padding:8px 22px;display:flex;gap:16px;flex-wrap:wrap;">
+        ${phone?`<span style="font-size:8.5px;color:#fff;opacity:0.9;">📞 ${phone}</span>`:''}
+        ${email?`<span style="font-size:8.5px;color:#fff;opacity:0.9;">✉️ ${email}</span>`:''}
+        ${web?`<span style="font-size:8.5px;color:#fff;opacity:0.9;">🌐 ${web}</span>`:''}
+      </div>
+    </div>`;
+  } else if(tmpl==='t11') { // Shadow — full gradient diagonal
+    html=`<div style="${base}background:linear-gradient(125deg,#0d0d0d 0%,${c}44 50%,#0d0d0d 100%);color:#fff;box-shadow:0 8px 32px rgba(0,0,0,0.8);display:flex;flex-direction:column;justify-content:space-between;padding:20px 22px;">
+      <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 60% 40%,${c}22,transparent 70%);border-radius:10px;"></div>
+      <div style="position:relative;z-index:1;">
+        <div style="font-size:9px;color:${c};text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;">${company}</div>
+        <div style="font-size:20px;font-weight:800;">${name}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.55);margin-top:3px;">${title}</div>
+        ${tagline?`<div style="font-size:8.5px;color:rgba(255,255,255,0.35);margin-top:6px;font-style:italic;">"${tagline}"</div>`:''}
+      </div>
+      <div style="position:relative;z-index:1;display:flex;justify-content:space-between;align-items:flex-end;">
+        <div style="font-size:8.5px;color:rgba(255,255,255,0.65);line-height:2;">${infoLines}</div>
+        ${showQR?`<div>${qrImg}</div>`:''}
+      </div>
+    </div>`;
+  } else { // t12 — Eclipse — QR center focus
+    html=`<div style="${base}background:#080808;color:#fff;box-shadow:0 8px 32px rgba(0,0,0,0.9);display:flex;align-items:stretch;">
+      <div style="flex:1;padding:16px;display:flex;flex-direction:column;justify-content:space-between;border-right:1px solid ${c}33;">
+        <div>
+          <div style="font-size:17px;font-weight:800;color:#fff;">${name}</div>
+          <div style="font-size:9px;color:${c};margin-top:2px;text-transform:uppercase;letter-spacing:1.5px;">${title}</div>
+          <div style="font-size:8.5px;color:rgba(255,255,255,0.35);margin-top:2px;">${company}</div>
+          ${tagline?`<div style="font-size:8px;color:rgba(255,255,255,0.3);margin-top:6px;font-style:italic;">"${tagline}"</div>`:''}
+        </div>
+        <div style="font-size:8.5px;color:rgba(255,255,255,0.55);line-height:1.9;">${infoLines}</div>
+      </div>
+      ${showQR?`<div style="width:88px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:10px;">
+        <img src="${qrSrc}" style="width:68px;height:68px;border-radius:4px;background:rgba(255,255,255,0.9);padding:3px;">
+        <div style="font-size:7px;color:rgba(255,255,255,0.4);text-align:center;">Scan to<br>connect</div>
+      </div>`:`<div style="width:88px;display:flex;align-items:center;justify-content:center;"><div style="font-size:44px;font-weight:900;color:${c};opacity:0.3;letter-spacing:-3px;">${initials}</div></div>`}
+    </div>`;
+  }
+  document.getElementById('vc-preview-wrap').innerHTML = `<div style="padding:12px;display:flex;justify-content:center;overflow:auto;">${html}</div>`;
+}
+function getVCardElement() {
+  return document.getElementById('vc-preview-wrap').querySelector('[style*="height:204px"]');
+}
+async function downloadVCardPNG() {
+  const el = document.getElementById('vc-preview-wrap').querySelector('div > div');
+  if(!el) return;
+  // Use html2canvas if available, else use canvas approach
+  if(window.html2canvas) {
+    const canvas = await html2canvas(el, {scale:7, backgroundColor:null, useCORS:true});
+    const a=document.createElement('a'); a.href=canvas.toDataURL('image/png'); a.download='business-card-2400px.png'; a.click();
+  } else {
+    // Fallback: open in new tab with print instruction
+    const content = document.getElementById('vc-preview-wrap').querySelector('div > div').outerHTML;
+    const w = window.open('','_blank');
+    w.document.write(`<html><head><title>Business Card</title><style>body{margin:20px;background:#fff;display:flex;justify-content:center;}</style></head><body>${content}<p style="margin-top:20px;font-family:sans-serif;font-size:12px;color:#666;">Right-click → Save Image As... ya screenshot lo</p></body></html>`);
+    w.document.close();
+  }
+}
+function downloadVCardPDF() {
+  const content = document.getElementById('vc-preview-wrap').querySelector('div > div').outerHTML;
+  const w = window.open('','_blank');
+  w.document.write(`<html><head><title>Business Card</title><style>
+    @page{size:90mm 54mm;margin:0;}
+    body{margin:0;width:90mm;height:54mm;overflow:hidden;}
+    @media print{body{margin:0;}}
+  </style></head><body>${content}<script>window.onload=()=>setTimeout(()=>{window.print();},400)<\/script></body></html>`);
+  w.document.close();
+}
+function printVCard() {
+  const inner = document.getElementById('vc-preview-wrap').querySelector('div > div');
+  if(!inner) return;
+  const card = inner.outerHTML;
+  const repeat = Array(8).fill(card).join('');
+  const w = window.open('','_blank');
+  w.document.write(`<html><head><title>Business Cards</title><style>
+    body{margin:10mm;background:#fff;}
+    .grid{display:flex;flex-wrap:wrap;gap:6mm;}
+    @media print{body{margin:5mm;} @page{size:A4;}}
+  </style></head><body><div class="grid">${repeat}</div><script>window.onload=()=>setTimeout(()=>{window.print();},500)<\/script></body></html>`);
+  w.document.close();
+}
+
+// ===== IMAGE COMPRESSOR =====
+let originalImage = null, originalFile = null;
+function loadImage(input) {
+  const file = input.files[0]; if(!file) return;
+  originalFile = file;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    originalImage = e.target.result;
+    document.getElementById('img-orig').src = originalImage;
+    document.getElementById('img-orig-size').textContent = `Original: ${(file.size/1024).toFixed(1)} KB`;
+    document.getElementById('img-controls').style.display='block';
+    compressImage();
+  };
+  reader.readAsDataURL(file);
+}
+function updateImgMode() {
+  const mode = document.getElementById('img-mode').value;
+  const qualities = {low:80, medium:60, high:30, custom:60};
+  document.getElementById('img-quality').value = qualities[mode];
+  document.getElementById('quality-val').textContent = qualities[mode];
+  document.getElementById('custom-quality-wrap').style.display = mode==='custom' ? 'block':'none';
+  compressImage();
+}
+function compressImage() {
+  if(!originalImage) return;
+  const quality = parseInt(document.getElementById('img-quality').value) / 100;
+  const fmt = document.getElementById('img-fmt').value;
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = img.width; canvas.height = img.height;
+    canvas.getContext('2d').drawImage(img,0,0);
+    const compressed = canvas.toDataURL(fmt, quality);
+    document.getElementById('img-compressed').src = compressed;
+    const size = Math.round((compressed.length - 22) * 3/4 / 1024);
+    const origSize = originalFile ? Math.round(originalFile.size/1024) : 0;
+    const saved = origSize - size;
+    const pct = origSize ? Math.round(saved/origSize*100) : 0;
+    document.getElementById('img-comp-size').innerHTML = `Compressed: ${size} KB <span style="color:var(--success);font-weight:600;">(${pct}% saved)</span>`;
+  };
+  img.src = originalImage;
+}
+function downloadCompressedImage() {
+  const src = document.getElementById('img-compressed').src;
+  const fmt = document.getElementById('img-fmt').value;
+  const ext = fmt==='image/webp'?'webp':fmt==='image/png'?'png':'jpg';
+  const a = document.createElement('a');
+  a.href = src; a.download = `compressed.${ext}`; a.click();
+}
+
+// ===== FORM BUILDER =====
+let fbFields = [];
+function addFormField() {
+  const label = document.getElementById('fb-label').value.trim();
+  if(!label) { alert('Field label required!'); return; }
+  const type = document.getElementById('fb-type').value;
+  const opts = document.getElementById('fb-options').value;
+  const required = document.getElementById('fb-required').checked;
+  fbFields.push({ id: Date.now(), label, type, opts: opts.split(',').map(s=>s.trim()).filter(Boolean), required });
+  document.getElementById('fb-label').value=''; document.getElementById('fb-options').value=''; document.getElementById('fb-required').checked=false;
+  renderFBList(); renderFormPreview();
+}
+document.getElementById('fb-type').addEventListener('change', function() {
+  document.getElementById('fb-options-wrap').style.display = ['select','radio','checkbox'].includes(this.value) ? 'block':'none';
+});
+function renderFBList() {
+  document.getElementById('fb-field-list').innerHTML = fbFields.map((f,i) => `
+    <li class="drag-item">
+      <span class="drag-handle">⠿</span>
+      <span style="flex:1;">${f.label} <small style="color:var(--text2);">(${f.type}${f.required?' *':''})</small></span>
+      <button class="btn btn-danger btn-sm" onclick="fbFields.splice(${i},1);renderFBList();renderFormPreview()">✕</button>
+    </li>`).join('');
+}
+function renderFormPreview() {
+  const title = document.getElementById('fb-title').value || 'My Form';
+  let html = `<div style="font-family:'Segoe UI',sans-serif;"><h3 style="color:var(--accent2);margin-bottom:16px;">${title}</h3>`;
+  fbFields.forEach(f => {
+    html += `<div style="margin-bottom:14px;"><label style="display:block;font-size:0.85rem;font-weight:600;margin-bottom:5px;color:var(--text);">${f.label}${f.required?' <span style="color:red;">*</span>':''}</label>`;
+    if(f.type==='textarea') html += `<textarea id="fbf-${f.id}" rows="3" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:6px;font-family:inherit;" ${f.required?'required':''}></textarea>`;
+    else if(f.type==='select') html += `<select id="fbf-${f.id}" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:6px;" ${f.required?'required':''}><option value="">-- Select --</option>${f.opts.map(o=>`<option>${o}</option>`).join('')}</select>`;
+    else if(f.type==='radio') html += f.opts.map(o=>`<label style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-weight:normal;color:var(--text);font-size:0.88rem;"><input type="radio" name="fbf-${f.id}" value="${o}" ${f.required?'required':''}> ${o}</label>`).join('');
+    else if(f.type==='checkbox') html += f.opts.map(o=>`<label style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-weight:normal;color:var(--text);font-size:0.88rem;"><input type="checkbox" name="fbf-${f.id}" value="${o}"> ${o}</label>`).join('');
+    else html += `<input type="${f.type}" id="fbf-${f.id}" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:6px;" ${f.required?'required':''}>`;
+    html += `</div>`;
+  });
+  html += `</div>`;
+  document.getElementById('fb-form-preview').innerHTML = html;
+}
+function submitFormPreview() {
+  const title = document.getElementById('fb-title').value || 'Form';
+  const response = {id: Date.now(), time: new Date().toLocaleString(), title, data: {}};
+  fbFields.forEach(f => {
+    if(f.type==='checkbox') {
+      const checked = [...document.querySelectorAll(`input[name="fbf-${f.id}"]:checked`)].map(el=>el.value);
+      response.data[f.label] = checked.join(', ');
+    } else if(f.type==='radio') {
+      const sel = document.querySelector(`input[name="fbf-${f.id}"]:checked`);
+      response.data[f.label] = sel ? sel.value : '';
+    } else {
+      const el = document.getElementById('fbf-'+f.id);
+      response.data[f.label] = el ? el.value : '';
+    }
+  });
+  const responses = JSON.parse(localStorage.getItem('fb-responses-'+title)||'[]');
+  responses.push(response);
+  localStorage.setItem('fb-responses-'+title, JSON.stringify(responses));
+  alert('Response saved!');
+  renderFBResponses();
+}
+function fbTab(tab) {
+  document.querySelectorAll('#tool-formbuilder .tab').forEach((t,i) => t.classList.toggle('active', (i===0&&tab==='preview')||(i===1&&tab==='responses')));
+  document.getElementById('fb-preview-panel').style.display = tab==='preview'?'block':'none';
+  document.getElementById('fb-responses-panel').style.display = tab==='responses'?'block':'none';
+  if(tab==='responses') renderFBResponses();
+}
+function renderFBResponses() {
+  const title = document.getElementById('fb-title').value || 'Form';
+  const responses = JSON.parse(localStorage.getItem('fb-responses-'+title)||'[]');
+  if(!responses.length) { document.getElementById('fb-responses-list').innerHTML='<p style="color:var(--text2);text-align:center;padding:20px;">No responses yet</p>'; return; }
+  document.getElementById('fb-responses-list').innerHTML = responses.slice().reverse().map((r,i) => `
+    <div style="border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px;">
+      <div style="font-size:0.78rem;color:var(--text2);margin-bottom:8px;">Response #${responses.length-i} • ${r.time}</div>
+      ${Object.entries(r.data).map(([k,v])=>`<div style="font-size:0.85rem;margin-bottom:4px;"><strong>${k}:</strong> ${v||'-'}</div>`).join('')}
+    </div>`).join('');
+}
+function clearFbResponses() {
+  const title = document.getElementById('fb-title').value || 'Form';
+  if(confirm('All responses delete kar dein?')) { localStorage.removeItem('fb-responses-'+title); renderFBResponses(); }
+}
+
+// ===== IMAGE TO PDF =====
+let i2pImages = [];
+function loadI2PImages(input) {
+  const files = Array.from(input.files);
+  files.forEach(f => {
+    const reader = new FileReader();
+    reader.onload = e => { i2pImages.push({src:e.target.result,name:f.name}); renderI2PList(); };
+    reader.readAsDataURL(f);
+  });
+  document.getElementById('i2p-controls').style.display='block';
+}
+function renderI2PList() {
+  document.getElementById('i2p-list').innerHTML = i2pImages.map((img,i) => `
+    <div style="position:relative;text-align:center;">
+      <img src="${img.src}" style="width:80px;height:80px;object-fit:cover;border-radius:6px;border:2px solid var(--border);">
+      <div style="font-size:0.7rem;color:var(--text2);margin-top:3px;">${i+1}. ${img.name.substring(0,12)}</div>
+      <button onclick="i2pImages.splice(${i},1);renderI2PList();" style="position:absolute;top:-6px;right:-6px;background:var(--danger);border:none;color:#fff;border-radius:50%;width:18px;height:18px;cursor:pointer;font-size:10px;">✕</button>
+    </div>`).join('');
+}
+function clearI2P() { i2pImages=[]; renderI2PList(); document.getElementById('i2p-controls').style.display='none'; }
+function convertI2P() {
+  if(!i2pImages.length) return;
+  document.getElementById('i2p-status').innerHTML = '<div class="alert alert-info">⚙️ Converting...</div>';
+  setTimeout(() => {
+    const size = document.getElementById('i2p-size').value;
+    const orient = document.getElementById('i2p-orient').value;
+    let imgTags = i2pImages.map(img => {
+      const style = size==='fit' ? 'max-width:100%;page-break-after:always;' :
+        orient==='landscape' ? 'width:100%;max-height:190mm;object-fit:contain;page-break-after:always;' :
+        'width:100%;max-height:257mm;object-fit:contain;page-break-after:always;';
+      return `<div style="page-break-after:always;text-align:center;"><img src="${img.src}" style="${style}"></div>`;
+    }).join('');
+    const w = window.open('','_blank');
+    w.document.write(`<html><head><title>Images PDF</title><style>
+      body{margin:0;} @page{size:${size==='a4'?'A4':size==='letter'?'letter':'auto'} ${orient};margin:5mm;}
+      img{display:block;margin:auto;} div{page-break-after:always;}
+      @media print{body{margin:0;}}
+    </style></head><body>${imgTags}<script>window.onload=()=>setTimeout(()=>{window.print();},500)<\/script></body></html>`);
+    w.document.close();
+    document.getElementById('i2p-status').innerHTML = '<div class="alert alert-success">✅ Print dialog open hua! Save as PDF karo.</div>';
+  }, 100);
+}
+
+// ===== PDF TOOLS (using PDF-Lib CDN-free approach) =====
+// Load pdf-lib dynamically from CDN
+function loadPdfLib(cb) {
+  if(window.PDFLib) { cb(); return; }
+  const s = document.createElement('script');
+  s.src = 'https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js';
+  s.onload = () => cb();
+  s.onerror = () => { alert('PDF-Lib load nahi ho saka. Internet connection check karein, ya try again.'); };
+  document.head.appendChild(s);
+}
+
+// PDF MERGER
+let pdfFiles = [];
+function loadPDFs(input) {
+  const files = Array.from(input.files);
+  files.forEach(f => pdfFiles.push({file:f, name:f.name}));
+  renderPMList();
+  document.getElementById('pm-list-card').style.display='block';
+}
+function renderPMList() {
+  document.getElementById('pm-list').innerHTML = pdfFiles.map((f,i) => `
+    <li class="drag-item">
+      <span class="drag-handle">⠿</span>
+      <span style="flex:1;">📄 ${f.name}</span>
+      <button class="btn btn-danger btn-sm" onclick="pdfFiles.splice(${i},1);renderPMList()">✕</button>
+    </li>`).join('');
+}
+function clearPDFs() { pdfFiles=[]; renderPMList(); document.getElementById('pm-list-card').style.display='none'; }
+async function mergePDFs() {
+  if(pdfFiles.length < 2) { alert('Kam se kam 2 PDFs select karein!'); return; }
+  document.getElementById('pm-status').innerHTML = '<div class="alert alert-info">⚙️ Merging PDFs...</div>';
+  loadPdfLib(async () => {
+    try {
+      const { PDFDocument } = PDFLib;
+      const merged = await PDFDocument.create();
+      for(const pf of pdfFiles) {
+        const ab = await readFileAsArrayBuffer(pf.file);
+        const pdf = await PDFDocument.load(ab);
+        const pages = await merged.copyPages(pdf, pdf.getPageIndices());
+        pages.forEach(p => merged.addPage(p));
+      }
+      const bytes = await merged.save();
+      downloadBlob(bytes, 'merged.pdf', 'application/pdf');
+      document.getElementById('pm-status').innerHTML = '<div class="alert alert-success">✅ Merge ho gaya! Download shuru hoga.</div>';
+    } catch(e) {
+      document.getElementById('pm-status').innerHTML = `<div class="alert alert-warning">⚠️ Error: ${e.message}</div>`;
+    }
+  });
+}
+
+// PDF LOCK
+let pdfLockFile = null;
+function loadPDFLock(input) {
+  pdfLockFile = input.files[0];
+  if(pdfLockFile) { document.getElementById('pl-controls').style.display='block'; }
+}
+function plTab(tab) {
+  document.querySelectorAll('#tool-pdflock .tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&tab==='lock')||(i===1&&tab==='unlock')));
+  document.getElementById('pl-lock-panel').style.display = tab==='lock'?'block':'none';
+  document.getElementById('pl-unlock-panel').style.display = tab==='unlock'?'block':'none';
+}
+async function lockPDF() {
+  if(!pdfLockFile) return;
+  const ownerPw = document.getElementById('pl-owner-pw').value;
+  const userPw = document.getElementById('pl-user-pw').value;
+  if(!ownerPw && !userPw) { alert('Password daalna zaroori hai!'); return; }
+  document.getElementById('pl-status').innerHTML = '<div class="alert alert-info">⚙️ Processing...</div>';
+  loadPdfLib(async () => {
+    try {
+      const { PDFDocument } = PDFLib;
+      const ab = await readFileAsArrayBuffer(pdfLockFile);
+      const pdf = await PDFDocument.load(ab);
+      const bytes = await pdf.save({
+        userPassword: userPw || undefined,
+        ownerPassword: ownerPw || undefined,
+        permissions: { printing: 'highResolution', modifying: false, copying: false }
+      });
+      downloadBlob(bytes, 'locked.pdf', 'application/pdf');
+      document.getElementById('pl-status').innerHTML = '<div class="alert alert-success">✅ PDF lock ho gaya!</div>';
+    } catch(e) {
+      document.getElementById('pl-status').innerHTML = `<div class="alert alert-warning">⚠️ ${e.message}</div>`;
+    }
+  });
+}
+async function unlockPDF() {
+  if(!pdfLockFile) return;
+  loadPdfLib(async () => {
+    try {
+      const { PDFDocument } = PDFLib;
+      const ab = await readFileAsArrayBuffer(pdfLockFile);
+      const pdf = await PDFDocument.load(ab, { ignoreEncryption: true });
+      const bytes = await pdf.save();
+      downloadBlob(bytes, 'unlocked.pdf', 'application/pdf');
+      document.getElementById('pl-status').innerHTML = '<div class="alert alert-success">✅ PDF save ho gaya (without encryption).</div>';
+    } catch(e) {
+      document.getElementById('pl-status').innerHTML = `<div class="alert alert-warning">⚠️ ${e.message}</div>`;
+    }
+  });
+}
+
+// PDF COMPRESS
+let pdfCompressFile = null;
+function loadPDFCompress(input) {
+  pdfCompressFile = input.files[0];
+  if(pdfCompressFile) {
+    document.getElementById('pc-controls').style.display='block';
+    document.getElementById('pc-status').innerHTML = `<div class="alert alert-info">📄 ${pdfCompressFile.name} (${(pdfCompressFile.size/1024).toFixed(1)} KB) loaded</div>`;
+  }
+}
+function updatePCMode() {
+  document.getElementById('pc-custom-wrap').style.display = document.getElementById('pc-mode').value==='custom'?'block':'none';
+}
+async function compressPDF() {
+  if(!pdfCompressFile) return;
+  document.getElementById('pc-status').innerHTML = '<div class="alert alert-info">⚙️ Compressing PDF... (yeh kuch seconds le sakta hai)</div>';
+  loadPdfLib(async () => {
+    try {
+      const { PDFDocument } = PDFLib;
+      const ab = await readFileAsArrayBuffer(pdfCompressFile);
+      const pdf = await PDFDocument.load(ab, { updateMetadata: false });
+      const bytes = await pdf.save({ useObjectStreams: true, addDefaultPage: false });
+      const origKB = pdfCompressFile.size/1024;
+      const newKB = bytes.byteLength/1024;
+      const saved = ((origKB-newKB)/origKB*100).toFixed(1);
+      if(origKB - newKB < 5) {
+        document.getElementById('pc-status').innerHTML = `<div class="alert alert-warning">⚠️ Is PDF mein bahut zyada compress nahi ho sakta (${origKB.toFixed(1)}KB → ${newKB.toFixed(1)}KB). Text-only PDFs mein limited compression hoti hai.</div>`;
+      } else {
+        document.getElementById('pc-status').innerHTML = `<div class="alert alert-success">✅ ${origKB.toFixed(1)}KB → ${newKB.toFixed(1)}KB (${saved}% saved)</div>`;
+      }
+      downloadBlob(bytes, 'compressed.pdf', 'application/pdf');
+    } catch(e) {
+      document.getElementById('pc-status').innerHTML = `<div class="alert alert-warning">⚠️ ${e.message}</div>`;
+    }
+  });
+}
+
+// TEXT TO PDF
+document.getElementById('t2p-text').addEventListener('input', updateT2PPreview);
+document.getElementById('t2p-font').addEventListener('change', updateT2PPreview);
+document.getElementById('t2p-size').addEventListener('change', updateT2PPreview);
+document.getElementById('t2p-color').addEventListener('input', updateT2PPreview);
+document.getElementById('t2p-bg').addEventListener('input', updateT2PPreview);
+document.getElementById('t2p-spacing').addEventListener('change', updateT2PPreview);
+function updateT2PPreview() {
+  const text = document.getElementById('t2p-text').value;
+  const font = document.getElementById('t2p-font').value;
+  const size = document.getElementById('t2p-size').value;
+  const color = document.getElementById('t2p-color').value;
+  const bg = document.getElementById('t2p-bg').value;
+  const spacing = document.getElementById('t2p-spacing').value;
+  const prev = document.getElementById('t2p-preview');
+  prev.style.fontFamily = font; prev.style.fontSize = size+'px'; prev.style.color = color;
+  prev.style.background = bg; prev.style.lineHeight = spacing;
+  let html = text.split('\n').map(line => {
+    if(line.startsWith('== ')) return `<h2 style="font-size:${parseInt(size)+4}px;font-weight:800;margin:12px 0 6px;border-bottom:2px solid ${color};">${line.substring(3)}</h2>`;
+    return `<p style="margin:0 0 6px;">${line||'&nbsp;'}</p>`;
+  }).join('');
+  prev.innerHTML = html;
+}
+function generateT2P() {
+  const title = document.getElementById('t2p-title').value || 'Document';
+  const content = document.getElementById('t2p-preview').innerHTML;
+  const font = document.getElementById('t2p-font').value;
+  const size = document.getElementById('t2p-size').value;
+  const color = document.getElementById('t2p-color').value;
+  const bg = document.getElementById('t2p-bg').value;
+  const spacing = document.getElementById('t2p-spacing').value;
+  const w = window.open('','_blank');
+  w.document.write(`<html><head><title>${title}</title><style>
+    body{font-family:'${font}',sans-serif;font-size:${size}px;color:${color};background:${bg};padding:25mm;line-height:${spacing};max-width:170mm;margin:0 auto;}
+    h2{font-size:${parseInt(size)+4}px;font-weight:800;margin:12px 0 6px;border-bottom:2px solid ${color};}
+    p{margin:0 0 6px;}
+    @media print{body{padding:15mm;}}
+  </style></head><body>${content}<script>window.onload=()=>setTimeout(()=>{window.print();},500)<\/script></body></html>`);
+  w.document.close();
+}
+
+// ===== HELPERS =====
+function readFileAsArrayBuffer(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result);
+    reader.onerror = reject;
+    reader.readAsArrayBuffer(file);
+  });
+}
+function downloadBlob(data, filename, mime) {
+  const blob = new Blob([data], {type: mime});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+// ===== INIT =====
+renderStock();
+buildResume();
+initInvoice();
+initSalary();
+buildVCard();
+updateT2PPreview();
+
+// Make nav click actually highlight
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', function() {
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+</script>
+
+<script>
+
+// ===== SIMPLE QR CODE GENERATOR (100% OFFLINE, NO DEPS) =====
+// Generates QR as canvas — supports alphanumeric + byte mode
+(function(){
+  // Tiny but working QR encoder for vCard strings (byte mode, M error correction)
+  // Based on public domain QR algorithm
+
+  var GF = (function(){
+    var exp = new Uint8Array(512), log = new Uint8Array(256);
+    var x = 1;
+    for(var i=0;i<255;i++){
+      exp[i]=x; log[x]=i;
+      x<<=1; if(x&256) x^=285;
+    }
+    for(var i=255;i<512;i++) exp[i]=exp[i-255];
+    return {
+      mul: function(a,b){ return a&&b ? exp[log[a]+log[b]] : 0; },
+      exp: function(n){ return exp[n%255]; },
+      log: function(n){ return log[n]; }
+    };
+  })();
+
+  function polyMul(p,q){
+    var r=new Uint8Array(p.length+q.length-1);
+    for(var i=0;i<p.length;i++) for(var j=0;j<q.length;j++) r[i+j]^=GF.mul(p[i],q[j]);
+    return r;
+  }
+  function polyMod(msg,gen){
+    var r=new Uint8Array(msg);
+    for(var i=0;i<msg.length-gen.length+1;i++){
+      var c=r[i]; if(!c) continue;
+      for(var j=1;j<gen.length;j++) r[i+j]^=GF.mul(gen[j],c);
+    }
+    return r.slice(msg.length-gen.length+1);
+  }
+  function makeGen(n){
+    var g=new Uint8Array([1]);
+    for(var i=0;i<n;i++) g=polyMul(g,new Uint8Array([1,GF.exp(i)]));
+    return g;
+  }
+
+  // RS block config for version 1-10, M error level
+  var RS_BLOCKS_M = [
+    null,
+    [1,16,10],[1,28,16],[1,44,26],[2,32,18],[2,43,24],
+    [4,27,16],[4,31,19],[2,38,22,2,39,22],[3,36,20,2,37,20],[4,43,24,1,44,24]
+  ];
+
+  function getVersion(dataLen){
+    for(var v=1;v<=10;v++){
+      var b=RS_BLOCKS_M[v], cap=0;
+      for(var i=0;i<b.length;i+=3) cap+=b[i]*b[i+2];
+      if(dataLen+2<=cap) return v; // +2 for mode+length indicator overhead (approx)
+    }
+    return 10;
+  }
+
+  function encodeData(str){
+    var bytes=[];
+    for(var i=0;i<str.length;i++){
+      var c=str.charCodeAt(i);
+      if(c>127){ // UTF-8
+        if(c<2048){ bytes.push(192|(c>>6)); bytes.push(128|(c&63)); }
+        else { bytes.push(224|(c>>12)); bytes.push(128|((c>>6)&63)); bytes.push(128|(c&63)); }
+      } else bytes.push(c);
+    }
+    return bytes;
+  }
+
+  function makeBitStream(data, version){
+    var bits=[];
+    function putBits(val,len){ for(var i=len-1;i>=0;i--) bits.push((val>>i)&1); }
+
+    var lenBits = version<10 ? 8 : 16;
+    putBits(4,4); // mode: byte
+    putBits(data.length, lenBits);
+    for(var i=0;i<data.length;i++) putBits(data[i],8);
+
+    // Calculate total capacity
+    var b=RS_BLOCKS_M[version], totalData=0;
+    for(var i=0;i<b.length;i+=3) totalData+=b[i]*b[i+2];
+    var totalBits=totalData*8;
+
+    // Terminator
+    var term=Math.min(4,totalBits-bits.length);
+    for(var i=0;i<term;i++) bits.push(0);
+    while(bits.length%8) bits.push(0);
+
+    // Pad bytes
+    var padBytes=[236,17], pi=0;
+    while(bits.length<totalBits){ putBits(padBytes[pi%2],8); pi++; }
+
+    return bits;
+  }
+
+  function bitsToBytes(bits){
+    var r=[];
+    for(var i=0;i<bits.length;i+=8){
+      var b=0;
+      for(var j=0;j<8;j++) b=(b<<1)|(bits[i+j]||0);
+      r.push(b);
+    }
+    return r;
+  }
+
+  function makeCodewords(dataBytes, version){
+    var b=RS_BLOCKS_M[version];
+    var blocks=[], ecBlocks=[];
+    var pos=0;
+    for(var i=0;i<b.length;i+=3){
+      var count=b[i], total=b[i+1], data=b[i+2], ec=total-data;
+      var gen=makeGen(ec);
+      for(var j=0;j<count;j++){
+        var d=dataBytes.slice(pos,pos+data); pos+=data;
+        var msg=new Uint8Array(data+ec);
+        for(var k=0;k<d.length;k++) msg[k]=d[k];
+        var rem=polyMod(msg,gen);
+        blocks.push(Array.from(d));
+        ecBlocks.push(Array.from(rem));
+      }
+    }
+    // Interleave
+    var result=[];
+    var maxLen=Math.max.apply(null,blocks.map(function(b){return b.length;}));
+    for(var i=0;i<maxLen;i++) for(var j=0;j<blocks.length;j++) if(i<blocks[j].length) result.push(blocks[j][i]);
+    var maxEcLen=Math.max.apply(null,ecBlocks.map(function(b){return b.length;}));
+    for(var i=0;i<maxEcLen;i++) for(var j=0;j<ecBlocks.length;j++) if(i<ecBlocks[j].length) result.push(ecBlocks[j][i]);
+    return result;
+  }
+
+  // Format info strings for M error level, patterns 0-7
+  var FORMAT_INFO = [
+    0x5412,0x5125,0x5E7C,0x5B4B,0x45F9,0x40CE,0x4F97,0x4AA0
+  ];
+
+  function makeMatrix(version){
+    var size=version*4+17;
+    var m=[];
+    for(var i=0;i<size;i++){ m.push(new Int8Array(size)); for(var j=0;j<size;j++) m[i][j]=-1; }
+    return m;
+  }
+
+  function setFinderPattern(m,r,c){
+    for(var i=-1;i<=7;i++) for(var j=-1;j<=7;j++){
+      var row=r+i,col=c+j;
+      if(row<0||row>=m.length||col<0||col>=m.length) continue;
+      m[row][col]=((i>=0&&i<=6&&(j===0||j===6))||(j>=0&&j<=6&&(i===0||i===6))||(i>=2&&i<=4&&j>=2&&j<=4))?1:0;
+    }
+  }
+
+  var ALIGN_POS=[null,[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50]];
+  function setAlignPatterns(m,version){
+    var pos=ALIGN_POS[version]; if(!pos||pos.length<2) return;
+    for(var i=0;i<pos.length;i++) for(var j=0;j<pos.length;j++){
+      var r=pos[i],c=pos[j];
+      if(m[r][c]!==-1) continue;
+      for(var dr=-2;dr<=2;dr++) for(var dc=-2;dc<=2;dc++)
+        m[r+dr][c+dc]=(dr===0&&dc===0)||(Math.abs(dr)===2||Math.abs(dc)===2)?1:0;
+    }
+  }
+
+  function setTimingPatterns(m){
+    var size=m.length;
+    for(var i=8;i<size-8;i++){
+      if(m[6][i]===-1) m[6][i]=i%2===0?1:0;
+      if(m[i][6]===-1) m[i][6]=i%2===0?1:0;
+    }
+  }
+
+  function reserveFormatAreas(m){
+    var size=m.length;
+    for(var i=0;i<9;i++){ if(m[i][8]===-1) m[i][8]=0; if(m[8][i]===-1) m[8][i]=0; }
+    for(var i=0;i<8;i++){ if(m[size-1-i][8]===-1) m[size-1-i][8]=0; if(m[8][size-1-i]===-1) m[8][size-1-i]=0; }
+    m[size-8][8]=1; // dark module
+  }
+
+  function placeData(m, codewords){
+    var size=m.length, bits=[];
+    for(var i=0;i<codewords.length;i++) for(var b=7;b>=0;b--) bits.push((codewords[i]>>b)&1);
+    var bi=0, dir=-1, row=size-1;
+    for(var col=size-1;col>0;col-=2){
+      if(col===6) col--;
+      for(var i=0;i<size;i++){
+        var r=dir===-1?row-i:i;
+        for(var dc=0;dc<2;dc++){
+          var c=col-dc;
+          if(m[r][c]===-1){ m[r][c]=bi<bits.length?bits[bi++]:0; }
+        }
+      }
+      dir=-dir; if(dir===-1) row=size-1; else row=0;
+    }
+  }
+
+  function getMaskBit(pat,r,c){
+    switch(pat){
+      case 0: return (r+c)%2===0;
+      case 1: return r%2===0;
+      case 2: return c%3===0;
+      case 3: return (r+c)%3===0;
+      case 4: return (Math.floor(r/2)+Math.floor(c/3))%2===0;
+      case 5: return (r*c)%2+(r*c)%3===0;
+      case 6: return ((r*c)%2+(r*c)%3)%2===0;
+      case 7: return ((r+c)%2+(r*c)%3)%2===0;
+    }
+  }
+
+  function applyMask(m, pat){
+    var size=m.length;
+    for(var r=0;r<size;r++) for(var c=0;c<size;c++)
+      if(m[r][c]===0||m[r][c]===1) m[r][c]^=(getMaskBit(pat,r,c)?1:0);
+  }
+
+  function writeFormatInfo(m, pat){
+    var size=m.length;
+    var fi=(FORMAT_INFO[pat]^0x5412); // M level
+    // Actually: format = (M_level<<3|pat) encoded with BCH + XOR mask
+    // Use precomputed for M level (01) with mask pattern
+    var fmt=getFormatInfo(1,pat); // 1 = M
+    var bits=[];
+    for(var i=14;i>=0;i--) bits.push((fmt>>i)&1);
+    // Place format bits
+    for(var i=0;i<6;i++) m[i][8]=bits[i];
+    m[7][8]=bits[6]; m[8][8]=bits[7]; m[8][7]=bits[8];
+    for(var i=9;i<15;i++) m[8][14-i]=bits[i];
+    for(var i=0;i<8;i++) m[size-1-i][8]=bits[i];
+    for(var i=8;i<15;i++) m[8][size-15+i]=bits[i];
+    m[size-8][8]=1;
+  }
+
+  function getFormatInfo(ecLevel, maskPattern){
+    var data=(ecLevel<<3)|maskPattern;
+    var g=0x537;
+    var d=data<<10;
+    for(var i=4;i>=0;i--) if(d>>(i+10)) d^=(g<<i);
+    return ((data<<10)|d)^0x5412;
+  }
+
+  function scoreMask(m){
+    var size=m.length, score=0;
+    // Rule 1: 5+ in a row
+    for(var r=0;r<size;r++){
+      var run=1;
+      for(var c=1;c<size;c++){
+        if(m[r][c]===m[r][c-1]) run++;
+        else{ if(run>=5) score+=run-2; run=1; }
+      }
+      if(run>=5) score+=run-2;
+    }
+    for(var c=0;c<size;c++){
+      var run=1;
+      for(var r=1;r<size;r++){
+        if(m[r][c]===m[r-1][c]) run++;
+        else{ if(run>=5) score+=run-2; run=1; }
+      }
+      if(run>=5) score+=run-2;
+    }
+    return score;
+  }
+
+  function bestMask(m0, codewords){
+    var best=null, bestScore=Infinity, bestPat=0;
+    for(var pat=0;pat<8;pat++){
+      var m=m0.map(function(row){ return new Int8Array(row); });
+      applyMask(m,pat);
+      var s=scoreMask(m);
+      if(s<bestScore){ bestScore=s; bestPat=pat; best=m; }
+    }
+    return {matrix:best, pat:bestPat};
+  }
+
+  window.generateQRDataURL = function(text, size, darkColor, lightColor){
+    size = size||150;
+    darkColor = darkColor||'#000';
+    lightColor = lightColor||'#fff';
+
+    try {
+      var data = encodeData(text);
+      var version = getVersion(data.length);
+      var bits = makeBitStream(data, version);
+      var dataBytes = bitsToBytes(bits);
+      var codewords = makeCodewords(dataBytes, version);
+
+      var size0 = version*4+17;
+      var m0 = makeMatrix(version);
+      setFinderPattern(m0,0,0);
+      setFinderPattern(m0,0,size0-7);
+      setFinderPattern(m0,size0-7,0);
+      setAlignPatterns(m0,version);
+      setTimingPatterns(m0);
+      reserveFormatAreas(m0);
+      placeData(m0, codewords);
+
+      var result = bestMask(m0, codewords);
+      var m = result.matrix, pat = result.pat;
+      writeFormatInfo(m, pat);
+
+      var canvas = document.createElement('canvas');
+      canvas.width = canvas.height = size;
+      var ctx = canvas.getContext('2d');
+      var modules = size0;
+      var cell = size / (modules + 8); // 4 module quiet zone each side
+      var offset = 4 * cell;
+
+      ctx.fillStyle = lightColor==='transparent'?'rgba(255,255,255,0.9)':lightColor;
+      ctx.fillRect(0,0,size,size);
+      ctx.fillStyle = darkColor;
+      for(var r=0;r<modules;r++) for(var c=0;c<modules;c++)
+        if(m[r][c]===1) ctx.fillRect(offset+c*cell, offset+r*cell, cell, cell);
+
+      return canvas.toDataURL('image/png');
+    } catch(e) {
+      // Fallback: simple placeholder
+      var canvas = document.createElement('canvas');
+      canvas.width = canvas.height = size;
+      var ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#fff'; ctx.fillRect(0,0,size,size);
+      ctx.fillStyle = darkColor||'#000';
+      ctx.font = '10px sans-serif';
+      ctx.fillText('QR', size/2-8, size/2);
+      return canvas.toDataURL('image/png');
+    }
+  };
+})();
+
+</script>
+</body>
+</html>
