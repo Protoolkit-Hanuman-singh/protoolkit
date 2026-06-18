@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>⚡ ProToolkit — Professional Office Suite</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+:root{
+  --p1:#7c6ff7;--p2:#5de0e6;--p3:#c084fc;--p4:#f472b6;
+  --gold:#fbbf24;--green:#34d399;
+  --bg:#060610;--surface:rgba(255,255,255,.035);--border:rgba(255,255,255,.07);
+  --text:#eef0fb;--muted:#5a5f82;--r:16px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* ── MESH BG ── */
+.mesh{position:fixed;inset:0;z-index:-2;background:var(--bg)}
+.mesh::before{content:'';position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 80% 60% at 15% 8%,rgba(124,111,247,.17) 0%,transparent 60%),
+    radial-gradient(ellipse 60% 50% at 85% 85%,rgba(93,224,230,.11) 0%,transparent 60%),
+    radial-gradient(ellipse 50% 40% at 50% 50%,rgba(192,132,252,.07) 0%,transparent 60%),
+    radial-gradient(ellipse 35% 30% at 88% 12%,rgba(244,114,182,.09) 0%,transparent 55%);
+  animation:mp 14s ease-in-out infinite alternate}
+@keyframes mp{0%{opacity:.65;transform:scale(1)}100%{opacity:1;transform:scale(1.05)}}
+.grid-bg{position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);
+  background-size:52px 52px}
+
+/* ── SCROLL REVEAL ── */
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1)}
+.reveal.in-view{opacity:1;transform:translateY(0)}
+
+/* ── HEADER ── */
+.hdr{position:sticky;top:0;z-index:1000;height:64px;padding:0 28px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(6,6,16,.75);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);
+  transition:.4s}
+.logo{display:flex;align-items:center;gap:10px;cursor:default;text-decoration:none}
+.logo-text{font-family:'Space Grotesk',sans-serif;font-size:1.5rem;font-weight:700;letter-spacing:-.4px;
+  background:linear-gradient(135deg,var(--p1),var(--p2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.logo-v{font-size:.55rem;letter-spacing:1.5px;color:var(--muted);
+  background:rgba(255,255,255,.05);border:1px solid var(--border);padding:3px 10px;border-radius:20px}
+.hdr-right{display:flex;gap:8px;align-items:center}
+.hbtn{background:transparent;border:1px solid var(--border);color:var(--muted);
+  padding:7px 16px;border-radius:30px;cursor:pointer;font-size:.76rem;font-family:'Inter',sans-serif;
+  transition:.3s;text-decoration:none;display:flex;align-items:center;gap:5px}
+.hbtn:hover{background:rgba(124,111,247,.12);border-color:rgba(124,111,247,.3);color:var(--p3)}
+.hbtn.active{background:rgba(124,111,247,.16);border-color:rgba(124,111,247,.4);color:var(--p3)}
+
+/* ── HERO ── */
+.hero{max-width:860px;margin:0 auto;padding:80px 24px 48px;text-align:center}
+.hero-pill{display:inline-flex;align-items:center;gap:8px;
+  background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.18);color:var(--gold);
+  padding:6px 20px;border-radius:50px;font-size:.67rem;font-weight:700;letter-spacing:2px;
+  text-transform:uppercase;margin-bottom:28px;animation:pillGlow 3s ease infinite}
+@keyframes pillGlow{0%,100%{box-shadow:0 0 0 0 rgba(251,191,36,.1)}50%{box-shadow:0 0 24px rgba(251,191,36,.08)}}
+.hero h1{font-family:'Space Grotesk',sans-serif;font-size:clamp(2.2rem,6vw,4.2rem);
+  font-weight:700;line-height:1.08;letter-spacing:-.03em;margin-bottom:18px}
+.g1{background:linear-gradient(135deg,#fff 0%,var(--p3) 55%,var(--p2) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.g2{background:linear-gradient(135deg,var(--p1),var(--p2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-sub{font-size:.98rem;color:var(--muted);max-width:520px;margin:0 auto 32px;line-height:1.88}
+.hero-sub strong{color:var(--p3)}
+
+.stats{display:flex;justify-content:center;gap:52px;flex-wrap:wrap;margin:0 0 38px}
+.stat .sn{font-family:'Space Grotesk',sans-serif;font-size:2.5rem;font-weight:700;
+  background:linear-gradient(135deg,#fff,var(--p3));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stat .sl{font-size:.7rem;color:var(--muted);margin-top:2px;letter-spacing:.5px}
+
+.ctas{display:flex;justify-content:center;gap:14px;flex-wrap:wrap}
+.btn-a{background:linear-gradient(135deg,var(--p1),#5a52d0);color:#fff;
+  padding:14px 36px;border-radius:50px;border:none;font-size:.93rem;font-weight:700;
+  cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px;
+  box-shadow:0 4px 28px rgba(124,111,247,.25);transition:.3s;font-family:'Inter',sans-serif}
+.btn-a:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(124,111,247,.35)}
+.btn-b{background:rgba(255,255,255,.04);color:var(--text);
+  padding:14px 36px;border-radius:50px;border:1px solid var(--border);
+  font-size:.93rem;font-weight:600;cursor:pointer;text-decoration:none;
+  display:inline-flex;align-items:center;gap:8px;transition:.3s;font-family:'Inter',sans-serif}
+.btn-b:hover{background:rgba(255,255,255,.08);transform:translateY(-3px)}
+
+/* ── SECTION HEADER ── */
+.sec-wrap{max-width:960px;margin:0 auto;padding:0 24px}
+.sh{font-family:'Space Grotesk',sans-serif;font-size:clamp(1.7rem,4vw,2.4rem);font-weight:700;
+  background:linear-gradient(135deg,var(--p3),var(--p2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  margin-bottom:6px;text-align:center}
+.ss{text-align:center;color:var(--muted);font-size:.88rem;margin-bottom:32px}
+
+/* ── SESSION SLOTS ── */
+.slots-section{padding:64px 0 0}
+.slot-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:960px;margin:0 auto;padding:0 24px}
+@media(max-width:600px){.slot-grid{grid-template-columns:1fr}}
+
+.slot{background:var(--surface);border:1px solid var(--border);border-radius:22px;
+  padding:30px 24px;cursor:pointer;transition:.4s cubic-bezier(.175,.885,.32,1.275);
+  position:relative;overflow:hidden;text-decoration:none;color:var(--text)}
+.slot::before{content:'';position:absolute;inset:0;opacity:0;transition:.5s;
+  background:linear-gradient(135deg,rgba(124,111,247,.07),rgba(93,224,230,.03))}
+.slot:hover::before{opacity:1}
+.slot:hover{transform:translateY(-7px);border-color:rgba(124,111,247,.3);
+  box-shadow:0 24px 60px rgba(0,0,0,.4),0 0 0 1px rgba(124,111,247,.08)}
+.slot:focus-visible{outline:2px solid var(--p1);outline-offset:4px}
+
+.slot.qr-slot{border-color:rgba(52,211,153,.12);background:rgba(52,211,153,.025)}
+.slot.qr-slot::before{background:linear-gradient(135deg,rgba(52,211,153,.08),rgba(93,224,230,.03))}
+.slot.qr-slot:hover{border-color:rgba(52,211,153,.35);box-shadow:0 24px 60px rgba(52,211,153,.09)}
+
+.slot-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px}
+.slot-icon{font-size:2.8rem;line-height:1;transition:.4s}
+.slot:hover .slot-icon{transform:scale(1.14) rotate(-6deg)}
+
+.chip-live{background:linear-gradient(135deg,var(--green),#059669);color:#fff;
+  font-size:.48rem;font-weight:800;padding:4px 12px;border-radius:20px;
+  text-transform:uppercase;letter-spacing:.7px;animation:chipPulse 2s infinite}
+@keyframes chipPulse{0%,100%{opacity:1}50%{opacity:.65}}
+.chip-soon{background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.2);color:var(--gold);
+  font-size:.48rem;font-weight:700;padding:4px 12px;border-radius:20px;
+  text-transform:uppercase;letter-spacing:.7px}
+
+.slot-title{font-family:'Space Grotesk',sans-serif;font-size:1.4rem;font-weight:700;margin-bottom:6px}
+.slot-desc{color:var(--muted);font-size:.84rem;line-height:1.72;margin-bottom:16px}
+.slot-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px}
+.stag{font-size:.65rem;padding:4px 11px;border-radius:15px;font-weight:500}
+.stag-g{background:rgba(52,211,153,.07);border:1px solid rgba(52,211,153,.14);color:var(--green)}
+.stag-p{background:rgba(124,111,247,.07);border:1px solid rgba(124,111,247,.14);color:var(--p3)}
+
+/* primary "Open Tool" CTA + secondary "Details" toggle on each slot card */
+.slot-arrow{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.slot-open-btn{background:linear-gradient(135deg,var(--green),#059669);color:#fff;
+  padding:10px 20px;border-radius:24px;font-size:.78rem;font-weight:700;
+  text-decoration:none;white-space:nowrap;transition:.3s;
+  box-shadow:0 4px 16px rgba(52,211,153,.18);display:inline-flex;align-items:center;gap:6px}
+.slot-open-btn:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 8px 26px rgba(52,211,153,.32)}
+.slot:not(.qr-slot) .slot-open-btn{background:linear-gradient(135deg,var(--p1),#5a52d0);
+  box-shadow:0 4px 16px rgba(124,111,247,.18)}
+.slot:not(.qr-slot) .slot-open-btn:hover{box-shadow:0 8px 26px rgba(124,111,247,.32)}
+.sa-details{font-size:.74rem;font-weight:600;color:var(--muted);
+  display:inline-flex;align-items:center;gap:4px}
+.sa-ico{font-size:.95rem;transition:.3s;display:inline-block}
+.slot:hover .sa-ico{transform:translateX(3px)}
+
+/* ── DETAIL PANEL ── */
+.detail-panel{max-width:960px;margin:16px auto 0;padding:0 24px;
+  display:none;animation:panelIn .4s ease}
+@keyframes panelIn{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:translateY(0)}}
+.detail-panel.open{display:block}
+.dp-inner{background:rgba(255,255,255,.025);border:1px solid var(--border);
+  border-radius:20px;padding:28px 24px;position:relative}
+.dp-close{position:absolute;top:14px;right:16px;background:rgba(255,255,255,.06);
+  border:1px solid var(--border);color:var(--muted);width:30px;height:30px;border-radius:50%;
+  cursor:pointer;font-size:.85rem;display:flex;align-items:center;justify-content:center;
+  transition:.3s;font-family:'Inter',sans-serif}
+.dp-close:hover{background:rgba(255,255,255,.12);color:var(--text);transform:rotate(90deg)}
+
+/* QR detail */
+.dp-qr{display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:start}
+@media(max-width:540px){.dp-qr{grid-template-columns:1fr}}
+.dp-qr-left .dp-big-icon{font-size:4rem;display:block;margin-bottom:10px;text-align:center}
+.dp-qr-left .dp-open-btn{background:linear-gradient(135deg,var(--green),#059669);color:#fff;
+  border:none;padding:12px 28px;border-radius:30px;font-size:.85rem;font-weight:700;
+  cursor:pointer;width:100%;font-family:'Inter',sans-serif;text-decoration:none;
+  display:block;text-align:center;transition:.3s}
+.dp-qr-left .dp-open-btn:hover{transform:scale(1.04);box-shadow:0 8px 24px rgba(52,211,153,.3)}
+.dp-right h3{font-family:'Space Grotesk',sans-serif;font-size:1.2rem;font-weight:700;margin-bottom:8px}
+.dp-right p{color:var(--muted);font-size:.84rem;line-height:1.75;margin-bottom:14px}
+.dp-feat-list{list-style:none;display:flex;flex-direction:column;gap:8px}
+.dp-feat-list li{display:flex;align-items:center;gap:10px;font-size:.82rem;color:var(--muted)}
+.dp-feat-list li::before{content:'';width:6px;height:6px;border-radius:50%;
+  background:var(--green);flex-shrink:0}
+.dp-feat-list li strong{color:var(--text)}
+.dp-link-hint{margin-top:14px;background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.15);
+  border-radius:10px;padding:10px 14px;font-size:.75rem;color:var(--green)}
+.dp-link-hint code{background:rgba(0,0,0,.3);padding:2px 7px;border-radius:5px;
+  font-size:.72rem;color:var(--p2)}
+
+/* AllTools detail */
+.dp-tools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-top:14px}
+.dp-tool{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:12px;
+  padding:14px 12px;text-align:center;transition:.3s;cursor:default;text-decoration:none;color:var(--text);display:block}
+.dp-tool:hover{background:rgba(124,111,247,.07);border-color:rgba(124,111,247,.2)}
+.dp-tool.dp-live{border-color:rgba(52,211,153,.15);cursor:pointer}
+.dp-tool.dp-live:hover{background:rgba(52,211,153,.07);border-color:rgba(52,211,153,.3);transform:translateY(-3px)}
+.dp-tool .dt-icon{font-size:1.8rem;display:block;margin-bottom:5px}
+.dp-tool .dt-name{font-size:.75rem;font-weight:700;margin-bottom:2px}
+.dp-tool .dt-desc{font-size:.62rem;color:var(--muted)}
+.dp-tool .dt-badge{display:inline-block;font-size:.5rem;font-weight:700;padding:2px 8px;
+  border-radius:10px;margin-top:5px;text-transform:uppercase}
+.dt-bl{background:rgba(52,211,153,.1);color:var(--green);border:1px solid rgba(52,211,153,.2)}
+.dt-bs{background:rgba(251,191,36,.08);color:var(--gold);border:1px solid rgba(251,191,36,.15)}
+.dp-open-all{display:block;width:100%;margin-top:18px;background:linear-gradient(135deg,var(--p1),#5a52d0);
+  color:#fff;border:none;padding:13px 28px;border-radius:30px;font-size:.87rem;font-weight:700;
+  cursor:pointer;font-family:'Inter',sans-serif;text-decoration:none;text-align:center;transition:.3s}
+.dp-open-all:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(124,111,247,.3)}
+
+/* ── FEATURE STRIPS ── */
+.features-section{padding:64px 0 0}
+.feat-strip{max-width:960px;margin:0 auto;padding:0 24px;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.feat-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;
+  padding:20px 16px;display:flex;gap:14px;align-items:flex-start;transition:.3s}
+.feat-card:hover{transform:translateY(-3px);border-color:rgba(124,111,247,.2)}
+.feat-ico{font-size:1.6rem;flex-shrink:0;margin-top:2px}
+.feat-t{font-size:.88rem;font-weight:700;margin-bottom:3px}
+.feat-d{font-size:.76rem;color:var(--muted);line-height:1.65}
+
+/* ── GAME ── */
+.game-section{padding:64px 0 0}
+.game-inner{max-width:440px;margin:0 auto;padding:0 24px}
+.gbox{background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:30px 22px}
+.g-head{font-family:'Space Grotesk',sans-serif;font-size:1.15rem;font-weight:700;margin-bottom:3px}
+.g-sub{color:var(--muted);font-size:.78rem;margin-bottom:20px}
+
+.scoreboard{display:flex;background:rgba(255,255,255,.025);border:1px solid var(--border);
+  border-radius:12px;overflow:hidden;margin-bottom:20px}
+.sbox{flex:1;padding:12px 6px;text-align:center;border-right:1px solid var(--border)}
+.sbox:last-child{border-right:none}
+.sbl{font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}
+.sbn{font-family:'Space Grotesk',sans-serif;font-size:1.5rem;font-weight:700}
+.sbox.xb .sbn{color:var(--p1)}
+.sbox.db .sbn{color:var(--muted)}
+.sbox.ob .sbn{color:var(--p4)}
+
+.turn-row{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px}
+.t-dot{width:9px;height:9px;border-radius:50%;transition:.4s;flex-shrink:0}
+.t-dot.xd{background:var(--p1)}
+.t-dot.od{background:var(--p4)}
+.t-dot.dim{opacity:.25;transform:scale(.7)}
+#gStatus{font-size:.86rem;font-weight:600}
+
+.board{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;max-width:230px;margin:0 auto 16px}
+.cell{aspect-ratio:1;background:rgba(255,255,255,.04);border:1px solid var(--border);
+  border-radius:11px;display:flex;align-items:center;justify-content:center;
+  font-family:'Space Grotesk',sans-serif;font-size:1.9rem;font-weight:700;
+  cursor:pointer;transition:.25s;user-select:none}
+.cell:hover:not(.taken){background:rgba(124,111,247,.1);border-color:rgba(124,111,247,.35);transform:scale(1.05)}
+.cell.cx{color:var(--p1)}
+.cell.co{color:var(--p4)}
+.cell.win{background:rgba(52,211,153,.12);border-color:var(--green);animation:winPop .35s ease}
+@keyframes winPop{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
+.cell.taken{cursor:default}
+
+.g-reset{background:linear-gradient(135deg,var(--p1),#5a52d0);color:#fff;
+  border:none;padding:10px 30px;border-radius:28px;font-size:.8rem;font-weight:700;
+  cursor:pointer;transition:.3s;font-family:'Inter',sans-serif}
+.g-reset:hover{transform:scale(1.04)}
+
+/* Game tabs / switcher */
+.game-tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;justify-content:center}
+.gtab{background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--muted);
+  padding:9px 18px;border-radius:24px;font-size:.78rem;font-weight:600;cursor:pointer;
+  transition:.3s;font-family:'Inter',sans-serif}
+.gtab:hover{background:rgba(124,111,247,.08);color:var(--text)}
+.gtab.active{background:linear-gradient(135deg,var(--p1),#5a52d0);color:#fff;border-color:transparent;
+  box-shadow:0 4px 16px rgba(124,111,247,.3)}
+.game-panel{display:none}
+.game-panel.active{display:block}
+
+/* Memory Match */
+.mem-stats,.rx-stats{display:flex;justify-content:center;gap:30px;margin-bottom:16px}
+.mem-stat{text-align:center}
+.mem-stat .msn{font-family:'Space Grotesk',sans-serif;font-size:1.4rem;font-weight:700;color:var(--p3)}
+.mem-stat .msl{font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.mem-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-width:280px;margin:0 auto 16px}
+.mem-card{aspect-ratio:1;border-radius:10px;cursor:pointer;perspective:600px}
+.mem-card-inner{position:relative;width:100%;height:100%;
+  transition:transform .45s cubic-bezier(.4,.2,.2,1);transform-style:preserve-3d}
+.mem-card.flipped .mem-card-inner{transform:rotateY(180deg)}
+.mem-face{position:absolute;inset:0;border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font-size:1.5rem;backface-visibility:hidden;border:1px solid var(--border)}
+.mem-front{background:rgba(124,111,247,.08);color:var(--p3)}
+.mem-back{background:rgba(255,255,255,.05);transform:rotateY(180deg)}
+.mem-card.matched .mem-back{background:rgba(52,211,153,.12);border-color:var(--green)}
+.mem-win{text-align:center;font-size:.86rem;font-weight:600;margin-bottom:8px;min-height:20px;color:var(--green)}
+
+/* Reflex Tap */
+.rx-pad{max-width:280px;margin:0 auto 16px;aspect-ratio:1.6;border-radius:16px;
+  display:flex;align-items:center;justify-content:center;text-align:center;
+  background:rgba(255,255,255,.04);border:1px solid var(--border);cursor:pointer;
+  transition:.2s;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.1rem;
+  user-select:none;padding:16px}
+.rx-pad.wait{background:rgba(244,114,182,.08);border-color:rgba(244,114,182,.25);color:var(--p4)}
+.rx-pad.go{background:rgba(52,211,153,.14);border-color:var(--green);color:var(--green)}
+.rx-pad.early{background:rgba(251,191,36,.1);border-color:rgba(251,191,36,.3);color:var(--gold)}
+
+/* ── FOOTER ── */
+footer{margin-top:60px;text-align:center;padding:28px 24px;
+  border-top:1px solid var(--border);color:var(--muted);font-size:.8rem}
+footer a{color:var(--p1);text-decoration:none;transition:.3s}
+footer a:hover{color:var(--p3)}
+.heart{color:#f87171;display:inline-block;animation:hb 1.4s infinite}
+@keyframes hb{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}
+.footer-links{display:flex;justify-content:center;gap:20px;flex-wrap:wrap;margin-bottom:10px}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(130px);
+  background:rgba(8,8,20,.93);backdrop-filter:blur(28px);border:1px solid var(--border);
+  color:var(--text);padding:16px 22px;border-radius:14px;font-size:.88rem;font-weight:600;
+  z-index:9999;box-shadow:0 20px 60px rgba(0,0,0,.5);text-align:center;
+  max-width:300px;min-width:240px;opacity:0;
+  transition:.55s cubic-bezier(.175,.885,.32,1.275);pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:all}
+.ti{font-size:1.6rem;display:block;margin-bottom:4px}
+.tt{display:block;font-size:.9rem}
+.ts{display:block;font-size:.7rem;color:var(--muted);margin-top:3px}
+.ta{display:inline-block;margin-top:9px;background:linear-gradient(135deg,var(--p1),#5a52d0);
+  color:#fff;padding:6px 22px;border-radius:24px;font-size:.72rem;font-weight:700;
+  border:none;cursor:pointer;font-family:'Inter',sans-serif;transition:.3s}
+.ta:hover{transform:scale(1.05)}
+.tx{position:absolute;top:8px;right:10px;background:none;border:none;
+  color:var(--muted);font-size:1rem;cursor:pointer;transition:.3s}
+.tx:hover{color:var(--text);transform:rotate(90deg)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  .hdr{padding:0 16px;height:58px}
+  .logo-v{display:none}
+  .hero{padding:50px 16px 36px}
+  .stats{gap:24px}
+  .stat .sn{font-size:2rem}
+  .slot-grid,.sec-wrap,.feat-strip,.game-inner{padding-left:16px;padding-right:16px}
+  .detail-panel{padding:0 16px}
+  .dp-qr{grid-template-columns:1fr}
+}
+@media(max-width:480px){
+  .hero h1{font-size:2rem}
+  .dp-tools-grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}
+  .slot-arrow{flex-direction:column;align-items:stretch}
+  .slot-open-btn{justify-content:center;width:100%}
+  .sa-details{justify-content:center}
+}
+</style>
+</head>
+<body>
+<div class="mesh"></div>
+<div class="grid-bg"></div>
+
+<!-- HEADER -->
+<header class="hdr">
+  <a class="logo" href="#">
+    <span class="logo-text">⚡ ProToolkit</span>
+    <span class="logo-v">v2.0</span>
+  </a>
+  <div class="hdr-right">
+    <a href="#slots" class="hbtn nav-link" data-sec="slots">🛠️ Tools</a>
+    <a href="#features" class="hbtn nav-link" data-sec="features">✨ Features</a>
+    <a href="#game" class="hbtn nav-link" data-sec="game">🎮 Game</a>
+    <a href="https://github.com/Protoolkit-Hanuman-singh/protoolkit" target="_blank" class="hbtn">🐙 GitHub</a>
+    <button class="hbtn" id="themeBtn">☀️</button>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-pill">🚀 &nbsp;19+ Professional Tools — 100% Live &amp; Free</div>
+  <h1>
+    <span class="g1">Your Complete</span><br>
+    <span class="g2">Office Suite</span>
+  </h1>
+  <p class="hero-sub">
+    <strong>Resume · Invoice · QR Code · Visiting Card · Certificate · PDF Tools</strong><br>
+    Sab kuch ek jagah — offline, free, aur blazing fast.
+  </p>
+  <div class="stats">
+    <div class="stat"><div class="sn">19+</div><div class="sl">Live Tools</div></div>
+    <div class="stat"><div class="sn">100%</div><div class="sl">Offline &amp; Free</div></div>
+    <div class="stat"><div class="sn">0₹</div><div class="sl">Zero Cost</div></div>
+  </div>
+  <div class="ctas">
+    <a href="#slots" class="btn-a">🚀 Explore Tools</a>
+    <a href="#features" class="btn-b">✨ See Features</a>
+  </div>
+</section>
+
+<!-- SLOTS -->
+<section class="slots-section" id="slots">
+  <div class="sec-wrap">
+    <h2 class="sh">Choose Your Tool</h2>
+    <p class="ss">Card pe click karo details dekhne ke liye, ya seedha <strong style="color:var(--text)">"Open Tool"</strong> button dabake tool kholo</p>
+  </div>
+
+  <div class="slot-grid">
+
+    <!-- QR SLOT -->
+    <div class="slot qr-slot reveal" id="slotQR" onclick="openSlot('qr')" role="button" tabindex="0" aria-expanded="false">
+      <div class="slot-top">
+        <span class="slot-icon">📱</span>
+        <span class="chip-live">🔴 Live Now</span>
+      </div>
+      <div class="slot-title">QR Code Generator</div>
+      <div class="slot-desc">Text, URL, Email, Phone, SMS — sab ka QR banao. Corner markers ke saath, easy scanning ke liye.</div>
+      <div class="slot-tags">
+        <span class="stag stag-g">Multiple Types</span>
+        <span class="stag stag-g">Color Picker</span>
+        <span class="stag stag-g">PNG Download</span>
+        <span class="stag stag-g">Offline</span>
+      </div>
+      <div class="slot-arrow">
+        <a href="qrcodeA.html" class="slot-open-btn" onclick="event.stopPropagation()">🚀 Open Tool</a>
+        <span class="sa-details">Details <span class="sa-ico">↓</span></span>
+      </div>
+    </div>
+
+    <!-- ALL TOOLS SLOT -->
+    <div class="slot reveal" id="slotAll" onclick="openSlot('all')" role="button" tabindex="0" aria-expanded="false">
+      <div class="slot-top">
+        <span class="slot-icon">🛠️</span>
+        <span class="chip-live">✅ All Live</span>
+      </div>
+      <div class="slot-title">All 19+ Tools</div>
+      <div class="slot-desc">Resume, Bio-Data, Invoice, Certificate, ID Card, Visiting Card, Barcode, Stock Manager, PDF Tools — sab ek jagah, sab live.</div>
+      <div class="slot-tags">
+        <span class="stag stag-p">Resume / CV</span>
+        <span class="stag stag-p">Invoice GST</span>
+        <span class="stag stag-p">Certificate</span>
+        <span class="stag stag-p">PDF Tools</span>
+      </div>
+      <div class="slot-arrow">
+        <a href="AllToolPA.html" class="slot-open-btn" onclick="event.stopPropagation()">🚀 Open Tool</a>
+        <span class="sa-details">Details <span class="sa-ico">↓</span></span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- QR DETAIL PANEL -->
+  <div class="detail-panel" id="panelQR">
+    <div class="dp-inner">
+      <button class="dp-close" onclick="closePanel('qr')">✕</button>
+      <div class="dp-qr">
+        <div class="dp-qr-left">
+          <span class="dp-big-icon">📱</span>
+          <a href="qrcodeA.html" class="dp-open-btn">Open QR Generator →</a>
+        </div>
+        <div class="dp-right">
+          <h3>QR Code Generator — Features</h3>
+          <p>Ek powerful QR code generator jo completely offline kaam karta hai. Kisi bhi type ka QR banao, color customize karo, aur PNG mein download karo.</p>
+          <ul class="dp-feat-list">
+            <li><strong>URL / Website Link</strong> — koi bhi web link ka QR banao</li>
+            <li><strong>Plain Text</strong> — koi bhi text QR mein convert karo</li>
+            <li><strong>Email</strong> — direct email QR with subject &amp; body</li>
+            <li><strong>Phone Number</strong> — ek scan mein call ready</li>
+            <li><strong>SMS</strong> — pre-filled message ke saath</li>
+            <li><strong>Corner Markers</strong> — easy scanning ke liye styled markers</li>
+            <li><strong>Color Picker</strong> — foreground &amp; background custom karo</li>
+            <li><strong>PNG Download</strong> — high quality image export</li>
+          </ul>
+          <div class="dp-link-hint">
+            🔗 <strong>GitHub pe link karne ke liye:</strong> apni repository mein <code>qrcodeA.html</code> naam se file upload karo — slot automatically usi file pe redirect karega.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ALL TOOLS DETAIL PANEL -->
+  <div class="detail-panel" id="panelAll">
+    <div class="dp-inner">
+      <button class="dp-close" onclick="closePanel('all')">✕</button>
+      <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.15rem;font-weight:700;margin-bottom:6px">All 19+ Tools — Live</h3>
+      <p style="color:var(--muted);font-size:.83rem;line-height:1.75;margin-bottom:4px">
+        Niche saare 19+ tools hain — <span style="color:var(--green)">sab live hain!</span> Kisi bhi tool pe click karo, seedha "All Tools" page khul jayega jahan se tum apna kaam shuru kar sakte ho.
+      </p>
+      <div class="dp-tools-grid" id="dpToolsGrid"></div>
+      <a href="AllToolPA.html" class="dp-open-all">Open All Tools Page →</a>
+      <div class="dp-link-hint" style="margin-top:14px;background:rgba(124,111,247,.06);border-color:rgba(124,111,247,.15);color:var(--p3)">
+        🔗 <strong>GitHub pe link karne ke liye:</strong> <code>AllToolPA.html</code> naam ki file apni repo mein upload karo — yah button automatically us page pe jayega.
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- FEATURES -->
+<section class="features-section" id="features">
+  <div class="sec-wrap">
+    <h2 class="sh">Why ProToolkit?</h2>
+    <p class="ss">Professional quality, zero compromise</p>
+  </div>
+  <div class="feat-strip" id="featStrip"></div>
+</section>
+
+<!-- GAME -->
+<section class="game-section" id="game">
+  <div class="sec-wrap" style="margin-bottom:24px">
+    <h2 class="sh">🎮 Game Zone</h2>
+    <p class="ss">Explore karte karte break lo — 3 mini games khelo!</p>
+  </div>
+  <div class="game-inner">
+    <div class="game-tabs reveal">
+      <button class="gtab active" id="tab-ttt" onclick="switchGame('ttt')">⭕ Tic-Tac-Toe</button>
+      <button class="gtab" id="tab-memory" onclick="switchGame('memory')">🧠 Memory Match</button>
+      <button class="gtab" id="tab-reflex" onclick="switchGame('reflex')">⚡ Reflex Tap</button>
+    </div>
+
+    <div class="gbox game-panel active reveal" id="panel-ttt">
+      <div class="g-head">Tic-Tac-Toe</div>
+      <div class="g-sub">Player X se start — kisi bhi cell pe tap karo</div>
+      <div class="scoreboard">
+        <div class="sbox xb"><div class="sbl">Player X</div><div class="sbn" id="sX">0</div></div>
+        <div class="sbox db"><div class="sbl">Draws</div><div class="sbn" id="sD">0</div></div>
+        <div class="sbox ob"><div class="sbl">Player O</div><div class="sbn" id="sO">0</div></div>
+      </div>
+      <div class="turn-row">
+        <div class="t-dot xd" id="dotX"></div>
+        <div id="gStatus">Player X's turn</div>
+        <div class="t-dot od dim" id="dotO"></div>
+      </div>
+      <div class="board" id="board">
+        <div class="cell" data-i="0"></div><div class="cell" data-i="1"></div><div class="cell" data-i="2"></div>
+        <div class="cell" data-i="3"></div><div class="cell" data-i="4"></div><div class="cell" data-i="5"></div>
+        <div class="cell" data-i="6"></div><div class="cell" data-i="7"></div><div class="cell" data-i="8"></div>
+      </div>
+      <button class="g-reset" onclick="resetGame()">🔄 New Game</button>
+    </div>
+
+    <div class="gbox game-panel" id="panel-memory">
+      <div class="g-head">Memory Match</div>
+      <div class="g-sub">Saare jode (pairs) dhundo — kam moves mein jeeto</div>
+      <div class="mem-stats">
+        <div class="mem-stat"><div class="msn" id="memMoves">0</div><div class="msl">Moves</div></div>
+        <div class="mem-stat"><div class="msn" id="memBest">—</div><div class="msl">Best</div></div>
+      </div>
+      <div class="mem-win" id="memWin"></div>
+      <div class="mem-grid" id="memGrid"></div>
+      <button class="g-reset" onclick="initMemory()">🔄 New Game</button>
+    </div>
+
+    <div class="gbox game-panel" id="panel-reflex">
+      <div class="g-head">Reflex Tap</div>
+      <div class="g-sub">Green hone ka wait karo, phir jaldi se tap karo</div>
+      <div class="rx-stats">
+        <div class="mem-stat"><div class="msn" id="rxLast">—</div><div class="msl">Last (ms)</div></div>
+        <div class="mem-stat"><div class="msn" id="rxBest">—</div><div class="msl">Best (ms)</div></div>
+      </div>
+      <div class="rx-pad" id="rxPad" onclick="rxTap()">Tap to Start</div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-links">
+    <a href="#home">Home</a>
+    <a href="#slots">Tools</a>
+    <a href="#features">Features</a>
+    <a href="#game">Game</a>
+    <a href="https://github.com/Protoolkit-Hanuman-singh/protoolkit" target="_blank">GitHub</a>
+  </div>
+  <p>Made with <span class="heart">❤️</span> by
+    <a href="https://github.com/Protoolkit-Hanuman-singh" target="_blank">Hanuman Singh</a>
+    · © 2025 ProToolkit
+  </p>
+  <p style="margin-top:5px;font-size:.68rem;color:#2a2f5a">All tools offline · No data collected · Open Source</p>
+</footer>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span class="ti" id="ti">🚀</span>
+  <span class="tt" id="tt"></span>
+  <span class="ts" id="ts"></span>
+  <button class="ta" id="ta"></button>
+  <button class="tx" onclick="closeToast()">✕</button>
+</div>
+
+<script>
+// ── FEATURES DATA ──
+const feats=[
+  {ic:'⚡',t:'Instant & Offline',d:'Koi server nahi, koi internet nahi. Browser mein kholo aur kaam shuru karo.'},
+  {ic:'🔒',t:'Zero Data Collection',d:'Tumhara data sirf tumhare device pe — hum kuch bhi store nahi karte.'},
+  {ic:'🎨',t:'Premium Templates',d:'Har tool mein professionally designed templates — print-ready quality.'},
+  {ic:'📥',t:'PDF & PNG Download',d:'Ek click mein PDF ya high-resolution PNG download karo instantly.'},
+  {ic:'🆓',t:'100% Free Forever',d:'Koi subscription nahi, koi hidden charges nahi. Hamesha bilkul free.'},
+  {ic:'📱',t:'Mobile Friendly',d:'Desktop ya mobile — har jagah perfectly smooth kaam karta hai.'},
+];
+const fs=document.getElementById('featStrip');
+feats.forEach(f=>{
+  const d=document.createElement('div');d.className='feat-card reveal';
+  d.innerHTML=`<span class="feat-ico">${f.ic}</span><div><div class="feat-t">${f.t}</div><div class="feat-d">${f.d}</div></div>`;
+  fs.appendChild(d);
+});
+
+// ── TOOLS DATA for All Tools Panel ── (har tool ab live hai; kisi bhi tool pe click → AllToolPA.html khulta hai)
+const allTools=[
+  {ic:'📄',name:'Resume / CV',desc:'Professional resume'},
+  {ic:'📋',name:'Bio-Data',desc:'5 premium templates'},
+  {ic:'🧾',name:'Invoice',desc:'GST ready'},
+  {ic:'📋',name:'Quotation',desc:'Pro quotes'},
+  {ic:'💰',name:'Salary Slip',desc:'Auto calculation'},
+  {ic:'🖨️',name:'Visiting Card',desc:'12 dark templates'},
+  {ic:'✅',name:'To-Do List',desc:'Priority + date'},
+  {ic:'🎓',name:'Certificate',desc:'5 templates'},
+  {ic:'🪪',name:'ID Card',desc:'5 templates'},
+  {ic:'📱',name:'QR Code',desc:'With corner markers'},
+  {ic:'📊',name:'Barcode',desc:'EAN-13'},
+  {ic:'📦',name:'Stock Manager',desc:'Inventory'},
+  {ic:'📋',name:'Form Builder',desc:'Surveys'},
+  {ic:'🖼️',name:'Image Compressor',desc:'Reduce size'},
+  {ic:'🖼️',name:'Image to PDF',desc:'Convert'},
+  {ic:'📄',name:'PDF Merger',desc:'Combine PDFs'},
+  {ic:'🔒',name:'PDF Lock',desc:'Password'},
+  {ic:'📄',name:'PDF Compressor',desc:'Reduce size'},
+  {ic:'📝',name:'Text to PDF',desc:'Convert text'},
+];
+const dtg=document.getElementById('dpToolsGrid');
+allTools.forEach(t=>{
+  const d=document.createElement('a');
+  d.className='dp-tool dp-live';
+  d.href='AllToolPA.html';
+  d.innerHTML=`<span class="dt-icon">${t.ic}</span><div class="dt-name">${t.name}</div><div class="dt-desc">${t.desc}</div><span class="dt-badge dt-bl">✅ Live</span>`;
+  dtg.appendChild(d);
+});
+
+// ── SLOT PANEL LOGIC ──
+let openPanel=null;
+function openSlot(which){
+  const panelId=which==='qr'?'panelQR':'panelAll';
+  const slotId=which==='qr'?'slotQR':'slotAll';
+  if(openPanel===which){closePanel(which);return;}
+  // close any open
+  document.querySelectorAll('.detail-panel').forEach(p=>p.classList.remove('open'));
+  document.querySelectorAll('.slot').forEach(s=>s.setAttribute('aria-expanded','false'));
+  document.querySelectorAll('.sa-ico').forEach(s=>s.textContent='↓');
+  openPanel=which;
+  document.getElementById(panelId).classList.add('open');
+  document.getElementById(slotId).setAttribute('aria-expanded','true');
+  document.getElementById(slotId).querySelector('.sa-ico').textContent='↑';
+  setTimeout(()=>document.getElementById(panelId).scrollIntoView({behavior:'smooth',block:'nearest'}),50);
+}
+function closePanel(which){
+  const panelId=which==='qr'?'panelQR':'panelAll';
+  const slotId=which==='qr'?'slotQR':'slotAll';
+  document.getElementById(panelId).classList.remove('open');
+  document.getElementById(slotId).setAttribute('aria-expanded','false');
+  document.getElementById(slotId).querySelector('.sa-ico').textContent='↓';
+  openPanel=null;
+}
+// keyboard support
+document.querySelectorAll('.slot').forEach(s=>{
+  s.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')s.click();});
+});
+
+// ── GAME ──
+let board=Array(9).fill(''),cur='X',active=true,sc={X:0,O:0,D:0};
+const W=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+function updDots(){
+  document.getElementById('dotX').classList.toggle('dim',cur!=='X');
+  document.getElementById('dotO').classList.toggle('dim',cur!=='O');
+}
+document.querySelectorAll('.cell').forEach(c=>{
+  c.addEventListener('click',function(){
+    const i=parseInt(this.dataset.i);
+    if(!active||board[i])return;
+    board[i]=cur;
+    this.textContent=cur==='X'?'✕':'◯';
+    this.classList.add('c'+cur.toLowerCase(),'taken');
+    const wp=W.find(p=>board[p[0]]&&board[p[0]]===board[p[1]]&&board[p[0]]===board[p[2]]);
+    if(wp){
+      wp.forEach(j=>document.querySelector(`.cell[data-i="${j}"]`).classList.add('win'));
+      document.getElementById('gStatus').textContent=`🎉 Player ${cur} wins!`;
+      sc[cur]++;document.getElementById('s'+cur).textContent=sc[cur];
+      active=false;return;
+    }
+    if(board.every(b=>b)){
+      document.getElementById('gStatus').textContent="🤝 Draw!";
+      sc.D++;document.getElementById('sD').textContent=sc.D;
+      active=false;return;
+    }
+    cur=cur==='X'?'O':'X';
+    document.getElementById('gStatus').textContent=`Player ${cur}'s turn`;
+    updDots();
+  });
+});
+function resetGame(){
+  board=Array(9).fill('');cur='X';active=true;
+  document.querySelectorAll('.cell').forEach(c=>{c.textContent='';c.className='cell';});
+  document.getElementById('gStatus').textContent="Player X's turn";
+  updDots();
+}
+updDots();
+
+// ── GAME TAB SWITCHER ──
+function switchGame(which){
+  document.querySelectorAll('.gtab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.game-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+which).classList.add('active');
+  document.getElementById('panel-'+which).classList.add('active');
+  if(which==='memory'&&!memInit){initMemory();memInit=true;}
+}
+
+// ── MEMORY MATCH ──
+let memInit=false,memCards=[],memFirst=null,memLock=false,memMoves=0,memMatches=0,memBest=null;
+const memEmojis=['⚡','🎨','🔒','📥','🆓','📱'];
+function initMemory(){
+  const deck=[...memEmojis,...memEmojis].sort(()=>Math.random()-.5);
+  memCards=deck.map((e,i)=>({id:i,emoji:e,flipped:false,matched:false}));
+  memFirst=null;memLock=false;memMoves=0;memMatches=0;
+  document.getElementById('memMoves').textContent='0';
+  document.getElementById('memWin').textContent='';
+  renderMemory();
+}
+function renderMemory(){
+  const grid=document.getElementById('memGrid');
+  grid.innerHTML='';
+  memCards.forEach(c=>{
+    const el=document.createElement('div');
+    el.className='mem-card'+(c.flipped||c.matched?' flipped':'')+(c.matched?' matched':'');
+    el.innerHTML=`<div class="mem-card-inner">
+      <div class="mem-face mem-front">❓</div>
+      <div class="mem-face mem-back">${c.emoji}</div>
+    </div>`;
+    el.addEventListener('click',()=>flipMemCard(c.id));
+    grid.appendChild(el);
+  });
+}
+function flipMemCard(id){
+  if(memLock)return;
+  const card=memCards.find(c=>c.id===id);
+  if(!card||card.flipped||card.matched)return;
+  card.flipped=true;
+  renderMemory();
+  if(memFirst===null){memFirst=card;return;}
+  memLock=true;memMoves++;
+  document.getElementById('memMoves').textContent=memMoves;
+  const second=card;
+  if(memFirst.emoji===second.emoji){
+    memFirst.matched=true;second.matched=true;memMatches++;
+    memFirst=null;memLock=false;
+    renderMemory();
+    if(memMatches===memEmojis.length){
+      document.getElementById('memWin').textContent=`🎉 Solved in ${memMoves} moves!`;
+      if(memBest===null||memMoves<memBest){memBest=memMoves;document.getElementById('memBest').textContent=memBest;}
+    }
+  }else{
+    setTimeout(()=>{
+      memFirst.flipped=false;second.flipped=false;
+      memFirst=null;memLock=false;
+      renderMemory();
+    },700);
+  }
+}
+
+// ── REFLEX TAP ──
+let rxState='idle',rxTimer=null,rxStart=0,rxBest=null;
+function rxTap(){
+  const pad=document.getElementById('rxPad');
+  if(rxState==='idle'){
+    rxState='waiting';
+    pad.className='rx-pad wait';
+    pad.textContent='Wait for green…';
+    const delay=800+Math.random()*2200;
+    rxTimer=setTimeout(()=>{
+      rxState='go';rxStart=performance.now();
+      pad.className='rx-pad go';pad.textContent='TAP NOW!';
+    },delay);
+  }else if(rxState==='waiting'){
+    clearTimeout(rxTimer);
+    rxState='idle';
+    pad.className='rx-pad early';
+    pad.textContent='Too soon! Tap to retry';
+    setTimeout(()=>{pad.className='rx-pad';pad.textContent='Tap to Start';},1200);
+  }else if(rxState==='go'){
+    const reaction=Math.round(performance.now()-rxStart);
+    document.getElementById('rxLast').textContent=reaction;
+    if(rxBest===null||reaction<rxBest){rxBest=reaction;document.getElementById('rxBest').textContent=rxBest;}
+    rxState='idle';
+    pad.className='rx-pad';
+    pad.textContent=`${reaction}ms — Tap to retry`;
+  }
+}
+
+// ── SCROLL REVEAL ──
+const revealObserver=new IntersectionObserver((entries)=>{
+  entries.forEach(en=>{
+    if(en.isIntersecting){en.target.classList.add('in-view');revealObserver.unobserve(en.target);}
+  });
+},{threshold:.15});
+document.querySelectorAll('.reveal').forEach(el=>revealObserver.observe(el));
+
+// ── NAV SCROLLSPY ──
+const navLinks=document.querySelectorAll('.nav-link');
+const navObserver=new IntersectionObserver((entries)=>{
+  entries.forEach(en=>{
+    if(en.isIntersecting){
+      navLinks.forEach(l=>l.classList.toggle('active',l.dataset.sec===en.target.id));
+    }
+  });
+},{rootMargin:'-45% 0px -45% 0px',threshold:0});
+['slots','features','game'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el)navObserver.observe(el);
+});
+
+// ── TOAST ──
+let toastT;
+function showToast(icon,title,sub,btn,cb){
+  document.getElementById('ti').textContent=icon;
+  document.getElementById('tt').textContent=title;
+  document.getElementById('ts').textContent=sub;
+  const ta=document.getElementById('ta');ta.textContent=btn;
+  const nb=ta.cloneNode(true);ta.parentNode.replaceChild(nb,ta);
+  nb.addEventListener('click',()=>{if(cb)cb();closeToast();});
+  document.getElementById('toast').classList.add('show');
+  clearTimeout(toastT);toastT=setTimeout(closeToast,4500);
+}
+function closeToast(){document.getElementById('toast').classList.remove('show');clearTimeout(toastT);}
+
+// ── THEME ──
+let dark=true;
+document.getElementById('themeBtn').addEventListener('click',function(){
+  dark=!dark;
+  const r=document.documentElement.style;
+  if(dark){
+    r.setProperty('--bg','#060610');r.setProperty('--text','#eef0fb');
+    r.setProperty('--muted','#5a5f82');r.setProperty('--surface','rgba(255,255,255,.035)');
+    r.setProperty('--border','rgba(255,255,255,.07)');
+    this.textContent='☀️';
+  }else{
+    r.setProperty('--bg','#f0f2ff');r.setProperty('--text','#1a1d27');
+    r.setProperty('--muted','#5a5f7e');r.setProperty('--surface','rgba(255,255,255,.75)');
+    r.setProperty('--border','rgba(0,0,0,.07)');
+    this.textContent='🌙';
+  }
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){closeToast();document.querySelectorAll('.detail-panel.open').forEach(p=>{const id=p.id==='panelQR'?'qr':'all';closePanel(id);});}
+  if(e.key==='t'||e.key==='T')document.getElementById('themeBtn').click();
+});
+</script>
+</body>
+</html>
