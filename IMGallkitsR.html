@@ -1,0 +1,3324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>PixelForge Image — Photo Toolkit</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.0.4/tesseract.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+  :root{--bg:#0a0a0f;--surface:#12121a;--surface2:#1a1a26;--surface3:#22222f;--border:#2a2a3d;--accent:#7c6af7;--accent2:#f76a8a;--accent3:#6af7c8;--text:#e8e8f0;--text2:#9090b0;--text3:#5a5a7a;--success:#4ade80;--warning:#fbbf24;--error:#f87171;--radius:12px;--radius-sm:8px;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{font-family:'Space Grotesk',sans-serif;background:radial-gradient(ellipse 1200px 600px at 50% -10%, rgba(124,106,247,0.10), transparent),var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+  header{padding:14px 18px;border-bottom:1px solid var(--border);background:rgba(10,10,15,0.95);backdrop-filter:blur(12px);position:sticky;top:0;z-index:250;display:flex;align-items:center;gap:14px;}
+  .hamburger{display:none;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:18px;width:38px;height:38px;border-radius:var(--radius-sm);cursor:pointer;flex-shrink:0;align-items:center;justify-content:center;}
+  .logo{font-size:19px;font-weight:700;letter-spacing:-0.5px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap;}
+  .logo span{font-weight:300;opacity:0.7;}
+  .badge{font-size:10px;font-family:'JetBrains Mono',monospace;background:var(--surface3);color:var(--accent3);padding:3px 8px;border-radius:20px;border:1px solid var(--border);white-space:nowrap;margin-left:auto;}
+  .app{display:flex;min-height:calc(100vh - 57px);position:relative;}
+  .sidebar{width:220px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);padding:16px 0 40px;}
+  .sidebar-section{padding:14px 16px 4px;font-size:9px;font-weight:600;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:10px 18px;cursor:pointer;font-size:13px;color:var(--text2);transition:all 0.15s;border-left:2px solid transparent;}
+  .nav-item:hover{background:var(--surface2);color:var(--text);}
+  .nav-item.active{background:var(--surface2);color:var(--accent);border-left-color:var(--accent);}
+  .nav-item .icon{font-size:16px;width:20px;text-align:center;}
+  .drawer-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:199;}
+  .drawer-backdrop.show{display:block;}
+  .main{flex:1;padding:24px;overflow-y:auto;max-width:980px;}
+  .panel{display:none;animation:fadeIn 0.2s ease;}
+  .panel.active{display:block;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+  .panel-title{font-size:21px;font-weight:700;margin-bottom:6px;letter-spacing:-0.5px;}
+  .panel-sub{font-size:13px;color:var(--text2);margin-bottom:20px;}
+  .dropzone{border:2px dashed var(--border);border-radius:var(--radius);padding:36px 20px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--surface);position:relative;}
+  .dropzone:hover,.dropzone.drag{border-color:var(--accent);background:rgba(124,106,247,0.05);}
+  .dropzone-icon{font-size:38px;margin-bottom:10px;}
+  .dropzone-text{font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px;}
+  .dropzone-sub{font-size:12px;color:var(--text3);}
+  .dz-spinner{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:var(--surface);border-radius:var(--radius);}
+  .dropzone.loading .dz-spinner{display:flex;}
+  .dropzone.loading .dropzone-icon,.dropzone.loading .dropzone-text,.dropzone.loading .dropzone-sub{opacity:0.15;}
+  .spinner{width:30px;height:30px;border:3px solid var(--surface3);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .ws-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;margin-bottom:18px;}
+  .ws-thumb{width:42px;height:42px;border-radius:8px;object-fit:cover;background:var(--surface3);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;}
+  .ws-info{flex:1;min-width:140px;}
+  .ws-name{font-size:13px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:280px;}
+  .ws-meta{font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-top:2px;}
+  .ws-actions{display:flex;gap:6px;flex-wrap:wrap;}
+  .ws-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--success);margin-right:5px;box-shadow:0 0 6px var(--success);}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:16px;}
+  .card-title{font-size:12px;font-weight:700;color:var(--text2);margin-bottom:14px;letter-spacing:0.4px;}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+  label{font-size:12px;color:var(--text2);display:block;margin-bottom:6px;}
+  input[type="range"]{-webkit-appearance:none;width:100%;height:4px;background:var(--surface3);border-radius:2px;outline:none;}
+  input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid var(--bg);}
+  input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid var(--bg);}
+  input[type="number"],input[type="text"],select{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:var(--radius-sm);font-size:14px;font-family:inherit;outline:none;transition:border-color 0.15s;}
+  input[type="number"]:focus,input[type="text"]:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(124,106,247,0.15);}
+  select option{background:var(--surface2);}
+  .btn{display:inline-flex;align-items:center;gap:7px;padding:11px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;border:none;transition:all 0.15s;white-space:nowrap;}
+  .btn-primary{background:var(--accent);color:#fff;}
+  .btn-primary:hover{background:#9080ff;transform:translateY(-1px);box-shadow:0 6px 18px rgba(124,106,247,0.35);}
+  .btn-secondary{background:var(--surface3);color:var(--text);border:1px solid var(--border);}
+  .btn-secondary:hover{background:var(--surface2);}
+  .btn-success{background:#166534;color:var(--success);border:1px solid #166534;}
+  .btn-success:hover{background:#14532d;}
+  .btn-danger{background:#7f1d1d;color:var(--error);border:1px solid #7f1d1d;}
+  .btn-sm{padding:7px 12px;font-size:12px;}
+  .btn:disabled{opacity:0.4;cursor:not-allowed;transform:none !important;}
+  .btn-group{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;}
+  .preview-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-top:16px;text-align:center;min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .preview-wrap canvas{max-width:100%;max-height:400px;border-radius:6px;box-shadow:0 8px 32px rgba(0,0,0,0.5);}
+  .compare-wrap{position:relative;border-radius:var(--radius);overflow:hidden;user-select:none;touch-action:none;background:var(--surface);}
+  .compare-wrap img{display:block;width:100%;pointer-events:none;}
+  .compare-after{position:absolute;top:0;left:0;height:100%;width:50%;overflow:hidden;}
+  .compare-after img{height:100%;width:auto;}
+  .compare-handle{position:absolute;top:0;bottom:0;left:50%;width:3px;background:#fff;cursor:ew-resize;transform:translateX(-50%);}
+  .compare-handle::after{content:'⟷';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--accent);color:#fff;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;}
+  .compare-tag{position:absolute;top:8px;font-size:10px;font-family:'JetBrains Mono',monospace;background:rgba(0,0,0,0.55);color:#fff;padding:3px 8px;border-radius:10px;}
+  .compare-tag.before{left:8px;}.compare-tag.after{right:8px;}
+  .stat-row{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;}
+  .stat{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;flex:1;min-width:95px;}
+  .stat-label{font-size:9px;color:var(--text3);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:0.5px;}
+  .stat-val{font-size:15px;font-weight:700;color:var(--text);margin-top:2px;font-family:'JetBrains Mono',monospace;word-break:break-word;}
+  .format-grid{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0;}
+  .format-chip{padding:7px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--text2);transition:all 0.15s;font-family:'JetBrains Mono',monospace;}
+  .format-chip:hover,.format-chip.selected{background:var(--accent);color:#fff;border-color:var(--accent);}
+  #toast{position:fixed;bottom:24px;right:24px;left:auto;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:12px 18px;border-radius:var(--radius);font-size:13px;z-index:999;transform:translateY(60px) translateX(0);transition:transform 0.3s ease,opacity .3s ease;opacity:0;pointer-events:none;display:flex;align-items:center;gap:8px;max-width:90vw;box-shadow:0 8px 32px rgba(0,0,0,0.5);}
+  #toast.show{transform:translateY(0);opacity:1;}
+  #toast.success .t-icon::before{content:'✓';color:var(--success);}
+  #toast.error .t-icon::before{content:'✕';color:var(--error);}
+  #toast.info .t-icon::before{content:'ℹ';color:var(--accent);}
+  .tabs{display:flex;gap:4px;margin-bottom:18px;border-bottom:1px solid var(--border);overflow-x:auto;}
+  .tab{padding:9px 16px;font-size:13px;cursor:pointer;color:var(--text2);border-bottom:2px solid transparent;transition:all 0.15s;margin-bottom:-1px;white-space:nowrap;}
+  .tab:hover{color:var(--text);}
+  .tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600;}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+  input[type="color"]{width:46px;height:38px;padding:2px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;}
+  .checkbox-wrap{display:flex;align-items:center;gap:8px;cursor:pointer;}
+  .checkbox-wrap input[type="checkbox"]{width:18px;height:18px;accent-color:var(--accent);cursor:pointer;}
+  .checkbox-wrap span{font-size:13px;color:var(--text2);}
+  ::-webkit-scrollbar{width:6px;height:6px;}
+  ::-webkit-scrollbar-track{background:var(--bg);}
+  ::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:3px;}
+  .wm-position-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;width:120px;}
+  .wm-pos{aspect-ratio:1;background:var(--surface2);border:1px solid var(--border);border-radius:4px;cursor:pointer;transition:all 0.15s;}
+  .wm-pos:hover,.wm-pos.active{background:var(--accent);border-color:var(--accent);}
+  .section-divider{border:none;border-top:1px solid var(--border);margin:18px 0;}
+  .hint-banner{display:flex;gap:10px;align-items:flex-start;background:rgba(124,106,247,0.08);border:1px solid rgba(124,106,247,0.3);border-radius:var(--radius);padding:12px 14px;font-size:12px;color:var(--text2);margin-bottom:18px;line-height:1.5;}
+  .smart-note{display:flex;gap:8px;align-items:flex-start;background:rgba(106,247,200,0.06);border-left:3px solid var(--accent3);border-radius:6px;padding:10px 12px;font-size:11.5px;color:var(--text2);line-height:1.5;margin-top:12px;}
+  .file-list-row{display:flex;align-items:center;gap:10px;padding:9px 10px;background:var(--surface2);border-radius:8px;margin-bottom:6px;font-size:12.5px;color:var(--text2);}
+  .file-list-row .name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .file-list-row .order-btns{display:flex;gap:2px;}
+  .file-list-row .order-btns button{background:var(--surface3);border:1px solid var(--border);color:var(--text2);border-radius:4px;width:22px;height:22px;cursor:pointer;font-size:11px;}
+  #crop-canvas{cursor:grab;display:block;max-width:100%;touch-action:none;}
+  .credit-footer{text-align:center;padding:18px 10px 6px;font-size:11px;color:var(--text3);}
+  .credit-footer b{color:var(--accent3);}
+  .focus-hint{font-size:11px;color:var(--accent3);margin-top:6px;}
+  .color-chip-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+  .color-chip{display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:4px 8px 4px 4px;font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text2);}
+  .color-chip .swatch{width:18px;height:18px;border-radius:50%;border:1px solid var(--border);}
+  .color-chip button{background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;line-height:1;}
+  .progress-bar{height:6px;background:var(--surface3);border-radius:3px;overflow:hidden;margin-top:10px;}
+  .progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent3));transition:width 0.2s;}
+  .mode-toggle{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+  .mode-btn{flex:1;min-width:140px;padding:10px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface2);color:var(--text2);font-size:12.5px;font-weight:600;cursor:pointer;text-align:center;transition:all .15s;}
+  .mode-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .img-queue-strip{display:flex;gap:8px;overflow-x:auto;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:14px;}
+  .img-queue-item{flex-shrink:0;width:64px;text-align:center;cursor:pointer;position:relative;}
+  .img-queue-item img{width:64px;height:64px;object-fit:cover;border-radius:8px;border:2px solid transparent;display:block;}
+  .img-queue-item.active img{border-color:var(--accent);}
+  .img-queue-item .lbl{font-size:9px;color:var(--text3);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .img-queue-item .rm{position:absolute;top:-4px;right:-4px;width:18px;height:18px;border-radius:50%;background:var(--error);color:#fff;font-size:10px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .img-queue-add{flex-shrink:0;width:64px;height:64px;border:2px dashed var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text3);font-size:22px;}
+  @media (max-width:860px){
+    .hamburger{display:flex;}
+    .sidebar{position:fixed;top:0;left:0;height:100vh;width:250px;z-index:200;transform:translateX(-105%);transition:transform 0.25s ease;box-shadow:10px 0 40px rgba(0,0,0,0.4);padding-top:60px;overflow-y:auto;}
+    .sidebar.open{transform:translateX(0);}
+    .app{flex-direction:column;}
+    .main{padding:14px;padding-bottom:30px;max-width:100%;}
+    .grid-2,.grid-3{grid-template-columns:1fr;}
+    .panel-title{font-size:18px;}
+    .ws-name{max-width:50vw;}
+    #toast{bottom:18px;left:14px;right:14px;max-width:none;}
+    .badge{display:none;}
+    .btn{padding:13px 18px;font-size:14px;}
+    .nav-item{padding:13px 18px;font-size:14px;}
+    input[type="range"]::-webkit-slider-thumb{width:24px;height:24px;}
+  }
+</style>
+</head>
+<body>
+
+<div id="toast"><span class="t-icon"></span><span id="toast-msg"></span></div>
+<div class="drawer-backdrop" id="drawer-backdrop" onclick="closeDrawer()"></div>
+<input type="file" id="universal-img-input" accept="image/*" style="display:none" onchange="onImageDropzoneChange(this)">
+
+<header>
+  <button class="hamburger" onclick="toggleDrawer()">☰</button>
+  <div class="logo">PixelForge <span>Image</span></div>
+  <div class="badge">by Hanuman Singh · OFFLINE v5.1</div>
+</header>
+
+<div class="app">
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-section">Image Tools (इमेज)</div>
+    <div class="nav-item active" data-panel="compress" onclick="showPanel('compress',event)"><span class="icon">🗜️</span><span>Compress (संकुचित करें)</span></div>
+    <div class="nav-item" data-panel="resize" onclick="showPanel('resize',event)"><span class="icon">↔️</span><span>Resize (आकार बदलें)</span></div>
+    <div class="nav-item" data-panel="convert" onclick="showPanel('convert',event)"><span class="icon">🔄</span><span>Convert (बदलें)</span></div>
+    <div class="nav-item" data-panel="crop" onclick="showPanel('crop',event)"><span class="icon">✂️</span><span>Crop (काटें)</span></div>
+    <div class="nav-item" data-panel="filters" onclick="showPanel('filters',event)"><span class="icon">🎨</span><span>Filters (प्रभाव)</span></div>
+    <div class="nav-item" data-panel="draw" onclick="showPanel('draw',event)"><span class="icon">🩹</span><span>Pencil / Retouch</span></div>
+    <div class="nav-item" data-panel="bgremove" onclick="showPanel('bgremove',event)"><span class="icon">🪄</span><span>BG Remove</span></div>
+    <div class="nav-item" data-panel="watermark" onclick="showPanel('watermark',event)"><span class="icon">🔖</span><span>Watermark</span></div>
+    <div class="nav-item" data-panel="palette" onclick="showPanel('palette',event)"><span class="icon">🎯</span><span>Palette</span></div>
+    <div class="nav-item" data-panel="ocr" onclick="showPanel('ocr',event)"><span class="icon">🔤</span><span>Image → Text (OCR)</span></div>
+    <div class="nav-item" data-panel="metadata" onclick="showPanel('metadata',event)"><span class="icon">🔍</span><span>Metadata (EXIF)</span></div>
+    <div class="nav-item" data-panel="img2pdf" onclick="showPanel('img2pdf',event)"><span class="icon">📑</span><span>Img → PDF</span></div>
+    <div class="sidebar-section">Bonus</div>
+    <div class="nav-item" data-panel="lockscreen" onclick="showPanel('lockscreen',event)"><span class="icon">🔒</span><span>Image Locker</span></div>
+  </nav>
+
+  <main class="main">
+
+    <!-- ═══════════════ IMAGE COMPRESS ═══════════════ -->
+    <div class="panel active" id="panel-compress">
+      <div class="panel-title">🗜️ Image Compress</div>
+      <div class="panel-sub">Ab "zyada quality maango" matlab "zyada accha" nahi — agar re-encode se behtar kuch nahi milta, hum seedha original hi de denge. Size kam karna ho to resolution + quality dono mil ke best result dete hain.</div>
+
+      <div class="mode-toggle">
+        <div class="mode-btn active" id="compress-top-mode-single" onclick="setCompressTopMode('single')">📄 Single Image</div>
+        <div class="mode-btn" id="compress-top-mode-batch" onclick="setCompressTopMode('batch')">📚 Batch — Multiple Images</div>
+      </div>
+
+      <div id="compress-single-section">
+      <div class="dropzone" id="dzwrap-compress" onclick="document.getElementById('compress-input').click()">
+        <input type="file" id="compress-input" accept="image/*" style="display:none" onchange="onImageDropzoneChange(this)">
+        <div class="dz-spinner"><div class="spinner"></div></div>
+        <div class="dropzone-icon">🖼️</div>
+        <div class="dropzone-text">Image drop karo ya click karo</div>
+        <div class="dropzone-sub">JPG · PNG · WEBP · BMP · GIF — yeh image baaki sab image tools mein bhi use hogi</div>
+      </div>
+
+      <div class="ws-bar" id="wsbar-compress" style="display:none"></div>
+
+      <div id="compress-loaded" style="display:none">
+        <div id="compress-stats"></div>
+
+        <div class="card" style="margin-top:16px">
+          <div class="card-title">QUALITY CONTROL (गुणवत्ता)</div>
+          <div class="grid-2">
+            <div>
+              <label>Quality <span class="range-val" id="q-val">85%</span></label>
+              <input type="range" id="q-slider" min="1" max="100" value="85" oninput="syncQualitySlider(this.value)">
+            </div>
+            <div>
+              <label>Exact Value (1-100 tak hi jayega)</label>
+              <input type="number" id="q-num" min="1" max="100" value="85" oninput="syncQualityNum(this.value)">
+            </div>
+          </div>
+          <div class="smart-note">🛟 Quality slider ko niche le jaane par bhi image "bekar/धुंधली" nahi dikhegi — niche kuch quality ek safe floor se kam nahi jaati, size kam karne ka kaam zyada resolution se hota hai, sirf quality crush se nahi.</div>
+
+          <hr class="section-divider">
+          <div class="grid-2">
+            <div>
+              <label>Target Size (KB) — optional</label>
+              <input type="number" id="target-kb" placeholder="e.g. 200" oninput="scheduleCompressPreview()">
+            </div>
+            <div>
+              <label>Output Format</label>
+              <select id="compress-fmt" onchange="scheduleCompressPreview()">
+                <option value="jpeg">JPEG (best for photos)</option>
+                <option value="webp">WEBP (smallest size)</option>
+                <option value="png">PNG (lossless)</option>
+              </select>
+            </div>
+          </div>
+          <div class="checkbox-wrap" style="margin-top:14px">
+            <input type="checkbox" id="allow-downscale" checked onchange="scheduleCompressPreview()">
+            <span>Bahut chhota target ho to resolution bhi thoda kam karo (quality crush karne se better result milta hai)</span>
+          </div>
+        </div>
+
+        <div id="compress-result" style="display:none">
+          <div class="stat-row" id="compress-result-stats"></div>
+          <div id="compress-smart-note"></div>
+          <div id="compress-compare"></div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="autoOptimizeCompress()">🎯 Auto Optimize</button>
+          <button class="btn btn-success" onclick="downloadCompressed()">⬇️ Download</button>
+          <button class="btn btn-secondary" onclick="applyCompressToWorkspace()">✅ Apply to Workspace</button>
+        </div>
+      </div>
+      </div>
+
+      <div id="compress-batch-section" style="display:none">
+        <div class="hint-banner">📚 Multiple images add karo — har ek ki apni quality/target setting rakho, sab independently compress karo. Kisi ek ke complete hone ka wait nahi karna padega.</div>
+        <div class="btn-group" style="margin-top:0;margin-bottom:14px">
+          <button class="btn btn-primary" onclick="document.getElementById('compress-batch-input').click()">➕ Add Images</button>
+          <input type="file" id="compress-batch-input" accept="image/*" multiple style="display:none" onchange="compressBatchAddFiles(this)">
+          <button class="btn btn-secondary" onclick="compressBatchRunAll()">⚡ Run All Pending</button>
+          <button class="btn btn-success" onclick="compressBatchDownloadAll()">⬇️ Download All Done</button>
+        </div>
+        <div id="compress-batch-jobs-wrap"></div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ IMAGE RESIZE ═══════════════ -->
+    <div class="panel" id="panel-resize">
+      <div class="panel-title">↔️ Image Resize</div>
+      <div class="panel-sub">Pixels, percentage, ya presets — high-quality step-down scaling ke saath, aspect ratio lock, aur before/after compare</div>
+
+      <div class="mode-toggle">
+        <div class="mode-btn active" id="resize-top-mode-single" onclick="setResizeTopMode('single')">📄 Single Image</div>
+        <div class="mode-btn" id="resize-top-mode-batch" onclick="setResizeTopMode('batch')">📚 Batch — Multiple Images</div>
+      </div>
+
+      <div id="resize-single-section">
+      <div class="dropzone" id="dzwrap-resize" onclick="document.getElementById('resize-input').click()">
+        <input type="file" id="resize-input" accept="image/*" style="display:none" onchange="onImageDropzoneChange(this)">
+        <div class="dz-spinner"><div class="spinner"></div></div>
+        <div class="dropzone-icon">📐</div>
+        <div class="dropzone-text">Image drop karo ya click karo</div>
+        <div class="dropzone-sub">Koi bhi image format</div>
+      </div>
+
+      <div class="ws-bar" id="wsbar-resize" style="display:none"></div>
+
+      <div id="resize-loaded" style="display:none">
+        <div id="resize-stats"></div>
+
+        <div class="card" style="margin-top:16px">
+          <div class="card-title">SIZE OPTIONS</div>
+          <div class="tabs">
+            <div class="tab active" onclick="switchResizeTab('px',this)">Pixels</div>
+            <div class="tab" onclick="switchResizeTab('pct',this)">Percentage</div>
+            <div class="tab" onclick="switchResizeTab('preset',this)">Presets</div>
+            <div class="tab" onclick="switchResizeTab('upscale',this)">Upscale ✨</div>
+          </div>
+
+          <div class="tab-panel active" id="rt-px">
+            <div class="grid-2">
+              <div><label>Width (px)</label><input type="number" id="r-w" oninput="onResizeWChange()"></div>
+              <div><label>Height (px)</label><input type="number" id="r-h" oninput="onResizeHChange()"></div>
+            </div>
+            <div class="checkbox-wrap" style="margin-top:10px">
+              <input type="checkbox" id="r-lock" checked>
+              <span>Aspect Ratio Lock</span>
+            </div>
+          </div>
+
+          <div class="tab-panel" id="rt-pct">
+            <label>Scale (%) <span class="range-val" id="pct-val">50%</span></label>
+            <input type="range" id="pct-slider" min="1" max="400" value="50" oninput="syncPctSlider(this.value)">
+            <input type="number" id="pct-num" min="1" max="400" value="50" style="margin-top:8px" oninput="syncPctNum(this.value)">
+          </div>
+
+          <div class="tab-panel" id="rt-preset">
+            <div class="grid-3">
+              <button class="btn btn-secondary btn-sm" onclick="applyPreset(1920,1080)">1920×1080 FHD</button>
+              <button class="btn btn-secondary btn-sm" onclick="applyPreset(1280,720)">1280×720 HD</button>
+              <button class="btn btn-secondary btn-sm" onclick="applyPreset(3840,2160)">3840×2160 4K</button>
+              <button class="btn btn-secondary btn-sm" onclick="applyPreset(800,600)">800×600 SVGA</button>
+              <button class="btn btn-secondary btn-sm" onclick="applyPreset(1080,1080)">1080×1080 Insta</button>
+              <button class="btn btn-secondary btn-sm" onclick="applyPreset(1200,630)">1200×630 OG</button>
+              <button class="btn btn-secondary btn-sm" onclick="applyPreset(512,512)">512×512 Icon</button>
+              <button class="btn btn-secondary btn-sm" onclick="applyPreset(192,192)">192×192 Favicon</button>
+              <button class="btn btn-secondary btn-sm" onclick="applyPreset(2480,3508)">A4 300dpi</button>
+            </div>
+          </div>
+
+          <div class="tab-panel" id="rt-upscale">
+            <p style="font-size:12px;color:var(--text2);margin-bottom:10px">Sharpening ke saath 2x/3x/4x upscale. Dhyan rahe: yeh nayi detail nahi banata (woh sirf AI upscalers karte hain, jo hum jaanboojh kar nahi use kar rahe) — yeh sirf bade size par crisp dikhne ki koshish karta hai.</p>
+            <div class="grid-3">
+              <button class="btn btn-secondary btn-sm" onclick="applyUpscale(2)">2× Upscale</button>
+              <button class="btn btn-secondary btn-sm" onclick="applyUpscale(3)">3× Upscale</button>
+              <button class="btn btn-secondary btn-sm" onclick="applyUpscale(4)">4× Upscale</button>
+            </div>
+          </div>
+
+          <hr class="section-divider">
+          <div class="checkbox-wrap" style="margin-bottom:12px">
+            <input type="checkbox" id="r-sharpen-after" checked>
+            <span>Smart Sharpen After Resize (downscale ke baad bhi sharp dikhe)</span>
+          </div>
+          <div class="grid-2">
+            <div>
+              <label>Quality <span class="range-val" id="rq-val">90%</span></label>
+              <input type="range" id="rq-slider" min="1" max="100" value="90" oninput="document.getElementById('rq-val').textContent=this.value+'%';scheduleResizePreview();">
+            </div>
+            <div>
+              <label>Output Format</label>
+              <select id="resize-fmt" onchange="scheduleResizePreview()">
+                <option value="jpeg">JPEG</option>
+                <option value="png">PNG</option>
+                <option value="webp">WEBP</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div id="resize-result" style="display:none">
+          <div class="stat-row" id="resize-result-stats"></div>
+          <div id="resize-compare"></div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-success" onclick="downloadResized()">⬇️ Download</button>
+          <button class="btn btn-secondary" onclick="applyResizeToWorkspace()">✅ Apply to Workspace</button>
+        </div>
+      </div>
+      </div>
+
+      <div id="resize-batch-section" style="display:none">
+        <div class="hint-banner">📚 Multiple images add karo — har ek ke liye target width/height ya % set karo, sab independently resize karo.</div>
+        <div class="btn-group" style="margin-top:0;margin-bottom:14px">
+          <button class="btn btn-primary" onclick="document.getElementById('resize-batch-input').click()">➕ Add Images</button>
+          <input type="file" id="resize-batch-input" accept="image/*" multiple style="display:none" onchange="resizeBatchAddFiles(this)">
+          <button class="btn btn-secondary" onclick="resizeBatchRunAll()">↔️ Run All Pending</button>
+          <button class="btn btn-success" onclick="resizeBatchDownloadAll()">⬇️ Download All Done</button>
+        </div>
+        <div id="resize-batch-jobs-wrap"></div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ IMAGE CONVERT ═══════════════ -->
+    <div class="panel" id="panel-convert">
+      <div class="panel-title">🔄 Format Convert</div>
+      <div class="panel-sub">Koi bhi format me convert karo — batch bhi support karta hai</div>
+
+      <div class="dropzone" id="dzwrap-convert-only" onclick="document.getElementById('convert-input').click()">
+        <input type="file" id="convert-input" accept="image/*" multiple style="display:none" onchange="onConvertFilesChange(this)">
+        <div class="dz-spinner"><div class="spinner"></div></div>
+        <div class="dropzone-icon">🔄</div>
+        <div class="dropzone-text">Ek ya multiple images add karo</div>
+        <div class="dropzone-sub">Batch conversion support · har baar add karne par list mein judti hai</div>
+      </div>
+
+      <div class="btn-group" style="margin-top:10px">
+        <button class="btn btn-secondary btn-sm" onclick="addWorkspaceImageToConvert()">📥 Add Current Workspace Image</button>
+      </div>
+
+      <div id="convert-loaded" style="display:none">
+        <div id="convert-list" style="margin:14px 0"></div>
+
+        <div class="card">
+          <div class="card-title">OUTPUT FORMAT</div>
+          <div class="format-grid" id="fmt-chips">
+            <div class="format-chip selected" data-fmt="jpeg" onclick="selectFmt(this)">JPEG</div>
+            <div class="format-chip" data-fmt="png" onclick="selectFmt(this)">PNG</div>
+            <div class="format-chip" data-fmt="webp" onclick="selectFmt(this)">WEBP</div>
+            <div class="format-chip" data-fmt="bmp" onclick="selectFmt(this)">BMP</div>
+            <div class="format-chip" data-fmt="ico" onclick="selectFmt(this)">ICO</div>
+            <div class="format-chip" data-fmt="svg" onclick="selectFmt(this)">SVG (wrap)</div>
+          </div>
+          <div class="grid-2" style="margin-top:12px">
+            <div>
+              <label>Quality (JPEG/WEBP) <span class="range-val" id="cv-q-val">90%</span></label>
+              <input type="range" id="cv-q-slider" min="1" max="100" value="90" oninput="document.getElementById('cv-q-val').textContent=this.value+'%'">
+            </div>
+          </div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="doConvert()">🔄 Convert All</button>
+          <button class="btn btn-danger btn-sm" onclick="clearConvertList()">🗑 Clear List</button>
+        </div>
+
+        <div id="convert-results" style="margin-top:16px"></div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ CROP ═══════════════ -->
+    <div class="panel" id="panel-crop">
+      <div class="panel-title">✂️ Crop Image</div>
+      <div class="panel-sub">Handles ko drag karo resize ke liye, box ke andar drag karo move ke liye</div>
+
+      <div id="crop-queue-wrap"></div>
+
+      <div class="dropzone" id="dzwrap-crop" onclick="document.getElementById('crop-input').click()">
+        <input type="file" id="crop-input" accept="image/*" multiple style="display:none" onchange="onImageDropzoneChange(this)">
+        <div class="dz-spinner"><div class="spinner"></div></div>
+        <div class="dropzone-icon">✂️</div>
+        <div class="dropzone-text">Image load karo (multiple bhi select kar sakte ho)</div>
+      </div>
+
+      <div class="ws-bar" id="wsbar-crop" style="display:none"></div>
+
+      <div id="crop-loaded" style="display:none">
+        <div class="card" style="margin-top:16px">
+          <div class="card-title">CROP SETTINGS</div>
+          <div class="grid-3" style="margin-bottom:12px">
+            <button class="btn btn-secondary btn-sm" onclick="setCropAspect(1,1)">1:1 Square</button>
+            <button class="btn btn-secondary btn-sm" onclick="setCropAspect(16,9)">16:9 Wide</button>
+            <button class="btn btn-secondary btn-sm" onclick="setCropAspect(4,3)">4:3</button>
+            <button class="btn btn-secondary btn-sm" onclick="setCropAspect(3,2)">3:2</button>
+            <button class="btn btn-secondary btn-sm" onclick="setCropAspect(9,16)">9:16 Story</button>
+            <button class="btn btn-secondary btn-sm" onclick="setCropAspect(0,0)">Free</button>
+          </div>
+          <div class="grid-2">
+            <div><label>X (px)</label><input type="number" id="crop-x" value="0" oninput="onCropInputChange()"></div>
+            <div><label>Y (px)</label><input type="number" id="crop-y" value="0" oninput="onCropInputChange()"></div>
+            <div><label>Width (px)</label><input type="number" id="crop-w" value="0" oninput="onCropInputChange()"></div>
+            <div><label>Height (px)</label><input type="number" id="crop-h" value="0" oninput="onCropInputChange()"></div>
+          </div>
+          <div style="margin-top:12px">
+            <label>Output Format</label>
+            <select id="crop-fmt">
+              <option value="jpeg">JPEG</option>
+              <option value="png">PNG</option>
+              <option value="webp">WEBP</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-top:12px;position:relative;overflow:auto;max-height:70vh;background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);padding:4px">
+          <canvas id="crop-canvas"></canvas>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-success" onclick="downloadCroppedNow()">⬇️ Download</button>
+          <button class="btn btn-primary" onclick="applyCropAction()">✅ Apply to Workspace</button>
+          <button class="btn btn-secondary" onclick="resetCrop()">↺ Reset Box</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ FILTERS ═══════════════ -->
+    <div class="panel" id="panel-filters">
+      <div class="panel-title">🎨 Image Filters & Adjustments</div>
+      <div class="panel-sub">Brightness, contrast, border, rounded corners, aur "Smart Focus Enhance" — image par click karo, wahi area sharp ho jayega</div>
+
+      <div id="filters-queue-wrap"></div>
+
+      <div class="dropzone" id="dzwrap-filters" onclick="document.getElementById('filter-input').click()">
+        <input type="file" id="filter-input" accept="image/*" multiple style="display:none" onchange="onImageDropzoneChange(this)">
+        <div class="dz-spinner"><div class="spinner"></div></div>
+        <div class="dropzone-icon">🎨</div>
+        <div class="dropzone-text">Image load karo (multiple bhi select kar sakte ho)</div>
+      </div>
+
+      <div class="ws-bar" id="wsbar-filters" style="display:none"></div>
+
+      <div id="filter-loaded" style="display:none">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">ADJUSTMENTS</div>
+            <div style="display:flex;flex-direction:column;gap:16px">
+              <div><label>Brightness <span class="range-val" id="fv-bright">100%</span></label><input type="range" id="f-bright" min="0" max="200" value="100" oninput="updateFilter('bright',this.value)"></div>
+              <div><label>Contrast <span class="range-val" id="fv-cont">100%</span></label><input type="range" id="f-cont" min="0" max="200" value="100" oninput="updateFilter('cont',this.value)"></div>
+              <div><label>Saturation <span class="range-val" id="fv-sat">100%</span></label><input type="range" id="f-sat" min="0" max="300" value="100" oninput="updateFilter('sat',this.value)"></div>
+              <div><label>Blur (px) <span class="range-val" id="fv-blur">0px</span></label><input type="range" id="f-blur" min="0" max="20" value="0" oninput="updateFilter('blur',this.value)"></div>
+              <div><label>Invert <span class="range-val" id="fv-invert">0%</span></label><input type="range" id="f-invert" min="0" max="100" value="0" oninput="updateFilter('invert',this.value)"></div>
+              <div><label>Hue Rotate (°) <span class="range-val" id="fv-hue">0°</span></label><input type="range" id="f-hue" min="0" max="360" value="0" oninput="updateFilter('hue',this.value)"></div>
+              <div><label>Opacity <span class="range-val" id="fv-op">100%</span></label><input type="range" id="f-op" min="0" max="100" value="100" oninput="updateFilter('op',this.value)"></div>
+              <div><label>Rotation (°) <span class="range-val" id="fv-rot">0°</span></label><input type="range" id="f-rot" min="0" max="360" value="0" oninput="updateFilter('rot',this.value)"></div>
+              <div><label>Sharpen ✨ <span class="range-val" id="fv-sharp">0</span></label><input type="range" id="f-sharp" min="0" max="10" value="0" oninput="updateFilter('sharp',this.value)"></div>
+              <div><label>Noise Reduction 🧹 <span class="range-val" id="fv-denoise">0</span></label><input type="range" id="f-denoise" min="0" max="5" value="0" oninput="updateFilter('denoise',this.value)"></div>
+              <div><label>Vignette 🌑 <span class="range-val" id="fv-vig">0%</span></label><input type="range" id="f-vig" min="0" max="100" value="0" oninput="updateFilter('vig',this.value)"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">PRESETS & EFFECTS</div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <button class="btn btn-secondary btn-sm" onclick="applyPresetFilter('grayscale')">⬛ Grayscale</button>
+              <button class="btn btn-secondary btn-sm" onclick="applyPresetFilter('sepia')">🟤 Sepia</button>
+              <button class="btn btn-secondary btn-sm" onclick="applyPresetFilter('invert')">🔲 Invert</button>
+              <button class="btn btn-secondary btn-sm" onclick="applyPresetFilter('vivid')">🌈 Vivid</button>
+              <button class="btn btn-secondary btn-sm" onclick="applyPresetFilter('cool')">❄️ Cool</button>
+              <button class="btn btn-secondary btn-sm" onclick="applyPresetFilter('warm')">🔥 Warm</button>
+              <button class="btn btn-secondary btn-sm" onclick="applyPresetFilter('vintage')">📷 Vintage</button>
+              <button class="btn btn-secondary btn-sm" onclick="applyPresetFilter('fade')">🌫️ Fade</button>
+              <button class="btn btn-secondary btn-sm" onclick="applyPresetFilter('dramatic')">⚡ Dramatic</button>
+              <button class="btn btn-secondary btn-sm" onclick="applyPresetFilter('hdr')">🌟 HDR Pop</button>
+              <button class="btn btn-secondary btn-sm" onclick="applyPresetFilter('cinematic')">🎬 Cinematic</button>
+            </div>
+            <hr class="section-divider">
+            <div class="card-title">🎯 SMART FOCUS ENHANCE</div>
+            <p style="font-size:11.5px;color:var(--text2);margin-bottom:8px">Preview canvas par click karo — us jagah ka detail/sharpness badh jayega, baki image waisi hi rahegi. (Max 8 spots — uske baad purane spots khud replace ho jaate hain, taaki app slow/crash na ho.)</p>
+            <div class="grid-2">
+              <div><label>Strength <span class="range-val" id="fv-focus-str">5</span></label><input type="range" id="f-focus-str" min="1" max="10" value="5" oninput="document.getElementById('fv-focus-str').textContent=this.value"></div>
+              <div><label>Radius (px) <span class="range-val" id="fv-focus-rad">120</span></label><input type="range" id="f-focus-rad" min="30" max="400" value="120" oninput="document.getElementById('fv-focus-rad').textContent=this.value"></div>
+            </div>
+            <div class="checkbox-wrap" style="margin:8px 0">
+              <input type="checkbox" id="f-focus-mode">
+              <span>Focus Mode ON (canvas par click karke enhance karo)</span>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="clearFocusSpots()">↺ Clear Focus Spots</button>
+            <hr class="section-divider">
+            <div class="card-title">FLIP</div>
+            <div style="display:flex;gap:8px;margin-bottom:18px">
+              <button class="btn btn-secondary btn-sm" onclick="flipImg('h')">↔️ Flip H</button>
+              <button class="btn btn-secondary btn-sm" onclick="flipImg('v')">↕️ Flip V</button>
+            </div>
+            <div class="card-title">BORDER & SHAPE</div>
+            <div class="grid-2">
+              <div><label>Border Width <span class="range-val" id="fv-bw">0px</span></label><input type="range" id="f-bw" min="0" max="40" value="0" oninput="updateFilter('borderWidth',this.value)"></div>
+              <div><label>Corner Radius <span class="range-val" id="fv-radius">0px</span></label><input type="range" id="f-radius" min="0" max="200" value="0" oninput="updateFilter('radius',this.value)"></div>
+            </div>
+            <div style="margin-top:10px;display:flex;align-items:center;gap:10px">
+              <input type="color" id="f-border-color" value="#ffffff" oninput="updateFilter('borderColor',this.value)">
+              <span style="font-size:12px;color:var(--text2)">Border color</span>
+            </div>
+            <hr class="section-divider">
+            <div class="card-title">OUTPUT FORMAT</div>
+            <select id="filter-fmt">
+              <option value="jpeg">JPEG</option>
+              <option value="png">PNG</option>
+              <option value="webp">WEBP</option>
+            </select>
+            <label style="margin-top:10px">Quality <span class="range-val" id="fq-val">90%</span></label>
+            <input type="range" id="fq-slider" min="1" max="100" value="90" oninput="document.getElementById('fq-val').textContent=this.value+'%'">
+          </div>
+        </div>
+
+        <div class="preview-wrap">
+          <canvas id="filter-canvas"></canvas>
+          <div class="focus-hint" id="focus-hint" style="display:none">🎯 Focus Mode ON — canvas par jahan click karoge, wahan quality/sharpness badh jayegi</div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-success" onclick="downloadFilteredImg()">⬇️ Download</button>
+          <button class="btn btn-primary" onclick="applyFiltersToWorkspace()">✅ Apply to Workspace</button>
+          <button class="btn btn-secondary" onclick="resetFilters()">↺ Reset All</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ PENCIL / RETOUCH ═══════════════ -->
+    <div class="panel" id="panel-draw">
+      <div class="panel-title">🩹 Pencil / Smart Retouch</div>
+      <div class="panel-sub">Sirf pencil/marker nahi — ab ek poora retouch toolbox hai. "Smart Retouch" jahan le jaoge, wahan ka texture khud dekh kar decide karega: skin/flat area ho to smooth karega, baal/edge/texture ho to detail nikharega.</div>
+
+      <div id="draw-queue-wrap"></div>
+
+      <div class="dropzone" id="dzwrap-draw" onclick="document.getElementById('draw-input').click()">
+        <input type="file" id="draw-input" accept="image/*" multiple style="display:none" onchange="onImageDropzoneChange(this)">
+        <div class="dz-spinner"><div class="spinner"></div></div>
+        <div class="dropzone-icon">✏️</div>
+        <div class="dropzone-text">Image load karo (multiple bhi select kar sakte ho)</div>
+      </div>
+
+      <div class="ws-bar" id="wsbar-draw" style="display:none"></div>
+
+      <div id="draw-loaded" style="display:none">
+        <div class="card">
+          <div class="card-title">BRUSH SETTINGS</div>
+          <div class="grid-2">
+            <div>
+              <label>Tool</label>
+              <select id="dr-tool" onchange="onDrToolChange()">
+                <optgroup label="Draw">
+                  <option value="pencil">✏️ Pencil (solid line)</option>
+                  <option value="marker">🖍️ Marker (soft/translucent)</option>
+                  <option value="eraser">🧹 Eraser (draw ko hatao)</option>
+                </optgroup>
+                <optgroup label="Smart Retouch (offline, pixel-adaptive)">
+                  <option value="smart">🧠 Smart Retouch (auto skin/hair detect)</option>
+                  <option value="smooth">🫧 Smooth / Soften Brush</option>
+                  <option value="sharpen">🔬 Detail / Sharpen Brush</option>
+                  <option value="heal">🩹 Spot Heal (daag/blemish hatao)</option>
+                  <option value="brighten">☀️ Brighten Brush</option>
+                  <option value="darken">🌑 Darken (Burn) Brush</option>
+                  <option value="saturate">🎨 Saturate Brush</option>
+                  <option value="desaturate">🩶 Desaturate Brush</option>
+                </optgroup>
+              </select>
+            </div>
+            <div>
+              <label>Brush Size (px) <span class="range-val" id="dr-size-val">28</span></label>
+              <input type="range" id="dr-size" min="4" max="200" value="28" oninput="document.getElementById('dr-size-val').textContent=this.value">
+            </div>
+          </div>
+          <div class="grid-2" style="margin-top:12px">
+            <div>
+              <label id="dr-op-label">Strength <span class="range-val" id="dr-op-val">70%</span></label>
+              <input type="range" id="dr-op" min="5" max="100" value="70" oninput="document.getElementById('dr-op-val').textContent=this.value+'%'">
+            </div>
+            <div id="dr-color-wrap">
+              <label>Color</label>
+              <input type="color" id="dr-color" value="#ff3b3b">
+            </div>
+          </div>
+          <p id="dr-tool-hint" style="font-size:11.5px;color:var(--accent3);margin-top:10px"></p>
+          <div class="btn-group" style="margin-top:4px">
+            <button class="btn btn-secondary btn-sm" onclick="undoDraw()">↺ Undo Stroke</button>
+            <button class="btn btn-danger btn-sm" onclick="clearDrawing()">🗑 Clear All Changes</button>
+          </div>
+        </div>
+
+        <div class="preview-wrap" style="padding:8px;cursor:crosshair">
+          <canvas id="draw-canvas" style="touch-action:none"></canvas>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-success" onclick="downloadDrawing()">⬇️ Download</button>
+          <button class="btn btn-primary" onclick="applyDrawToWorkspace()">✅ Apply to Workspace</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ BACKGROUND REMOVE ═══════════════ -->
+    <div class="panel" id="panel-bgremove">
+      <div class="panel-title">🪄 Background Remover</div>
+      <div class="hint-banner">⚠️ <b>Note:</b> 100% offline (koi AI segmentation model nahi), isliye simple/plain background (white, green, solid color) par sabse accha result milega. Multi-point sampling se gradient/uneven background bhi thoda behtar chalta hai.</div>
+
+      <div id="bgremove-queue-wrap"></div>
+
+      <div class="dropzone" id="dzwrap-bgremove" onclick="document.getElementById('bgremove-input').click()">
+        <input type="file" id="bgremove-input" accept="image/*" multiple style="display:none" onchange="onImageDropzoneChange(this)">
+        <div class="dz-spinner"><div class="spinner"></div></div>
+        <div class="dropzone-icon">🪄</div>
+        <div class="dropzone-text">Image load karo (multiple bhi select kar sakte ho)</div>
+      </div>
+
+      <div class="ws-bar" id="wsbar-bgremove" style="display:none"></div>
+
+      <div id="bgremove-loaded" style="display:none">
+        <div class="card">
+          <div class="card-title">BACKGROUND COLOR SAMPLES</div>
+          <p style="font-size:11.5px;color:var(--text2);margin-bottom:8px">Jitne zyada sample points utna behtar — background uneven/gradient ho to khud preview canvas par click karke 2-4 jagah se color utha lo.</p>
+          <div class="btn-group" style="margin-top:0">
+            <button class="btn btn-secondary btn-sm" onclick="pickBgFromCorners()">📌 Auto-pick (4 corners)</button>
+            <button class="btn btn-secondary btn-sm" id="bg-pickmode-btn" onclick="toggleBgPickMode()">🎯 Canvas se Pick Karo (OFF)</button>
+            <button class="btn btn-danger btn-sm" onclick="clearBgSamples()">🗑 Clear Samples</button>
+          </div>
+          <div class="color-chip-row" id="bg-chip-row"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">SETTINGS</div>
+          <div class="grid-2">
+            <div>
+              <label>Sensitivity <span class="range-val" id="bg-tol-val">35</span></label>
+              <input type="range" id="bg-tol" min="5" max="100" value="35" oninput="document.getElementById('bg-tol-val').textContent=this.value;scheduleBgPreview()">
+            </div>
+            <div>
+              <label>Edge Softness <span class="range-val" id="bg-feather-val">3</span></label>
+              <input type="range" id="bg-feather" min="0" max="10" value="3" oninput="document.getElementById('bg-feather-val').textContent=this.value;scheduleBgPreview()">
+            </div>
+          </div>
+          <div class="grid-2" style="margin-top:12px">
+            <div>
+              <label>Despill (hata do bg color ka reflection edges se)</label>
+              <input type="range" id="bg-despill" min="0" max="100" value="30" oninput="scheduleBgPreview()">
+            </div>
+            <div>
+              <label>New Background</label>
+              <select id="bg-newbg" onchange="scheduleBgPreview()">
+                <option value="transparent">Transparent (PNG)</option>
+                <option value="#ffffff">White</option>
+                <option value="#000000">Black</option>
+                <option value="#22c55e">Green Screen</option>
+                <option value="custom">Custom Color ▼</option>
+              </select>
+              <input type="color" id="bg-newbg-custom" value="#7c6af7" style="margin-top:8px;display:none" oninput="scheduleBgPreview()">
+            </div>
+          </div>
+        </div>
+
+        <div class="preview-wrap" style="background:repeating-conic-gradient(#2a2a3d 0% 25%, #1a1a26 0% 50%) 50% / 16px 16px;">
+          <canvas id="bgremove-canvas"></canvas>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-success" onclick="downloadBgRemoved()">⬇️ Download</button>
+          <button class="btn btn-primary" onclick="applyBgRemoveToWorkspace()">✅ Apply to Workspace</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ WATERMARK ═══════════════ -->
+    <div class="panel" id="panel-watermark">
+      <div class="panel-title">🔖 Watermark</div>
+      <div class="panel-sub">Text ya image watermark — position, opacity, size, sab live preview</div>
+
+      <div class="mode-toggle">
+        <div class="mode-btn active" id="wm-top-mode-single" onclick="setWmTopMode('single')">📄 Single Image</div>
+        <div class="mode-btn" id="wm-top-mode-batch" onclick="setWmTopMode('batch')">📚 Batch — Multiple Images</div>
+      </div>
+
+      <div id="wm-single-section">
+      <div class="dropzone" id="dzwrap-watermark" onclick="document.getElementById('wm-input').click()">
+        <input type="file" id="wm-input" accept="image/*" style="display:none" onchange="onImageDropzoneChange(this)">
+        <div class="dz-spinner"><div class="spinner"></div></div>
+        <div class="dropzone-icon">🔖</div>
+        <div class="dropzone-text">Image load karo</div>
+      </div>
+
+      <div class="ws-bar" id="wsbar-watermark" style="display:none"></div>
+
+      <div id="wm-loaded" style="display:none">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">WATERMARK SETTINGS</div>
+            <div class="tabs">
+              <div class="tab active" onclick="switchWmTab('text',this)">Text</div>
+              <div class="tab" onclick="switchWmTab('img',this)">Image</div>
+            </div>
+
+            <div class="tab-panel active" id="wmt-text">
+              <label>Watermark Text</label>
+              <input type="text" id="wm-text" value="© Hanuman Singh" style="margin-bottom:10px" oninput="drawWatermark()">
+              <label>Font Size <span class="range-val" id="wm-fs-val">40px</span></label>
+              <input type="range" id="wm-fs" min="8" max="200" value="40" style="margin-bottom:14px" oninput="document.getElementById('wm-fs-val').textContent=this.value+'px';drawWatermark()">
+              <label>Color</label>
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+                <input type="color" id="wm-color" value="#ffffff" oninput="drawWatermark()">
+                <span style="font-size:12px;color:var(--text2)">Text color</span>
+              </div>
+            </div>
+
+            <div class="tab-panel" id="wmt-img">
+              <label>Watermark Image (logo / stamp)</label>
+              <div class="dropzone" style="padding:16px" onclick="document.getElementById('wm-img-input').click()">
+                <input type="file" id="wm-img-input" accept="image/*" style="display:none" onchange="loadWmImage(this)">
+                <div style="font-size:12px;color:var(--text2)">Logo / Stamp upload karo</div>
+              </div>
+              <label style="margin-top:10px">Size (%) <span class="range-val" id="wm-is-val">20%</span></label>
+              <input type="range" id="wm-is" min="5" max="100" value="20" oninput="document.getElementById('wm-is-val').textContent=this.value+'%';drawWatermark()">
+            </div>
+
+            <hr class="section-divider">
+            <label>Opacity <span class="range-val" id="wm-op-val">70%</span></label>
+            <input type="range" id="wm-op" min="5" max="100" value="70" style="margin-bottom:14px" oninput="document.getElementById('wm-op-val').textContent=this.value+'%';drawWatermark()">
+
+            <label>Rotation (°) <span class="range-val" id="wm-rot-val">-30°</span></label>
+            <input type="range" id="wm-rot" min="-180" max="180" value="-30" style="margin-bottom:14px" oninput="document.getElementById('wm-rot-val').textContent=this.value+'°';drawWatermark()">
+
+            <label>Position</label>
+            <div class="wm-position-grid" style="margin:8px 0">
+              <div class="wm-pos" data-pos="tl" onclick="setWmPos(this)" title="Top Left"></div>
+              <div class="wm-pos active" data-pos="tc" onclick="setWmPos(this)" title="Top Center"></div>
+              <div class="wm-pos" data-pos="tr" onclick="setWmPos(this)" title="Top Right"></div>
+              <div class="wm-pos" data-pos="ml" onclick="setWmPos(this)" title="Middle Left"></div>
+              <div class="wm-pos" data-pos="mc" onclick="setWmPos(this)" title="Center"></div>
+              <div class="wm-pos" data-pos="mr" onclick="setWmPos(this)" title="Middle Right"></div>
+              <div class="wm-pos" data-pos="bl" onclick="setWmPos(this)" title="Bottom Left"></div>
+              <div class="wm-pos" data-pos="bc" onclick="setWmPos(this)" title="Bottom Center"></div>
+              <div class="wm-pos" data-pos="br" onclick="setWmPos(this)" title="Bottom Right"></div>
+            </div>
+            <div class="checkbox-wrap" style="margin-top:8px">
+              <input type="checkbox" id="wm-tile" onchange="drawWatermark()">
+              <span>Tile (repeat across image)</span>
+            </div>
+          </div>
+
+          <div>
+            <div class="preview-wrap" style="min-height:280px">
+              <canvas id="wm-canvas"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-success" onclick="downloadWatermark()">⬇️ Download</button>
+          <button class="btn btn-primary" onclick="applyWatermarkToWorkspace()">✅ Apply to Workspace</button>
+        </div>
+      </div>
+      </div>
+
+      <div id="wm-batch-section" style="display:none">
+        <div class="hint-banner">📚 Multiple images add karo — sab par WAHI watermark settings (text/image, position, opacity, rotation, jo upar set ho) apply hogi, ek hi click mein.</div>
+        <div class="card">
+          <div class="card-title">SHARED WATERMARK SETTINGS (sab images par yeh lagega)</div>
+          <div class="tabs">
+            <div class="tab active" onclick="switchWmBatchTab('text',this)">Text</div>
+            <div class="tab" onclick="switchWmBatchTab('img',this)">Image</div>
+          </div>
+          <div class="tab-panel active" id="wmbt-text">
+            <label>Watermark Text</label>
+            <input type="text" id="wmb-text" value="© Hanuman Singh" style="margin-bottom:10px">
+            <label>Font Size <span class="range-val" id="wmb-fs-val">40px</span></label>
+            <input type="range" id="wmb-fs" min="8" max="200" value="40" oninput="document.getElementById('wmb-fs-val').textContent=this.value+'px'">
+            <label style="margin-top:10px">Color</label>
+            <input type="color" id="wmb-color" value="#ffffff">
+          </div>
+          <div class="tab-panel" id="wmbt-img">
+            <label>Watermark Image (logo / stamp)</label>
+            <div class="dropzone" style="padding:16px" onclick="document.getElementById('wmb-img-input').click()">
+              <input type="file" id="wmb-img-input" accept="image/*" style="display:none" onchange="loadWmBatchImage(this)">
+              <div style="font-size:12px;color:var(--text2)" id="wmb-img-label">Logo / Stamp upload karo</div>
+            </div>
+            <label style="margin-top:10px">Size (%) <span class="range-val" id="wmb-is-val">20%</span></label>
+            <input type="range" id="wmb-is" min="5" max="100" value="20" oninput="document.getElementById('wmb-is-val').textContent=this.value+'%'">
+          </div>
+          <hr class="section-divider">
+          <label>Opacity <span class="range-val" id="wmb-op-val">70%</span></label>
+          <input type="range" id="wmb-op" min="5" max="100" value="70" oninput="document.getElementById('wmb-op-val').textContent=this.value+'%'">
+          <label style="margin-top:10px">Rotation (°) <span class="range-val" id="wmb-rot-val">-30°</span></label>
+          <input type="range" id="wmb-rot" min="-180" max="180" value="-30" oninput="document.getElementById('wmb-rot-val').textContent=this.value+'°'">
+          <label style="margin-top:10px">Position</label>
+          <div class="wm-position-grid" style="margin:8px 0" id="wmb-pos-grid">
+            <div class="wm-pos" data-pos="tl" onclick="setWmBatchPos(this)"></div>
+            <div class="wm-pos active" data-pos="tc" onclick="setWmBatchPos(this)"></div>
+            <div class="wm-pos" data-pos="tr" onclick="setWmBatchPos(this)"></div>
+            <div class="wm-pos" data-pos="ml" onclick="setWmBatchPos(this)"></div>
+            <div class="wm-pos" data-pos="mc" onclick="setWmBatchPos(this)"></div>
+            <div class="wm-pos" data-pos="mr" onclick="setWmBatchPos(this)"></div>
+            <div class="wm-pos" data-pos="bl" onclick="setWmBatchPos(this)"></div>
+            <div class="wm-pos" data-pos="bc" onclick="setWmBatchPos(this)"></div>
+            <div class="wm-pos" data-pos="br" onclick="setWmBatchPos(this)"></div>
+          </div>
+        </div>
+        <div class="btn-group" style="margin-top:0;margin-bottom:14px">
+          <button class="btn btn-primary" onclick="document.getElementById('wm-batch-input').click()">➕ Add Images</button>
+          <input type="file" id="wm-batch-input" accept="image/*" multiple style="display:none" onchange="wmBatchAddFiles(this)">
+          <button class="btn btn-secondary" onclick="wmBatchRunAll()">🔖 Apply to All</button>
+          <button class="btn btn-success" onclick="wmBatchDownloadAll()">⬇️ Download All Done</button>
+        </div>
+        <div id="wm-batch-jobs-wrap"></div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ PALETTE EXTRACTOR ═══════════════ -->
+    <div class="panel" id="panel-palette">
+      <div class="panel-title">🎯 Color Palette Extractor</div>
+      <div class="panel-sub">Image se top colors nikalo + average color + hex codes</div>
+
+      <div class="dropzone" id="dzwrap-palette" onclick="document.getElementById('palette-input').click()">
+        <input type="file" id="palette-input" accept="image/*" style="display:none" onchange="onImageDropzoneChange(this)">
+        <div class="dz-spinner"><div class="spinner"></div></div>
+        <div class="dropzone-icon">🎯</div>
+        <div class="dropzone-text">Image load karo</div>
+      </div>
+
+      <div class="ws-bar" id="wsbar-palette" style="display:none"></div>
+
+      <div id="palette-loaded" style="display:none">
+        <div class="btn-group" style="margin-top:0">
+          <button class="btn btn-primary" onclick="extractPalette()">🎯 Extract Palette</button>
+        </div>
+        <div id="palette-results" style="margin-top:16px"></div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ OCR ═══════════════ -->
+    <div class="panel" id="panel-ocr">
+      <div class="panel-title">🔤 Image → Text (OCR)</div>
+      <div class="hint-banner">ℹ️ Yeh on-device OCR hai (Tesseract.js) — koi cloud AI/API call nahi hoti, sab kuch isi browser mein chalta hai. Bas <b>pehli baar</b> language data (~3-15MB) download hota hai, uske baad woh browser cache mein offline kaam karta hai.</div>
+
+      <div class="dropzone" id="dzwrap-ocr" onclick="document.getElementById('ocr-input').click()">
+        <input type="file" id="ocr-input" accept="image/*" style="display:none" onchange="onImageDropzoneChange(this)">
+        <div class="dz-spinner"><div class="spinner"></div></div>
+        <div class="dropzone-icon">🔤</div>
+        <div class="dropzone-text">Image load karo (jisme text ho)</div>
+      </div>
+
+      <div class="ws-bar" id="wsbar-ocr" style="display:none"></div>
+
+      <div id="ocr-loaded" style="display:none">
+        <div class="card">
+          <div class="grid-2">
+            <div>
+              <label>Language</label>
+              <select id="ocr-lang">
+                <option value="eng">English</option>
+                <option value="hin">हिंदी (Hindi)</option>
+                <option value="eng+hin">English + Hindi</option>
+              </select>
+            </div>
+            <div style="display:flex;align-items:flex-end">
+              <button class="btn btn-primary" style="width:100%" onclick="doOcr()">🔤 Extract Text</button>
+            </div>
+          </div>
+          <div class="progress-bar" id="ocr-progress-wrap" style="display:none"><div class="progress-bar-fill" id="ocr-progress-fill" style="width:0%"></div></div>
+        </div>
+        <div id="ocr-result" style="margin-top:14px"></div>
+        <div class="btn-group">
+          <button class="btn btn-success" id="ocr-dl-btn" style="display:none" onclick="downloadOcrText()">⬇️ Download .txt</button>
+          <button class="btn btn-secondary" id="ocr-copy-btn" style="display:none" onclick="copyOcrText()">📄 Copy All</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ METADATA / EXIF ═══════════════ -->
+    <div class="panel" id="panel-metadata">
+      <div class="panel-title">🔍 Image Metadata (EXIF)</div>
+      <div class="panel-sub">File info + asli embedded camera/GPS/date data — WhatsApp jaisi app ye sab strip kar deti hai, isliye seedha original file (jaisi upload ki thi) se padha jaata hai.</div>
+
+      <div class="dropzone" id="dzwrap-metadata" onclick="document.getElementById('meta-input').click()">
+        <input type="file" id="meta-input" accept="image/*" style="display:none" onchange="onImageDropzoneChange(this)">
+        <div class="dz-spinner"><div class="spinner"></div></div>
+        <div class="dropzone-icon">🔍</div>
+        <div class="dropzone-text">Image drop karo</div>
+      </div>
+
+      <div class="ws-bar" id="wsbar-metadata" style="display:none"></div>
+
+      <div id="meta-loaded" style="display:none">
+        <div id="meta-results"></div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ IMG → PDF (new tool, single + batch) ═══════════════ -->
+    <div class="panel" id="panel-img2pdf">
+      <div class="panel-title">📑 Images → PDF</div>
+      <div class="panel-sub">Ek ya zyada images ko PDF mein convert karo. Single mode mein ek PDF (sab images uske pages), Batch mode mein har image set ka apna alag PDF.</div>
+
+      <div class="mode-toggle">
+        <div class="mode-btn active" id="i2p-top-mode-single" onclick="setI2pTopMode('single')">📄 Single PDF (ek hi PDF mein sab images)</div>
+        <div class="mode-btn" id="i2p-top-mode-batch" onclick="setI2pTopMode('batch')">📚 Batch — Alag-Alag PDFs ke groups</div>
+      </div>
+
+      <div id="i2p-single-section">
+        <div class="dropzone" id="dzwrap-i2p" onclick="document.getElementById('i2p-input').click()">
+          <input type="file" id="i2p-input" accept="image/*" multiple style="display:none" onchange="onI2pFilesChange(this)">
+          <div class="dz-spinner"><div class="spinner"></div></div>
+          <div class="dropzone-icon">📑</div>
+          <div class="dropzone-text">Images select karo (multiple) — order yahi rahega PDF mein</div>
+        </div>
+        <div id="i2p-list" style="margin:12px 0"></div>
+        <div class="card" id="i2p-settings-card" style="display:none">
+          <div class="card-title">PDF SETTINGS</div>
+          <div class="grid-2">
+            <div>
+              <label>Page Size</label>
+              <select id="i2p-size">
+                <option value="a4">A4</option>
+                <option value="a3">A3</option>
+                <option value="letter">Letter</option>
+                <option value="fit">Fit to Image</option>
+              </select>
+            </div>
+            <div>
+              <label>Orientation</label>
+              <select id="i2p-orient">
+                <option value="auto">Auto (per image)</option>
+                <option value="portrait">Portrait</option>
+                <option value="landscape">Landscape</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-top:12px">
+            <label>Image Quality in PDF <span class="range-val" id="i2p-q-val">92%</span></label>
+            <input type="range" id="i2p-q" min="1" max="100" value="92" oninput="document.getElementById('i2p-q-val').textContent=this.value+'%'">
+          </div>
+        </div>
+        <div class="btn-group" id="i2p-actions" style="display:none">
+          <button class="btn btn-primary" onclick="doI2pSingle()">📑 Create PDF</button>
+          <button class="btn btn-danger btn-sm" onclick="clearI2pList()">🗑 Clear List</button>
+        </div>
+      </div>
+
+      <div id="i2p-batch-section" style="display:none">
+        <div class="hint-banner">📚 Har "group" apni images aur apni PDF settings rakhega — har group ka alag PDF banega. "+ New Group" se naya group add karo.</div>
+        <div class="btn-group" style="margin-top:0;margin-bottom:14px">
+          <button class="btn btn-primary" onclick="i2pBatchAddGroup()">➕ New Group</button>
+          <button class="btn btn-secondary" onclick="i2pBatchRunAll()">📑 Create All Pending</button>
+          <button class="btn btn-success" onclick="i2pBatchDownloadAll()">⬇️ Download All Done</button>
+        </div>
+        <div id="i2p-batch-groups-wrap"></div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ BONUS: IMAGE LOCKER ═══════════════ -->
+    <div class="panel" id="panel-lockscreen">
+      <div class="panel-title">🔒 Image Locker (पासवर्ड से बंद करो)</div>
+      <div class="panel-sub">Apni image ko password se lock karo — ek encrypted .lock file banta hai jo sirf yahin (isi tool mein) sahi password se khulega.</div>
+
+      <div class="dropzone" id="dzwrap-lock" onclick="document.getElementById('lock-input').click()">
+        <input type="file" id="lock-input" accept="image/*" style="display:none" onchange="onImageDropzoneChange(this)">
+        <div class="dz-spinner"><div class="spinner"></div></div>
+        <div class="dropzone-icon">🔒</div>
+        <div class="dropzone-text">Image load karo (workspace se)</div>
+      </div>
+
+      <div class="ws-bar" id="wsbar-lock" style="display:none"></div>
+
+      <div id="lock-loaded" style="display:none">
+        <div class="card">
+          <label>Password</label>
+          <input type="text" id="lock-pass" placeholder="Apna password likho">
+          <div class="btn-group">
+            <button class="btn btn-primary" onclick="doLockImage()">🔒 Lock & Download .lock file</button>
+          </div>
+        </div>
+        <hr class="section-divider">
+        <div class="card">
+          <div class="card-title">UNLOCK A .lock FILE</div>
+          <input type="file" id="unlock-file-input" accept=".lock,.json" style="margin-bottom:10px">
+          <input type="text" id="unlock-pass" placeholder="Password daalo">
+          <div class="btn-group">
+            <button class="btn btn-secondary" onclick="doUnlockImage()">🔓 Unlock & Preview</button>
+          </div>
+          <div id="unlock-result" style="margin-top:14px"></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div class="credit-footer">Made with ❤️ & full mehnat by <b>Hanuman Singh</b> — PixelForge Image</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+// ══════════════════════════════════════════
+//  SHARED WORKSPACE STATE
+// ══════════════════════════════════════════
+const Workspace = { image: null };
+let panelDirty = { crop: true, draw: true, filters: true };
+
+// ══════════════════════════════════════════
+//  NAVIGATION / DRAWER
+// ══════════════════════════════════════════
+function showPanel(id, evt) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const panel = document.getElementById('panel-' + id);
+  if (panel) panel.classList.add('active');
+  const navEl = (evt && evt.currentTarget) || document.querySelector('.nav-item[data-panel="' + id + '"]');
+  if (navEl) navEl.classList.add('active');
+  closeDrawer();
+  document.querySelector('.main').scrollTo({ top: 0, behavior: 'smooth' });
+  requestAnimationFrame(() => {
+    if (!Workspace.image) return;
+    if (id === 'crop' && panelDirty.crop) { initCropFromWorkspace(); panelDirty.crop = false; }
+    if (id === 'draw' && panelDirty.draw) { initDrawFromWorkspace(); panelDirty.draw = false; }
+    if (id === 'filters' && panelDirty.filters) { initFiltersFromWorkspace(); panelDirty.filters = false; }
+  });
+}
+function toggleDrawer() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('drawer-backdrop').classList.toggle('show');
+}
+function closeDrawer() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('drawer-backdrop').classList.remove('show');
+}
+
+// ══════════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════════
+let toastTimer;
+function toast(msg, type='success') {
+  const t = document.getElementById('toast');
+  clearTimeout(toastTimer);
+  t.className = 'show ' + type;
+  document.getElementById('toast-msg').textContent = msg;
+  toastTimer = setTimeout(() => t.className = '', 3400);
+}
+
+// ══════════════════════════════════════════
+//  UTILS
+// ══════════════════════════════════════════
+function fmtSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1048576) return (bytes/1024).toFixed(1) + ' KB';
+  return (bytes/1048576).toFixed(2) + ' MB';
+}
+function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function canvasToBlob(canvas, fmt, quality) {
+  return new Promise(res => {
+    const mime = fmt === 'png' ? 'image/png' : fmt === 'webp' ? 'image/webp' : 'image/jpeg';
+    canvas.toBlob(b => res(b), mime, quality / 100);
+  });
+}
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1000);
+}
+
+// FIX (issue #3, root cause): String.fromCharCode(...bytes) / btoa(String.fromCharCode(...bytes))
+// SPREADS the entire byte array as individual function arguments. Any image
+// over roughly 60-100KB blows past the engine's max-argument-count limit and
+// throws "Maximum call stack size exceeded" — silently breaking Lock (the
+// encrypt step never finishes, so no usable .lock file is ever produced,
+// which is exactly why Unlock then has nothing valid to open either). Fixed
+// by chunking the conversion through bytesToBase64/base64ToBytes below.
+function bytesToBase64(bytes) {
+  let binary = '';
+  const chunkSize = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
+  }
+  return btoa(binary);
+}
+function base64ToBytes(b64) {
+  const binary = atob(b64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+
+function loadImageFromFile(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = e => {
+      const img = new Image();
+      img.onload = () => res(img);
+      img.onerror = () => rej(new Error('Yeh image file corrupt ya unsupported lag rahi hai'));
+      img.src = e.target.result;
+    };
+    r.onerror = () => rej(new Error('File read nahi ho payi'));
+    r.readAsDataURL(file);
+  });
+}
+
+function statHtml(items) {
+  return `<div class="stat-row">${items.map(([l,v,c]) =>
+    `<div class="stat"><div class="stat-label">${l}</div><div class="stat-val" style="color:${c||'var(--text)'}">${v}</div></div>`
+  ).join('')}</div>`;
+}
+
+// HIGH QUALITY DOWNSCALE: step down by at most 50% per pass so each resampling
+// stays sharp — matches what dedicated resize tools do, instead of one big blurry jump.
+function highQualityResize(srcCanvasOrImg, srcW, srcH, dstW, dstH) {
+  let curCanvas = document.createElement('canvas');
+  curCanvas.width = srcW; curCanvas.height = srcH;
+  curCanvas.getContext('2d').drawImage(srcCanvasOrImg, 0, 0, srcW, srcH);
+  let curW = srcW, curH = srcH;
+  if (dstW < srcW || dstH < srcH) {
+    while (curW * 0.5 > dstW || curH * 0.5 > dstH) {
+      const nw = Math.max(dstW, Math.round(curW * 0.5));
+      const nh = Math.max(dstH, Math.round(curH * 0.5));
+      const next = document.createElement('canvas');
+      next.width = nw; next.height = nh;
+      const nctx = next.getContext('2d');
+      nctx.imageSmoothingEnabled = true; nctx.imageSmoothingQuality = 'high';
+      nctx.drawImage(curCanvas, 0, 0, curW, curH, 0, 0, nw, nh);
+      curCanvas = next; curW = nw; curH = nh;
+    }
+  }
+  const out = document.createElement('canvas');
+  out.width = dstW; out.height = dstH;
+  const octx = out.getContext('2d');
+  octx.imageSmoothingEnabled = true; octx.imageSmoothingQuality = 'high';
+  octx.drawImage(curCanvas, 0, 0, curW, curH, 0, 0, dstW, dstH);
+  return out;
+}
+function sharpenCanvasLight(canvas, amount) {
+  if (canvas.width * canvas.height > 6000000) return canvas;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  const imgData = ctx.getImageData(0, 0, w, h);
+  const src = new Uint8ClampedArray(imgData.data);
+  const data = imgData.data;
+  const a = amount;
+  const k = [0, -a, 0, -a, 1 + 4 * a, -a, 0, -a, 0];
+  for (let y = 1; y < h - 1; y++) {
+    for (let x = 1; x < w - 1; x++) {
+      for (let c = 0; c < 3; c++) {
+        let sum = 0, ki = 0;
+        for (let ky = -1; ky <= 1; ky++) for (let kx = -1; kx <= 1; kx++) {
+          sum += src[((y + ky) * w + (x + kx)) * 4 + c] * k[ki++];
+        }
+        data[(y * w + x) * 4 + c] = sum;
+      }
+    }
+  }
+  ctx.putImageData(imgData, 0, 0);
+  return canvas;
+}
+
+// ══════════════════════════════════════════
+//  ★ THE CORE FIX: SMART ENCODE ★
+// ══════════════════════════════════════════
+async function smartEncode(canvas, fmt, quality) {
+  const ws = Workspace.image;
+  const blob = await canvasToBlob(canvas, fmt, quality);
+  if (ws.originalFile && !ws.editedSinceUpload) {
+    const origFmt = (ws.originalFile.type || '').split('/')[1];
+    const normFmt = origFmt === 'jpg' ? 'jpeg' : origFmt;
+    if (normFmt === fmt && blob.size >= ws.originalFile.size) {
+      return { blob: ws.originalFile, note: 'original' };
+    }
+  }
+  if (blob.size >= ws.size * 1.03) {
+    const lossless = await canvasToBlob(canvas, 'png', 100);
+    if (lossless.size <= blob.size) return { blob: lossless, note: 'lossless' };
+  }
+  return { blob, note: 'encoded' };
+}
+function smartNoteHtml(note, ws) {
+  if (note === 'original') return `<div class="smart-note">✅ <div><b>Original hi best hai</b> — re-encode se size badhta lekin quality nahi sudhrti, isliye seedha asli file di gayi hai.</div></div>`;
+  if (note === 'lossless') return `<div class="smart-note">ℹ️ Is setting par <b>lossless PNG</b> hi sabse chhota/best tha, isliye woh use kiya gaya.</div>`;
+  return '';
+}
+
+// FIX (issue #4): the manual quality slider used to map 1:1 onto the raw
+// JPEG/WEBP encoder quality, so dragging it down to e.g. 10% asked the
+// encoder for a literal 10% quality image — genuinely ugly blocky output.
+// Now the UI slider (1-100, what the person sees and drags) maps onto a
+// SAFE encoder-quality floor (never below ~38, which still looks
+// reasonable) — extra size reduction at the low end comes from a small,
+// proportional resolution trim instead of crushing pixel quality further.
+function qualitySliderToEncodeParams(uiQ) {
+  uiQ = clamp(uiQ, 1, 100);
+  const encodeQ = Math.round(38 + (uiQ / 100) * 57); // 38–95 range, never lower
+  const scale = uiQ < 35 ? (0.6 + (uiQ / 35) * 0.4) : 1; // mild downscale only at low end
+  return { encodeQ, scale };
+}
+
+async function compressToTargetSizeSmart(img, fmt, targetBytes, allowDownscale) {
+  const scales = allowDownscale ? [1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.32, 0.25, 0.18, 0.12] : [1];
+  let lastResort = null;
+  for (const s of scales) {
+    const tw = Math.max(8, Math.round(img.width * s)), th = Math.max(8, Math.round(img.height * s));
+    const canvas = highQualityResize(img, img.width, img.height, tw, th);
+    let lo = 30, hi = 95, best = null;
+    for (let i = 0; i < 7; i++) {
+      const mid = Math.floor((lo + hi) / 2);
+      const blob = await canvasToBlob(canvas, fmt, mid);
+      if (blob.size <= targetBytes) { best = blob; lo = mid + 1; } else hi = mid - 1;
+    }
+    if (best) return { blob: best, scale: s, w: tw, h: th };
+    const floorBlob = await canvasToBlob(canvas, fmt, allowDownscale ? 30 : 1);
+    if (!lastResort || floorBlob.size < lastResort.blob.size) lastResort = { blob: floorBlob, scale: s, w: tw, h: th };
+  }
+  return lastResort;
+}
+
+// ══════════════════════════════════════════
+//  WORKSPACE: IMAGE
+// ══════════════════════════════════════════
+const IMAGE_PANELS = [
+  { dz: 'dzwrap-compress',  bar: 'wsbar-compress',  body: 'compress-loaded', onLoad: initCompressFromWorkspace },
+  { dz: 'dzwrap-resize',    bar: 'wsbar-resize',    body: 'resize-loaded',   onLoad: initResizeFromWorkspace },
+  { dz: 'dzwrap-bgremove',  bar: 'wsbar-bgremove',  body: 'bgremove-loaded', onLoad: initBgRemoveFromWorkspace },
+  { dz: 'dzwrap-watermark', bar: 'wsbar-watermark', body: 'wm-loaded',       onLoad: initWatermarkFromWorkspace },
+  { dz: 'dzwrap-palette',   bar: 'wsbar-palette',   body: 'palette-loaded',  onLoad: initPaletteFromWorkspace },
+  { dz: 'dzwrap-ocr',       bar: 'wsbar-ocr',        body: 'ocr-loaded',     onLoad: initOcrFromWorkspace },
+  { dz: 'dzwrap-metadata',  bar: 'wsbar-metadata',  body: 'meta-loaded',     onLoad: initMetadataFromWorkspace },
+  { dz: 'dzwrap-lock',      bar: 'wsbar-lock',      body: 'lock-loaded',     onLoad: initLockFromWorkspace },
+  { dz: 'dzwrap-crop',      bar: 'wsbar-crop',      body: 'crop-loaded',     onLoad: null },
+  { dz: 'dzwrap-draw',      bar: 'wsbar-draw',      body: 'draw-loaded',     onLoad: null },
+  { dz: 'dzwrap-filters',   bar: 'wsbar-filters',   body: 'filter-loaded',   onLoad: null },
+];
+
+function setWorkspaceImage(file) {
+  return loadImageFromFile(file).then(img => {
+    Workspace.image = {
+      name: file.name, size: file.size, type: file.type || 'image/png', img,
+      originalFile: file, editedSinceUpload: false,
+      history: [img.src], histIndex: 0
+    };
+    panelDirty = { crop: true, draw: true, filters: true };
+    toast('✅ ' + file.name + ' load ho gayi');
+    refreshAllImagePanels();
+    const activeId = document.querySelector('.panel.active')?.id?.replace('panel-', '');
+    if (['crop', 'draw', 'filters'].includes(activeId)) {
+      requestAnimationFrame(() => {
+        if (activeId === 'crop') { initCropFromWorkspace(); panelDirty.crop = false; }
+        if (activeId === 'draw') { initDrawFromWorkspace(); panelDirty.draw = false; }
+        if (activeId === 'filters') { initFiltersFromWorkspace(); panelDirty.filters = false; }
+      });
+    }
+  });
+}
+
+// FIX (issue #6, partial): dropzones for the interactive tools (crop, draw,
+// filters, bgremove) now accept MULTIPLE files. Extra files beyond the
+// first go straight into that tool's own image queue (see ImageQueue below)
+// so you can switch between several images without re-uploading.
+async function onImageDropzoneChange(input) {
+  const files = input.files ? Array.from(input.files) : [];
+  if (!files.length) return;
+  const dz = input.closest('.dropzone');
+  if (dz) dz.classList.add('loading');
+  try {
+    await setWorkspaceImage(files[0]);
+    const queueKey = dzToQueueKey(input.id);
+    if (queueKey) {
+      ImageQueue.add(queueKey, files[0]);
+      for (let i = 1; i < files.length; i++) ImageQueue.add(queueKey, files[i]);
+      renderImageQueue(queueKey);
+    }
+  }
+  catch (e) { toast('❌ ' + e.message, 'error'); }
+  finally { if (dz) dz.classList.remove('loading'); input.value = ''; }
+}
+function dzToQueueKey(inputId) {
+  const map = { 'crop-input': 'crop', 'draw-input': 'draw', 'filter-input': 'filters', 'bgremove-input': 'bgremove' };
+  return map[inputId] || null;
+}
+
+function triggerReplaceImage() { document.getElementById('universal-img-input').click(); }
+
+function pushImageHistory(canvas) {
+  const ws = Workspace.image; if (!ws) return;
+  canvas.toBlob(blob => {
+    const dataUrl = canvas.toDataURL('image/png');
+    const img = new Image();
+    img.onload = () => {
+      ws.img = img;
+      ws.editedSinceUpload = true;
+      ws.size = blob.size;
+      ws.history = ws.history.slice(0, ws.histIndex + 1);
+      ws.history.push(dataUrl);
+      ws.histIndex = ws.history.length - 1;
+      panelDirty = { crop: true, draw: true, filters: true };
+      refreshAllImagePanels();
+    };
+    img.src = dataUrl;
+  }, 'image/png');
+}
+function loadHistoryFrame(msg) {
+  const ws = Workspace.image;
+  const img = new Image();
+  img.onload = () => {
+    ws.img = img;
+    panelDirty = { crop: true, draw: true, filters: true };
+    refreshAllImagePanels();
+    if (msg) toast(msg, 'info');
+  };
+  img.src = ws.history[ws.histIndex];
+}
+function undoImage() { const ws = Workspace.image; if (!ws || ws.histIndex<=0) { toast('Undo karne ke liye kuch nahi hai','info'); return; } ws.histIndex--; loadHistoryFrame('↺ Undo applied'); }
+function resetImageToOriginal() {
+  const ws = Workspace.image; if (!ws || ws.histIndex<=0) return;
+  ws.histIndex = 0; ws.editedSinceUpload = false; ws.size = ws.originalFile ? ws.originalFile.size : ws.size;
+  loadHistoryFrame('↺ Original par reset ho gaya');
+}
+function clearWorkspaceImage() { Workspace.image = null; refreshAllImagePanels(); toast('🗑 Image workspace clear', 'info'); }
+
+function fillWorkspaceBar(el) {
+  const ws = Workspace.image;
+  el.innerHTML = `
+    <img class="ws-thumb" src="${ws.img.src}">
+    <div class="ws-info">
+      <div class="ws-name"><span class="ws-dot"></span>${escapeHtml(ws.name)}</div>
+      <div class="ws-meta">${ws.img.width}×${ws.img.height} · ${fmtSize(ws.size)}${ws.editedSinceUpload?' · edited':''}</div>
+    </div>
+    <div class="ws-actions">
+      <button class="btn btn-secondary btn-sm" onclick="undoImage()" ${ws.histIndex<=0?'disabled':''}>↺ Undo</button>
+      <button class="btn btn-secondary btn-sm" onclick="resetImageToOriginal()" ${ws.histIndex<=0?'disabled':''}>Reset</button>
+      <button class="btn btn-secondary btn-sm" onclick="triggerReplaceImage()">🔄 Change</button>
+      <button class="btn btn-danger btn-sm" onclick="clearWorkspaceImage()">🗑 Clear</button>
+    </div>`;
+}
+
+function refreshAllImagePanels() {
+  const loaded = !!Workspace.image;
+  IMAGE_PANELS.forEach(p => {
+    const dz = document.getElementById(p.dz), bar = document.getElementById(p.bar), body = document.getElementById(p.body);
+    if (dz) dz.style.display = loaded ? 'none' : 'block';
+    if (bar) { bar.style.display = loaded ? 'flex' : 'none'; if (loaded) fillWorkspaceBar(bar); }
+    if (body) body.style.display = loaded ? 'block' : 'none';
+    if (loaded && p.onLoad) p.onLoad();
+  });
+}
+
+// ══════════════════════════════════════════
+//  IMAGE QUEUE (issue #6): lets the interactive tools (Crop, Filters,
+//  Draw, BG Remove) hold SEVERAL images and switch between them — each
+//  image keeps its own edited canvas state independently, so you can work
+//  through a whole batch of photos one at a time without re-uploading.
+// ══════════════════════════════════════════
+const ImageQueue = {
+  queues: { crop: [], draw: [], filters: [], bgremove: [] },
+  add(key, file) {
+    const id = 'q' + Date.now() + Math.random().toString(36).slice(2,7);
+    this.queues[key].push({ id, file, name: file.name, thumbUrl: null, editedCanvas: null });
+    loadImageFromFile(file).then(img => {
+      const entry = this.queues[key].find(e => e.id === id);
+      if (entry) { entry.img = img; entry.thumbUrl = img.src; renderImageQueue(key); }
+    });
+    return id;
+  },
+  remove(key, id) { this.queues[key] = this.queues[key].filter(e => e.id !== id); renderImageQueue(key); },
+  list(key) { return this.queues[key] || []; }
+};
+function renderImageQueue(key) {
+  const wrap = document.getElementById(key + '-queue-wrap');
+  if (!wrap) return;
+  const items = ImageQueue.list(key);
+  if (!items.length) { wrap.innerHTML = ''; return; }
+  const activeName = Workspace.image ? Workspace.image.name : null;
+  wrap.innerHTML = `<div class="img-queue-strip">` + items.map(it => `
+    <div class="img-queue-item ${it.name === activeName ? 'active' : ''}" onclick="switchToQueueImage('${key}','${it.id}')">
+      <img src="${it.thumbUrl || ''}">
+      <button class="rm" onclick="event.stopPropagation();ImageQueue.remove('${key}','${it.id}')">✕</button>
+      <div class="lbl">${escapeHtml(it.name.slice(0,10))}</div>
+    </div>`).join('') +
+    `<div class="img-queue-add" onclick="document.getElementById('${key === 'filters' ? 'filter' : key}-input').click()">➕</div></div>`;
+}
+async function switchToQueueImage(key, id) {
+  const entry = ImageQueue.list(key).find(e => e.id === id);
+  if (!entry || !entry.img) return;
+  // Save current canvas state of whichever image we're leaving, so
+  // switching back later restores edits instead of losing them.
+  const prevName = Workspace.image ? Workspace.image.name : null;
+  if (prevName) {
+    const prevEntry = ImageQueue.list(key).find(e => e.name === prevName);
+    if (prevEntry) {
+      if (key === 'crop' && cropState) prevEntry.editedCanvas = cropState.canvas;
+      if (key === 'draw' && drawState) prevEntry.editedCanvas = drawState.canvas;
+      if (key === 'filters') prevEntry.editedCanvas = document.getElementById('filter-canvas');
+    }
+  }
+  Workspace.image = {
+    name: entry.name, size: entry.file.size, type: entry.file.type || 'image/png',
+    img: entry.editedCanvas ? await canvasToImg(entry.editedCanvas) : entry.img,
+    originalFile: entry.file, editedSinceUpload: !!entry.editedCanvas,
+    history: [entry.img.src], histIndex: 0
+  };
+  panelDirty = { crop: true, draw: true, filters: true };
+  refreshAllImagePanels();
+  renderImageQueue(key);
+  toast('🔁 "' + entry.name + '" par switch ho gaya');
+}
+function canvasToImg(canvas) {
+  return new Promise(res => { const img = new Image(); img.onload = () => res(img); img.src = canvas.toDataURL('image/png'); });
+}
+
+// ══════════════════════════════════════════
+//  COMPRESS
+// ══════════════════════════════════════════
+let compressDebounce, compressedBlob = null, lastCompareUrl = null;
+
+function setCompressTopMode(mode) {
+  document.getElementById('compress-top-mode-single').classList.toggle('active', mode==='single');
+  document.getElementById('compress-top-mode-batch').classList.toggle('active', mode==='batch');
+  document.getElementById('compress-single-section').style.display = mode==='single' ? 'block' : 'none';
+  document.getElementById('compress-batch-section').style.display = mode==='batch' ? 'block' : 'none';
+  if (mode === 'batch') renderCompressBatchJobs();
+}
+
+function syncQualityNum(v){
+  v = clamp(parseInt(v) || 1, 1, 100);
+  document.getElementById('q-num').value = v;
+  document.getElementById('q-slider').value = v;
+  document.getElementById('q-val').textContent = v + '%';
+  scheduleCompressPreview();
+}
+function syncQualitySlider(v){
+  v = clamp(parseInt(v) || 1, 1, 100);
+  document.getElementById('q-slider').value = v;
+  document.getElementById('q-num').value = v;
+  document.getElementById('q-val').textContent = v + '%';
+  scheduleCompressPreview();
+}
+
+function initCompressFromWorkspace() {
+  const ws = Workspace.image;
+  document.getElementById('compress-stats').innerHTML = statHtml([
+    ['Current Size', fmtSize(ws.size), 'var(--text2)'],
+    ['Dimensions', ws.img.width + ' × ' + ws.img.height, 'var(--text)'],
+    ['Format', (ws.type || 'image/jpeg').split('/')[1].toUpperCase(), 'var(--accent)']
+  ]);
+  scheduleCompressPreview();
+}
+function scheduleCompressPreview() {
+  clearTimeout(compressDebounce);
+  compressDebounce = setTimeout(renderCompressPreview, 180);
+}
+async function renderCompressPreview() {
+  const ws = Workspace.image; if (!ws) return;
+  const uiQ = parseInt(document.getElementById('q-slider').value);
+  const fmt = document.getElementById('compress-fmt').value;
+  const targetKb = parseInt(document.getElementById('target-kb').value);
+  const allowDownscale = document.getElementById('allow-downscale').checked;
+
+  let note = 'encoded', resultW = ws.img.width, resultH = ws.img.height;
+  if (targetKb > 0) {
+    const targetBytes = targetKb * 1024;
+    if (!ws.editedSinceUpload && ws.originalFile && targetBytes >= ws.originalFile.size) {
+      compressedBlob = ws.originalFile; note = 'original';
+      const c = document.createElement('canvas'); c.width = ws.img.width; c.height = ws.img.height;
+      c.getContext('2d').drawImage(ws.img, 0, 0);
+      window._compressCanvas = c;
+    } else {
+      const r = await compressToTargetSizeSmart(ws.img, fmt, targetBytes, allowDownscale);
+      compressedBlob = r.blob; resultW = r.w; resultH = r.h;
+      window._compressCanvas = highQualityResize(ws.img, ws.img.width, ws.img.height, r.w, r.h);
+      note = (r.scale < 1) ? 'downscaled' : 'encoded';
+    }
+  } else {
+    // FIX (#4): run the UI quality through the safe-floor mapping instead
+    // of feeding it straight to the encoder.
+    const { encodeQ, scale } = qualitySliderToEncodeParams(uiQ);
+    let canvas;
+    if (scale < 1) {
+      resultW = Math.max(8, Math.round(ws.img.width * scale));
+      resultH = Math.max(8, Math.round(ws.img.height * scale));
+      canvas = highQualityResize(ws.img, ws.img.width, ws.img.height, resultW, resultH);
+      note = 'downscaled';
+    } else {
+      canvas = document.createElement('canvas');
+      canvas.width = ws.img.width; canvas.height = ws.img.height;
+      canvas.getContext('2d').drawImage(ws.img, 0, 0);
+    }
+    const r = await smartEncode(canvas, fmt, encodeQ);
+    compressedBlob = r.blob; if (note !== 'downscaled') note = r.note; window._compressCanvas = canvas;
+  }
+
+  const ratio = ((1 - compressedBlob.size / ws.size) * 100).toFixed(1);
+  document.getElementById('compress-result').style.display = 'block';
+  document.getElementById('compress-result-stats').innerHTML = statHtml([
+    ['Original/Current', fmtSize(ws.size), 'var(--text2)'],
+    ['New Size', fmtSize(compressedBlob.size), 'var(--success)'],
+    ['Change', (ratio >= 0 ? '-' : '+') + Math.abs(ratio) + '%', 'var(--accent)'],
+    ['Output Dims', resultW + '×' + resultH, 'var(--accent3)']
+  ]);
+  let noteHtml = smartNoteHtml(note, ws);
+  if (note === 'downscaled') noteHtml = `<div class="smart-note">📐 Quality ko ek "safe" floor se neeche jaane se rok diya gaya — bachi hui size-saving ${resultW}×${resultH} jaisi halki resolution-trim se aayi hai, taaki image dhundhli/bekar na lage.</div>`;
+  document.getElementById('compress-smart-note').innerHTML = noteHtml;
+  renderCompareSlider('compress-compare', ws.img.src, compressedBlob);
+}
+async function autoOptimizeCompress() {
+  const ws = Workspace.image; if (!ws) return;
+  document.getElementById('compress-fmt').value = 'webp';
+  document.getElementById('target-kb').value = Math.round(ws.size * 0.7 / 1024);
+  await renderCompressPreview();
+  toast('🎯 Auto optimized ~30% savings target ke saath');
+}
+function downloadCompressed() {
+  if (!compressedBlob) { toast('Pehle image load karo', 'error'); return; }
+  const ext = (compressedBlob.type || 'image/jpeg').split('/')[1].replace('jpeg','jpg');
+  downloadBlob(compressedBlob, 'compressed.' + ext);
+  toast('⬇️ Download shuru!');
+}
+function applyCompressToWorkspace() {
+  if (!window._compressCanvas) return;
+  pushImageHistory(window._compressCanvas);
+  toast('✅ Compression workspace par apply ho gaya');
+}
+
+function renderCompareSlider(containerId, beforeSrc, afterBlob) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  if (lastCompareUrl) URL.revokeObjectURL(lastCompareUrl);
+  const afterUrl = URL.createObjectURL(afterBlob);
+  lastCompareUrl = afterUrl;
+  el.innerHTML = `<div class="compare-wrap" id="${containerId}-wrap">
+      <img class="cmp-before" src="${beforeSrc}">
+      <div class="compare-after"><img class="cmp-after" src="${afterUrl}"></div>
+      <div class="compare-handle"></div>
+      <span class="compare-tag before">BEFORE</span>
+      <span class="compare-tag after">AFTER</span>
+    </div>`;
+  bindCompareWrap(containerId);
+}
+function bindCompareWrap(containerId) {
+  const wrap = document.getElementById(containerId + '-wrap');
+  if (!wrap) return;
+  const beforeImg = wrap.querySelector('.cmp-before');
+  const afterImg = wrap.querySelector('.cmp-after');
+  const afterDiv = wrap.querySelector('.compare-after');
+  const handle = wrap.querySelector('.compare-handle');
+  function layout() { afterImg.style.width = wrap.clientWidth + 'px'; setPct(50); }
+  function setPct(pct) { afterDiv.style.width = pct + '%'; handle.style.left = pct + '%'; }
+  if (beforeImg.complete) layout(); else beforeImg.onload = layout;
+  let dragging = false;
+  const move = clientX => { const r = wrap.getBoundingClientRect(); setPct(clamp(((clientX - r.left) / r.width) * 100, 0, 100)); };
+  wrap.onpointerdown = e => { dragging = true; wrap.setPointerCapture(e.pointerId); move(e.clientX); };
+  wrap.onpointermove = e => { if (dragging) move(e.clientX); };
+  wrap.onpointerup = () => dragging = false;
+}
+
+// ---- Batch Compress ----
+let compressBatchJobs = [], compressBatchIdCounter = 1;
+function compressBatchAddFiles(input) {
+  Array.from(input.files || []).forEach(file => {
+    compressBatchJobs.push({ id: compressBatchIdCounter++, file, name: file.name, size: file.size, quality: 80, targetKb: 0, status: 'idle', resultBlob: null });
+  });
+  input.value = '';
+  renderCompressBatchJobs();
+}
+function compressBatchRemoveJob(id) { compressBatchJobs = compressBatchJobs.filter(j => j.id !== id); renderCompressBatchJobs(); }
+function compressBatchSet(id, patch) { const j = compressBatchJobs.find(j=>j.id===id); if (j) Object.assign(j, patch); }
+function renderCompressBatchJobs() {
+  const wrap = document.getElementById('compress-batch-jobs-wrap');
+  if (!wrap) return;
+  if (!compressBatchJobs.length) { wrap.innerHTML = '<p style="font-size:12px;color:var(--text3)">Koi image add nahi ki abhi.</p>'; return; }
+  wrap.innerHTML = compressBatchJobs.map(j => `
+    <div class="card" style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60%">${escapeHtml(j.name)} <span style="color:var(--text3);font-weight:400">(${fmtSize(j.size)})</span></div>
+        <button class="btn btn-danger btn-xs" onclick="compressBatchRemoveJob(${j.id})">✕ Remove</button>
+      </div>
+      <label>Quality <span style="color:var(--accent3)">${j.quality}%</span></label>
+      <input type="range" min="1" max="100" value="${j.quality}" oninput="compressBatchSet(${j.id},{quality:parseInt(this.value)});this.previousElementSibling.querySelector('span').textContent=this.value+'%'">
+      <label style="margin-top:8px">Target Size (KB) — optional</label>
+      <input type="number" placeholder="blank = sirf quality use karo" value="${j.targetKb||''}" onchange="compressBatchSet(${j.id},{targetKb:parseInt(this.value)||0})">
+      <div class="btn-group" style="margin-top:10px">
+        <button class="btn btn-primary btn-sm" onclick="compressBatchRunJob(${j.id})" ${j.status==='running'?'disabled':''}>${j.status==='running'?'⏳ Running...':'⚡ Compress'}</button>
+        ${j.resultBlob ? `<button class="btn btn-success btn-sm" onclick="compressBatchDownload(${j.id})">⬇️ Download (${fmtSize(j.resultBlob.size)})</button>` : ''}
+      </div>
+      ${j.status==='error' ? `<p style="color:var(--error);font-size:11.5px;margin-top:6px">${escapeHtml(j.errorMsg||'Error')}</p>` : ''}
+    </div>
+  `).join('');
+}
+async function compressBatchRunJob(id) {
+  const job = compressBatchJobs.find(j => j.id === id);
+  if (!job) return;
+  job.status = 'running'; renderCompressBatchJobs();
+  try {
+    const img = await loadImageFromFile(job.file);
+    const fmt = (job.file.type || 'image/jpeg').includes('png') ? 'png' : 'jpeg';
+    let blob;
+    if (job.targetKb > 0) {
+      const r = await compressToTargetSizeSmart(img, fmt, job.targetKb * 1024, true);
+      blob = r.blob;
+    } else {
+      const { encodeQ, scale } = qualitySliderToEncodeParams(job.quality);
+      let canvas;
+      if (scale < 1) canvas = highQualityResize(img, img.width, img.height, Math.round(img.width*scale), Math.round(img.height*scale));
+      else { canvas = document.createElement('canvas'); canvas.width = img.width; canvas.height = img.height; canvas.getContext('2d').drawImage(img, 0, 0); }
+      blob = await canvasToBlob(canvas, fmt, encodeQ);
+      if (blob.size >= job.size) blob = job.file;
+    }
+    job.resultBlob = blob;
+    job.status = 'done';
+    toast(`✅ ${job.name} compressed!`);
+  } catch (e) {
+    job.status = 'error'; job.errorMsg = e.message;
+    toast('❌ ' + job.name + ': ' + e.message, 'error');
+  }
+  renderCompressBatchJobs();
+}
+function compressBatchDownload(id) {
+  const job = compressBatchJobs.find(j => j.id === id);
+  if (!job || !job.resultBlob) return;
+  const ext = (job.resultBlob.type||'image/jpeg').split('/')[1].replace('jpeg','jpg');
+  downloadBlob(job.resultBlob, job.name.replace(/\.[^.]+$/,'') + '-compressed.' + ext);
+}
+async function compressBatchRunAll() { for (const j of compressBatchJobs) { if (j.status!=='done'&&j.status!=='running') await compressBatchRunJob(j.id); } }
+function compressBatchDownloadAll() { compressBatchJobs.filter(j=>j.resultBlob).forEach((j,i) => setTimeout(()=>compressBatchDownload(j.id), i*150)); }
+
+// ══════════════════════════════════════════
+//  RESIZE
+// ══════════════════════════════════════════
+let resizeTabMode = 'px', resizeDebounce, resizedBlob = null;
+
+function setResizeTopMode(mode) {
+  document.getElementById('resize-top-mode-single').classList.toggle('active', mode==='single');
+  document.getElementById('resize-top-mode-batch').classList.toggle('active', mode==='batch');
+  document.getElementById('resize-single-section').style.display = mode==='single' ? 'block' : 'none';
+  document.getElementById('resize-batch-section').style.display = mode==='batch' ? 'block' : 'none';
+  if (mode === 'batch') renderResizeBatchJobs();
+}
+
+function switchResizeTab(mode, el) {
+  resizeTabMode = mode;
+  document.querySelectorAll('#panel-resize .tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('#panel-resize .tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('rt-' + mode).classList.add('active');
+  if (mode !== 'upscale') scheduleResizePreview();
+}
+function initResizeFromWorkspace() {
+  const ws = Workspace.image;
+  document.getElementById('r-w').value = ws.img.width;
+  document.getElementById('r-h').value = ws.img.height;
+  document.getElementById('resize-stats').innerHTML = statHtml([
+    ['Width', ws.img.width + 'px', 'var(--text)'],
+    ['Height', ws.img.height + 'px', 'var(--text)'],
+    ['Size', fmtSize(ws.size), 'var(--text2)']
+  ]);
+  scheduleResizePreview();
+}
+function onResizeWChange() {
+  const ws = Workspace.image;
+  if (document.getElementById('r-lock').checked && ws) {
+    document.getElementById('r-h').value = Math.round(document.getElementById('r-w').value / ws.img.width * ws.img.height);
+  }
+  scheduleResizePreview();
+}
+function onResizeHChange() {
+  const ws = Workspace.image;
+  if (document.getElementById('r-lock').checked && ws) {
+    document.getElementById('r-w').value = Math.round(document.getElementById('r-h').value / ws.img.height * ws.img.width);
+  }
+  scheduleResizePreview();
+}
+function syncPctSlider(v){ v=clamp(parseInt(v)||1,1,400); document.getElementById('pct-slider').value=v; document.getElementById('pct-num').value=v; document.getElementById('pct-val').textContent=v+'%'; scheduleResizePreview(); }
+function syncPctNum(v){ v=clamp(parseInt(v)||1,1,400); document.getElementById('pct-num').value=v; document.getElementById('pct-slider').value=v; document.getElementById('pct-val').textContent=v+'%'; scheduleResizePreview(); }
+function applyPreset(w, h) {
+  document.getElementById('r-w').value = w;
+  document.getElementById('r-h').value = h;
+  document.getElementById('r-lock').checked = false;
+  switchResizeTab('px', document.querySelectorAll('#panel-resize .tab')[0]);
+}
+function scheduleResizePreview() { clearTimeout(resizeDebounce); resizeDebounce = setTimeout(renderResizePreview, 150); }
+async function renderResizePreview() {
+  const ws = Workspace.image; if (!ws) return;
+  let tw, th;
+  if (resizeTabMode === 'pct') {
+    const pct = parseInt(document.getElementById('pct-slider').value) / 100;
+    tw = Math.round(ws.img.width * pct); th = Math.round(ws.img.height * pct);
+  } else {
+    tw = parseInt(document.getElementById('r-w').value) || ws.img.width;
+    th = parseInt(document.getElementById('r-h').value) || ws.img.height;
+  }
+  tw = Math.max(1, tw); th = Math.max(1, th);
+  let canvas = highQualityResize(ws.img, ws.img.width, ws.img.height, tw, th);
+  if (document.getElementById('r-sharpen-after').checked && (tw < ws.img.width || th < ws.img.height)) {
+    sharpenCanvasLight(canvas, 0.18);
+  }
+  const fmt = document.getElementById('resize-fmt').value;
+  const q = parseInt(document.getElementById('rq-slider').value);
+  const blob = await canvasToBlob(canvas, fmt, q);
+  const lossless = (fmt !== 'png') ? await canvasToBlob(canvas, 'png', 100) : null;
+  resizedBlob = (lossless && lossless.size < blob.size) ? lossless : blob;
+  window._resizeCanvas = canvas;
+  document.getElementById('resize-result').style.display = 'block';
+  document.getElementById('resize-result-stats').innerHTML = statHtml([
+    ['New Size', tw + '×' + th, 'var(--success)'],
+    ['File Size', fmtSize(resizedBlob.size), 'var(--text2)']
+  ]);
+  renderCompareSlider('resize-compare', ws.img.src, resizedBlob);
+}
+async function applyUpscale(factor) {
+  const ws = Workspace.image; if (!ws) return;
+  toast('⏳ Upscaling ' + factor + '×...', 'info');
+  const tw = ws.img.width * factor, th = ws.img.height * factor;
+  const canvas = document.createElement('canvas');
+  canvas.width = tw; canvas.height = th;
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(ws.img, 0, 0, tw, th);
+  try { sharpenCanvasLight(canvas, 0.35); } catch (e) { /* skip on huge canvases */ }
+  document.getElementById('r-w').value = tw; document.getElementById('r-h').value = th;
+  const fmt = document.getElementById('resize-fmt').value;
+  const q = parseInt(document.getElementById('rq-slider').value);
+  resizedBlob = await canvasToBlob(canvas, fmt, q);
+  window._resizeCanvas = canvas;
+  document.getElementById('resize-result').style.display = 'block';
+  document.getElementById('resize-result-stats').innerHTML = statHtml([
+    ['New Size', tw + '×' + th, 'var(--success)'],
+    ['File Size', fmtSize(resizedBlob.size), 'var(--text2)']
+  ]);
+  renderCompareSlider('resize-compare', ws.img.src, resizedBlob);
+  toast('✅ ' + factor + '× upscale ho gaya (sharpened) — yaad rahe, nayi detail "generate" nahi hoti, sirf crisp dikhta hai');
+}
+function downloadResized() {
+  if (!resizedBlob) { toast('Pehle image load karo', 'error'); return; }
+  const ext = (resizedBlob.type||'image/jpeg').split('/')[1].replace('jpeg','jpg');
+  downloadBlob(resizedBlob, 'resized.' + ext);
+  toast('⬇️ Download shuru!');
+}
+function applyResizeToWorkspace() {
+  if (!window._resizeCanvas) return;
+  pushImageHistory(window._resizeCanvas);
+  toast('✅ Resize workspace par apply ho gaya');
+}
+
+// ---- Batch Resize ----
+let resizeBatchJobs = [], resizeBatchIdCounter = 1;
+function resizeBatchAddFiles(input) {
+  Array.from(input.files || []).forEach(file => {
+    resizeBatchJobs.push({ id: resizeBatchIdCounter++, file, name: file.name, size: file.size, mode: 'pct', w: 0, h: 0, pct: 50, status: 'idle', resultBlob: null });
+  });
+  input.value = '';
+  renderResizeBatchJobs();
+}
+function resizeBatchRemoveJob(id) { resizeBatchJobs = resizeBatchJobs.filter(j => j.id !== id); renderResizeBatchJobs(); }
+function resizeBatchSet(id, patch) { const j = resizeBatchJobs.find(j=>j.id===id); if (j) Object.assign(j, patch); }
+function renderResizeBatchJobs() {
+  const wrap = document.getElementById('resize-batch-jobs-wrap');
+  if (!wrap) return;
+  if (!resizeBatchJobs.length) { wrap.innerHTML = '<p style="font-size:12px;color:var(--text3)">Koi image add nahi ki abhi.</p>'; return; }
+  wrap.innerHTML = resizeBatchJobs.map(j => `
+    <div class="card" style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60%">${escapeHtml(j.name)} <span style="color:var(--text3);font-weight:400">(${fmtSize(j.size)})</span></div>
+        <button class="btn btn-danger btn-xs" onclick="resizeBatchRemoveJob(${j.id})">✕ Remove</button>
+      </div>
+      <div class="mode-toggle" style="margin-bottom:10px">
+        <div class="mode-btn ${j.mode==='pct'?'active':''}" onclick="resizeBatchSet(${j.id},{mode:'pct'});renderResizeBatchJobs()">Percentage</div>
+        <div class="mode-btn ${j.mode==='px'?'active':''}" onclick="resizeBatchSet(${j.id},{mode:'px'});renderResizeBatchJobs()">Exact Pixels</div>
+      </div>
+      ${j.mode==='pct'
+        ? `<label>Scale %</label><input type="number" value="${j.pct}" onchange="resizeBatchSet(${j.id},{pct:parseInt(this.value)||50})">`
+        : `<div class="grid-2"><div><label>Width</label><input type="number" value="${j.w||''}" onchange="resizeBatchSet(${j.id},{w:parseInt(this.value)||0})"></div><div><label>Height</label><input type="number" value="${j.h||''}" onchange="resizeBatchSet(${j.id},{h:parseInt(this.value)||0})"></div></div>`}
+      <div class="btn-group" style="margin-top:10px">
+        <button class="btn btn-primary btn-sm" onclick="resizeBatchRunJob(${j.id})" ${j.status==='running'?'disabled':''}>${j.status==='running'?'⏳ Running...':'↔️ Resize'}</button>
+        ${j.resultBlob ? `<button class="btn btn-success btn-sm" onclick="resizeBatchDownload(${j.id})">⬇️ Download</button>` : ''}
+      </div>
+      ${j.status==='error' ? `<p style="color:var(--error);font-size:11.5px;margin-top:6px">${escapeHtml(j.errorMsg||'Error')}</p>` : ''}
+    </div>
+  `).join('');
+}
+async function resizeBatchRunJob(id) {
+  const job = resizeBatchJobs.find(j => j.id === id);
+  if (!job) return;
+  job.status = 'running'; renderResizeBatchJobs();
+  try {
+    const img = await loadImageFromFile(job.file);
+    let tw, th;
+    if (job.mode === 'pct') { tw = Math.round(img.width * job.pct/100); th = Math.round(img.height * job.pct/100); }
+    else { tw = job.w || img.width; th = job.h || img.height; }
+    const canvas = highQualityResize(img, img.width, img.height, Math.max(1,tw), Math.max(1,th));
+    sharpenCanvasLight(canvas, 0.18);
+    const fmt = (job.file.type || 'image/jpeg').includes('png') ? 'png' : 'jpeg';
+    job.resultBlob = await canvasToBlob(canvas, fmt, 90);
+    job.status = 'done';
+    toast(`✅ ${job.name}: ${tw}×${th}`);
+  } catch (e) {
+    job.status = 'error'; job.errorMsg = e.message;
+    toast('❌ ' + job.name + ': ' + e.message, 'error');
+  }
+  renderResizeBatchJobs();
+}
+function resizeBatchDownload(id) {
+  const job = resizeBatchJobs.find(j => j.id === id);
+  if (!job || !job.resultBlob) return;
+  const ext = (job.resultBlob.type||'image/jpeg').split('/')[1].replace('jpeg','jpg');
+  downloadBlob(job.resultBlob, job.name.replace(/\.[^.]+$/,'') + '-resized.' + ext);
+}
+async function resizeBatchRunAll() { for (const j of resizeBatchJobs) { if (j.status!=='done'&&j.status!=='running') await resizeBatchRunJob(j.id); } }
+function resizeBatchDownloadAll() { resizeBatchJobs.filter(j=>j.resultBlob).forEach((j,i) => setTimeout(()=>resizeBatchDownload(j.id), i*150)); }
+
+// ══════════════════════════════════════════
+//  CONVERT
+// ══════════════════════════════════════════
+let convertImgs = [], selectedFmt = 'jpeg', convertedBlobs = [];
+
+function selectFmt(el) {
+  document.querySelectorAll('.format-chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedFmt = el.dataset.fmt;
+}
+async function onConvertFilesChange(input) {
+  if (!input.files.length) return;
+  const dz = input.closest('.dropzone'); if (dz) dz.classList.add('loading');
+  convertImgs = convertImgs.concat(Array.from(input.files));
+  renderConvertList();
+  if (dz) dz.classList.remove('loading');
+  input.value = '';
+  toast('📥 ' + input.files.length + ' file(s) list mein add ho gaye');
+}
+function renderConvertList() {
+  document.getElementById('convert-loaded').style.display = convertImgs.length ? 'block' : 'none';
+  document.getElementById('convert-list').innerHTML = convertImgs.map((f, i) =>
+    `<div class="file-list-row"><span style="font-size:16px">🖼️</span><span class="name">${escapeHtml(f.name)} <span style="color:var(--text3)">(${fmtSize(f.size)})</span></span>
+     <button class="btn btn-danger btn-sm" onclick="removeConvertAt(${i})">✕</button></div>`
+  ).join('');
+}
+function removeConvertAt(i) { convertImgs.splice(i, 1); renderConvertList(); }
+function clearConvertList() { convertImgs = []; convertedBlobs = []; document.getElementById('convert-results').innerHTML=''; renderConvertList(); }
+async function addWorkspaceImageToConvert() {
+  const ws = Workspace.image;
+  if (!ws) { toast('Pehle koi image workspace mein load karo', 'error'); return; }
+  const c = document.createElement('canvas'); c.width = ws.img.width; c.height = ws.img.height;
+  c.getContext('2d').drawImage(ws.img, 0, 0);
+  const blob = await canvasToBlob(c, 'png', 95);
+  convertImgs.push(new File([blob], ws.name.replace(/\.[^.]+$/, '') + '.png', { type: 'image/png' }));
+  renderConvertList();
+  toast('📥 Workspace image list mein add ho gayi');
+}
+function canvasToBmpBlob(canvas) {
+  const w = canvas.width, h = canvas.height;
+  const ctx = canvas.getContext('2d');
+  const imgData = ctx.getImageData(0, 0, w, h).data;
+  const rowSize = Math.floor((24 * w + 31) / 32) * 4;
+  const pixelArraySize = rowSize * h;
+  const fileSize = 54 + pixelArraySize;
+  const buf = new ArrayBuffer(fileSize);
+  const view = new DataView(buf);
+  view.setUint8(0, 0x42); view.setUint8(1, 0x4D);
+  view.setUint32(2, fileSize, true);
+  view.setUint32(10, 54, true);
+  view.setUint32(14, 40, true);
+  view.setInt32(18, w, true);
+  view.setInt32(22, h, true);
+  view.setUint16(26, 1, true);
+  view.setUint16(28, 24, true);
+  view.setUint32(34, pixelArraySize, true);
+  let offset = 54;
+  for (let y = h - 1; y >= 0; y--) {
+    let rowOffset = offset;
+    for (let x = 0; x < w; x++) {
+      const i = (y * w + x) * 4;
+      view.setUint8(rowOffset++, imgData[i+2]);
+      view.setUint8(rowOffset++, imgData[i+1]);
+      view.setUint8(rowOffset++, imgData[i]);
+    }
+    offset += rowSize;
+  }
+  return new Blob([buf], { type: 'image/bmp' });
+}
+async function canvasToIcoBlob(canvas) {
+  const pngBlob = await canvasToBlob(canvas, 'png', 100);
+  const pngBuf = await pngBlob.arrayBuffer();
+  const w = Math.min(canvas.width, 256), h = Math.min(canvas.height, 256);
+  const header = new ArrayBuffer(6 + 16);
+  const dv = new DataView(header);
+  dv.setUint16(0, 0, true); dv.setUint16(2, 1, true); dv.setUint16(4, 1, true);
+  dv.setUint8(6, w === 256 ? 0 : w); dv.setUint8(7, h === 256 ? 0 : h);
+  dv.setUint8(8, 0); dv.setUint8(9, 0);
+  dv.setUint16(10, 1, true); dv.setUint16(12, 32, true);
+  dv.setUint32(14, pngBuf.byteLength, true);
+  dv.setUint32(18, 22, true);
+  return new Blob([header, pngBuf], { type: 'image/x-icon' });
+}
+async function doConvert() {
+  if (!convertImgs.length) { toast('Pehle images add karo', 'error'); return; }
+  const fmt = selectedFmt, q = parseInt(document.getElementById('cv-q-slider').value);
+  const resultsDiv = document.getElementById('convert-results');
+  resultsDiv.innerHTML = '<div style="color:var(--text2);font-size:13px">⏳ Converting...</div>';
+  const blobs = [];
+  for (let file of convertImgs) {
+    try {
+      const img = await loadImageFromFile(file);
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width; canvas.height = img.height;
+      canvas.getContext('2d').drawImage(img, 0, 0);
+      const baseName = file.name.replace(/\.[^.]+$/, '');
+      if (fmt === 'bmp') {
+        blobs.push({ blob: canvasToBmpBlob(canvas), name: baseName + '.bmp' });
+      } else if (fmt === 'ico') {
+        blobs.push({ blob: await canvasToIcoBlob(canvas), name: baseName + '.ico' });
+      } else if (fmt === 'svg') {
+        const dataUrl = canvas.toDataURL('image/png');
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${canvas.width}" height="${canvas.height}"><image width="${canvas.width}" height="${canvas.height}" href="${dataUrl}"/></svg>`;
+        blobs.push({ blob: new Blob([svg], { type: 'image/svg+xml' }), name: baseName + '.svg' });
+      } else {
+        const blob = await canvasToBlob(canvas, fmt, q);
+        blobs.push({ blob, name: baseName + '.' + (fmt === 'jpeg' ? 'jpg' : fmt) });
+      }
+    } catch (e) { /* skip unreadable file */ }
+  }
+  resultsDiv.innerHTML = blobs.map((b, i) =>
+    `<div class="file-list-row"><span class="name">${escapeHtml(b.name)}</span><span style="font-size:11px;color:var(--text3)">${fmtSize(b.blob.size)}</span>
+     <button class="btn btn-success btn-sm" onclick="dlConvertedAt(${i})">⬇️</button></div>`
+  ).join('') + (blobs.length>1 ? `<div class="btn-group"><button class="btn btn-success btn-sm" onclick="dlAllConverted()">⬇️ Download All</button></div>` : '');
+  convertedBlobs = blobs;
+  toast('✅ ' + blobs.length + ' files converted!');
+}
+function dlConvertedAt(i) { const { blob, name } = convertedBlobs[i]; downloadBlob(blob, name); }
+function dlAllConverted() { convertedBlobs.forEach((b, i) => setTimeout(() => downloadBlob(b.blob, b.name), i * 200)); }
+
+// ══════════════════════════════════════════
+//  CROP — lazy-initialized only (see showPanel)
+// ══════════════════════════════════════════
+let cropState = null;
+const HANDLE_HIT = 18;
+const CROP_SNAP = 6;
+
+function initCropFromWorkspace() {
+  const ws = Workspace.image;
+  const canvas = document.getElementById('crop-canvas');
+  const wrap = canvas.parentElement;
+  if (wrap.clientWidth < 10) { setTimeout(() => { if (Workspace.image) initCropFromWorkspace(); }, 120); return; }
+  // FIX (issue #2, root cause): scale was computed ONLY from maxW / img.width,
+  // never checking height — so a tall/portrait photo (height >> width) ended
+  // up with a canvas far taller than the viewport, and only the very top of
+  // it was visible without realizing you needed to scroll. Now scale is
+  // capped by BOTH max width and max height, so the WHOLE image always fits
+  // on screen at once (precision is unaffected — the crop math all happens
+  // in the same scaled coordinate space either way).
+  const maxW = Math.min(wrap.clientWidth - 8, 900);
+  const maxH = Math.max(300, window.innerHeight * 0.62);
+  const scale = Math.min(1, maxW / ws.img.width, maxH / ws.img.height);
+  canvas.width = Math.max(1, Math.round(ws.img.width * scale));
+  canvas.height = Math.max(1, Math.round(ws.img.height * scale));
+  cropState = {
+    img: ws.img, canvas, ctx: canvas.getContext('2d'), scale,
+    box: { x: 0, y: 0, w: canvas.width, h: canvas.height },
+    aspect: 0, dragMode: null, dragStart: null, startBox: null, raf: null
+  };
+  bindCropEvents(canvas);
+  drawCrop();
+  syncCropInputs();
+  renderImageQueue('crop');
+}
+function normRect(x, y, w, h) { return { x: w < 0 ? x + w : x, y: h < 0 ? y + h : y, w: Math.abs(w), h: Math.abs(h) }; }
+function hitTestHandles(box, x, y) {
+  const pts = {
+    nw: [box.x, box.y], n: [box.x + box.w / 2, box.y], ne: [box.x + box.w, box.y],
+    w: [box.x, box.y + box.h / 2], e: [box.x + box.w, box.y + box.h / 2],
+    sw: [box.x, box.y + box.h], s: [box.x + box.w / 2, box.y + box.h], se: [box.x + box.w, box.y + box.h]
+  };
+  for (const name in pts) { const [px, py] = pts[name]; if (Math.hypot(x - px, y - py) <= HANDLE_HIT) return name; }
+  if (x >= box.x && x <= box.x + box.w && y >= box.y && y <= box.y + box.h) return 'move';
+  return null;
+}
+function snapVal(v, targets) { for (const t of targets) if (Math.abs(v - t) <= CROP_SNAP) return t; return v; }
+function bindCropEvents(canvas) {
+  canvas.onpointerdown = e => {
+    e.preventDefault();
+    canvas.setPointerCapture(e.pointerId);
+    const r = canvas.getBoundingClientRect();
+    const x = clamp((e.clientX - r.left) * (canvas.width / r.width), 0, canvas.width);
+    const y = clamp((e.clientY - r.top) * (canvas.height / r.height), 0, canvas.height);
+    const hit = hitTestHandles(cropState.box, x, y);
+    cropState.dragStart = { x, y };
+    cropState.startBox = { ...cropState.box };
+    if (hit) { cropState.dragMode = hit; canvas.style.cursor = hit === 'move' ? 'grabbing' : 'crosshair'; }
+    else { cropState.dragMode = 'new'; cropState.box = { x, y, w: 0, h: 0 }; }
+  };
+  canvas.onpointermove = e => {
+    if (!cropState.dragMode) return;
+    const r = canvas.getBoundingClientRect();
+    const x = clamp((e.clientX - r.left) * (canvas.width / r.width), 0, canvas.width);
+    const y = clamp((e.clientY - r.top) * (canvas.height / r.height), 0, canvas.height);
+    applyCropDrag(x, y);
+    if (cropState.raf) cancelAnimationFrame(cropState.raf);
+    cropState.raf = requestAnimationFrame(() => { drawCrop(); syncCropInputs(); });
+  };
+  canvas.onpointerup = canvas.onpointercancel = () => { cropState.dragMode = null; canvas.style.cursor = 'grab'; };
+}
+function applyCropDrag(x, y) {
+  const cs = cropState, b = cs.startBox, dx = x - cs.dragStart.x, dy = y - cs.dragStart.y;
+  const W = cs.canvas.width, H = cs.canvas.height;
+  let box;
+  if (cs.dragMode === 'new') {
+    const x0 = cs.dragStart.x, y0 = cs.dragStart.y;
+    let w = x - x0, h = y - y0;
+    if (cs.aspect > 0) h = (Math.sign(h) || 1) * Math.abs(w) / cs.aspect;
+    box = normRect(x0, y0, w, h);
+  } else if (cs.dragMode === 'move') {
+    box = { x: clamp(b.x + dx, 0, W - b.w), y: clamp(b.y + dy, 0, H - b.h), w: b.w, h: b.h };
+    box.x = snapVal(box.x, [(W-b.w)/2]);
+    box.y = snapVal(box.y, [(H-b.h)/2]);
+  } else {
+    box = { ...b };
+    const m = cs.dragMode;
+    if (m.includes('w')) { box.x = b.x + dx; box.w = b.w - dx; }
+    if (m.includes('e')) { box.w = b.w + dx; }
+    if (m.includes('n')) { box.y = b.y + dy; box.h = b.h - dy; }
+    if (m.includes('s')) { box.h = b.h + dy; }
+    if (cs.aspect > 0) {
+      if (m === 'n' || m === 's') { box.w = Math.abs(box.h) * cs.aspect; }
+      else { box.h = Math.abs(box.w) / cs.aspect; if (m.includes('n')) box.y = b.y + b.h - box.h; }
+    }
+    box = normRect(box.x, box.y, box.w, box.h);
+    box.x = snapVal(box.x, [0, W/2, W]); box.y = snapVal(box.y, [0, H/2, H]);
+    box.w = snapVal(box.x + box.w, [0, W/2, W]) - box.x;
+    box.h = snapVal(box.y + box.h, [0, H/2, H]) - box.y;
+  }
+  box.x = clamp(box.x, 0, W); box.y = clamp(box.y, 0, H);
+  box.w = clamp(box.w, 4, W - box.x); box.h = clamp(box.h, 4, H - box.y);
+  cs.box = box;
+}
+function drawCrop() {
+  const { canvas, ctx, img, box, scale } = cropState;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = 'rgba(0,0,0,0.55)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(img, box.x / scale, box.y / scale, box.w / scale, box.h / scale, box.x, box.y, box.w, box.h);
+  ctx.strokeStyle = '#7c6af7'; ctx.lineWidth = 2;
+  ctx.strokeRect(box.x, box.y, box.w, box.h);
+  ctx.setLineDash([4, 4]); ctx.strokeStyle = 'rgba(124,106,247,.45)'; ctx.lineWidth = 1;
+  for (let i = 1; i < 3; i++) {
+    ctx.beginPath(); ctx.moveTo(box.x + box.w * i / 3, box.y); ctx.lineTo(box.x + box.w * i / 3, box.y + box.h); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(box.x, box.y + box.h * i / 3); ctx.lineTo(box.x + box.w, box.y + box.h * i / 3); ctx.stroke();
+  }
+  ctx.setLineDash([]);
+  const pts = [[box.x, box.y], [box.x + box.w / 2, box.y], [box.x + box.w, box.y],
+    [box.x, box.y + box.h / 2], [box.x + box.w, box.y + box.h / 2],
+    [box.x, box.y + box.h], [box.x + box.w / 2, box.y + box.h], [box.x + box.w, box.y + box.h]];
+  ctx.fillStyle = '#fff'; ctx.strokeStyle = '#7c6af7'; ctx.lineWidth = 1.5;
+  pts.forEach(([px, py]) => { ctx.beginPath(); ctx.arc(px, py, 6, 0, 7); ctx.fill(); ctx.stroke(); });
+}
+function syncCropInputs() {
+  const { box, scale } = cropState;
+  document.getElementById('crop-x').value = Math.round(box.x / scale);
+  document.getElementById('crop-y').value = Math.round(box.y / scale);
+  document.getElementById('crop-w').value = Math.round(box.w / scale);
+  document.getElementById('crop-h').value = Math.round(box.h / scale);
+}
+function onCropInputChange() {
+  if (!cropState) return;
+  const s = cropState.scale;
+  const x = parseFloat(document.getElementById('crop-x').value) || 0;
+  const y = parseFloat(document.getElementById('crop-y').value) || 0;
+  const w = parseFloat(document.getElementById('crop-w').value) || 10;
+  const h = parseFloat(document.getElementById('crop-h').value) || 10;
+  cropState.box = {
+    x: clamp(x * s, 0, cropState.canvas.width),
+    y: clamp(y * s, 0, cropState.canvas.height),
+    w: clamp(w * s, 4, cropState.canvas.width),
+    h: clamp(h * s, 4, cropState.canvas.height)
+  };
+  drawCrop();
+}
+function setCropAspect(w, h) {
+  if (!cropState) return;
+  cropState.aspect = (w === 0) ? 0 : w / h;
+  if (cropState.aspect > 0) {
+    const b = cropState.box;
+    let nh = b.w / cropState.aspect;
+    if (b.y + nh > cropState.canvas.height) nh = cropState.canvas.height - b.y;
+    cropState.box.h = nh;
+    drawCrop(); syncCropInputs();
+  }
+}
+function buildCroppedCanvas() {
+  const s = cropState.scale, box = cropState.box;
+  const out = document.createElement('canvas');
+  out.width = Math.max(1, Math.round(box.w / s));
+  out.height = Math.max(1, Math.round(box.h / s));
+  out.getContext('2d').drawImage(cropState.img, box.x / s, box.y / s, box.w / s, box.h / s, 0, 0, out.width, out.height);
+  return out;
+}
+async function downloadCroppedNow() {
+  if (!cropState) return;
+  const out = buildCroppedCanvas();
+  const fmt = document.getElementById('crop-fmt').value;
+  const blob = await canvasToBlob(out, fmt, 95);
+  downloadBlob(blob, 'cropped.' + (fmt==='jpeg'?'jpg':fmt));
+  toast('⬇️ Cropped image downloaded!');
+}
+function applyCropAction() {
+  if (!cropState) return;
+  const out = buildCroppedCanvas();
+  pushImageHistory(out);
+  toast('✅ Crop workspace par apply ho gaya');
+}
+function resetCrop() {
+  if (!cropState) return;
+  cropState.box = { x: 0, y: 0, w: cropState.canvas.width, h: cropState.canvas.height };
+  syncCropInputs(); drawCrop();
+}
+
+// ══════════════════════════════════════════
+//  FILTERS — lazy-initialized only (see showPanel)
+// ══════════════════════════════════════════
+let filterImg = null, filterFlipH = false, filterFlipV = false;
+let filterState = { bright: 100, cont: 100, sat: 100, blur: 0, invert: 0, hue: 0, op: 100, rot: 0, borderWidth: 0, borderColor: '#ffffff', radius: 0, sharp: 0, denoise: 0, vig: 0 };
+let focusSpots = [];
+const MAX_FOCUS_SPOTS = 8; // FIX (#1/#5): cap spot count so repeated clicking can't pile up cost
+
+function initFiltersFromWorkspace() {
+  filterImg = Workspace.image.img;
+  filterFlipH = false; filterFlipV = false;
+  focusSpots = [];
+  resetFilters();
+  bindFocusClick();
+  renderImageQueue('filters');
+}
+function bindFocusClick() {
+  const canvas = document.getElementById('filter-canvas');
+  const hint = document.getElementById('focus-hint');
+  canvas.onclick = e => {
+    if (!document.getElementById('f-focus-mode').checked) return;
+    const r = canvas.getBoundingClientRect();
+    const x = (e.clientX - r.left) * (canvas.width / r.width);
+    const y = (e.clientY - r.top) * (canvas.height / r.height);
+    const strength = parseInt(document.getElementById('f-focus-str').value) / 10;
+    const radius = parseInt(document.getElementById('f-focus-rad').value) * (canvas.width / r.width);
+    // FIX (#1/#5): cap the number of live spots — beyond the max, drop the
+    // OLDEST spot instead of growing forever. Each spot now also re-uses
+    // small per-spot canvases (see applyFocusSpots below) instead of
+    // full-image-sized ones, so cost no longer scales with image size ×
+    // spot count the way it used to (that compounding cost — recomputed on
+    // every single redraw — was the actual cause of "thodi baad crash").
+    if (focusSpots.length >= MAX_FOCUS_SPOTS) focusSpots.shift();
+    focusSpots.push({ x, y, radius, strength });
+    toast('🎯 Focus spot added (' + focusSpots.length + '/' + MAX_FOCUS_SPOTS + ')');
+    drawFilterCanvas();
+  };
+  document.getElementById('f-focus-mode').onchange = e => { hint.style.display = e.target.checked ? 'block' : 'none'; };
+}
+function clearFocusSpots() { focusSpots = []; drawFilterCanvas(); toast('↺ Focus spots cleared', 'info'); }
+function updateFilter(key, val) {
+  filterState[key] = (key === 'borderColor') ? val : parseFloat(val);
+  const labelMap = { bright: ['fv-bright', '%'], cont: ['fv-cont', '%'], sat: ['fv-sat', '%'], blur: ['fv-blur', 'px'], invert: ['fv-invert', '%'], hue: ['fv-hue', '°'], op: ['fv-op', '%'], rot: ['fv-rot', '°'], borderWidth: ['fv-bw', 'px'], radius: ['fv-radius', 'px'], sharp: ['fv-sharp',''], denoise: ['fv-denoise',''], vig: ['fv-vig','%'] };
+  if (labelMap[key]) document.getElementById(labelMap[key][0]).textContent = val + labelMap[key][1];
+  if (filterImg) drawFilterCanvas();
+}
+function roundRectPath(ctx, x, y, w, h, r) {
+  r = Math.max(0, Math.min(r, w / 2, h / 2));
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+function applyConvolution(ctx, w, h, kernel, divisor) {
+  const imgData = ctx.getImageData(0, 0, w, h);
+  const src = new Uint8ClampedArray(imgData.data);
+  const data = imgData.data;
+  const side = Math.sqrt(kernel.length), half = Math.floor(side / 2);
+  for (let y = half; y < h - half; y++) {
+    for (let x = half; x < w - half; x++) {
+      for (let c = 0; c < 3; c++) {
+        let sum = 0, k = 0;
+        for (let ky = -half; ky <= half; ky++) for (let kx = -half; kx <= half; kx++) {
+          sum += src[((y+ky)*w + (x+kx))*4 + c] * kernel[k++];
+        }
+        data[(y*w+x)*4+c] = sum / divisor;
+      }
+    }
+  }
+  ctx.putImageData(imgData, 0, 0);
+}
+// FIX (#1/#5): completely rewritten to be LOCAL. The old version built a
+// full-canvas "sharp" copy + a full-canvas gradient mask + a full-canvas
+// temp canvas PER SPOT, every single redraw — for a 4000×3000 photo with a
+// handful of spots that's tens of megapixels of throwaway canvas work on
+// every slider tweak, which is what eventually crashed the tab. Now each
+// spot only touches a small square around itself (radius-bounded), so cost
+// scales with spot size, not image size, and the result is also more
+// visibly effective since the sharpen kernel is stronger (it doesn't need
+// to fight a competing global blur step anymore).
+function applyFocusSpots(ctx, w, h) {
+  if (!focusSpots.length) return;
+  focusSpots.forEach(spot => {
+    const r = Math.min(spot.radius, Math.max(w, h));
+    const x0 = clamp(Math.floor(spot.x - r), 0, w - 1);
+    const y0 = clamp(Math.floor(spot.y - r), 0, h - 1);
+    const ww = clamp(Math.ceil(r * 2), 2, w - x0);
+    const hh = clamp(Math.ceil(r * 2), 2, h - y0);
+    if (ww < 4 || hh < 4) return;
+    const region = ctx.getImageData(x0, y0, ww, hh);
+    const src = new Uint8ClampedArray(region.data);
+    const data = region.data;
+    // Stronger local unsharp mask — visibly increases local detail/contrast.
+    const amt = 0.5 + spot.strength * 0.9;
+    for (let y = 1; y < hh - 1; y++) {
+      for (let x = 1; x < ww - 1; x++) {
+        const dx = (x0 + x) - spot.x, dy = (y0 + y) - spot.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist > r) continue;
+        const falloff = (1 - dist / r) * spot.strength;
+        const idx = (y * ww + x) * 4;
+        for (let c = 0; c < 3; c++) {
+          const i = idx + c;
+          const lap = src[i] * (1 + 4 * amt)
+            - src[i - 4] * amt - src[i + 4] * amt
+            - src[((y - 1) * ww + x) * 4 + c] * amt - src[((y + 1) * ww + x) * 4 + c] * amt;
+          data[i] = clamp(src[i] + (lap - src[i]) * falloff, 0, 255);
+        }
+      }
+    }
+    ctx.putImageData(region, x0, y0);
+  });
+}
+function drawFilterCanvas() {
+  if (!filterImg) return;
+  const rot = filterState.rot * Math.PI / 180;
+  const cos = Math.abs(Math.cos(rot)), sin = Math.abs(Math.sin(rot));
+  const base = document.createElement('canvas');
+  base.width = Math.round(filterImg.width * cos + filterImg.height * sin);
+  base.height = Math.round(filterImg.width * sin + filterImg.height * cos);
+  const bctx = base.getContext('2d');
+  bctx.filter = [
+    `brightness(${filterState.bright}%)`, `contrast(${filterState.cont}%)`, `saturate(${filterState.sat}%)`,
+    `blur(${filterState.blur}px)`, `invert(${filterState.invert}%)`, `hue-rotate(${filterState.hue}deg)`, `opacity(${filterState.op}%)`
+  ].join(' ');
+  bctx.save();
+  bctx.translate(base.width / 2, base.height / 2);
+  bctx.rotate(rot);
+  if (filterFlipH) bctx.scale(-1, 1);
+  if (filterFlipV) bctx.scale(1, -1);
+  bctx.drawImage(filterImg, -filterImg.width / 2, -filterImg.height / 2);
+  bctx.restore();
+
+  if (filterState.denoise > 0 && base.width * base.height < 4000000) {
+    const amt = filterState.denoise / 5;
+    const k = [1,1,1, 1,1,1, 1,1,1];
+    const tmp = document.createElement('canvas'); tmp.width = base.width; tmp.height = base.height;
+    tmp.getContext('2d').drawImage(base, 0, 0);
+    applyConvolution(tmp.getContext('2d'), tmp.width, tmp.height, k, 9);
+    bctx.save(); bctx.globalAlpha = amt; bctx.drawImage(tmp, 0, 0); bctx.restore();
+  }
+  if (filterState.sharp > 0 && base.width * base.height < 4000000) {
+    const s = filterState.sharp / 10;
+    const k = [0,-s,0, -s,1+4*s,-s, 0,-s,0];
+    applyConvolution(bctx, base.width, base.height, k, 1);
+  }
+  if (filterState.vig > 0) {
+    const grad = bctx.createRadialGradient(base.width/2, base.height/2, base.width*0.25, base.width/2, base.height/2, base.width*0.7);
+    grad.addColorStop(0, 'rgba(0,0,0,0)');
+    grad.addColorStop(1, `rgba(0,0,0,${filterState.vig/100})`);
+    bctx.save(); bctx.fillStyle = grad; bctx.fillRect(0,0,base.width,base.height); bctx.restore();
+  }
+  applyFocusSpots(bctx, base.width, base.height);
+
+  const canvas = document.getElementById('filter-canvas');
+  const bw = Math.max(0, filterState.borderWidth || 0);
+  const radius = Math.max(0, filterState.radius || 0);
+  canvas.width = base.width + bw * 2;
+  canvas.height = base.height + bw * 2;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.save();
+  roundRectPath(ctx, bw, bw, base.width, base.height, radius);
+  ctx.clip();
+  ctx.drawImage(base, bw, bw);
+  ctx.restore();
+  if (bw > 0) {
+    ctx.lineWidth = bw;
+    ctx.strokeStyle = filterState.borderColor || '#ffffff';
+    roundRectPath(ctx, bw / 2, bw / 2, canvas.width - bw, canvas.height - bw, radius);
+    ctx.stroke();
+  }
+}
+function applyPresetFilter(preset) {
+  const presets = {
+    grayscale: { sat: 0 }, sepia: { sat: 30, hue: 30, bright: 105 }, invert: { invert: 100 },
+    vivid: { sat: 180, cont: 120, bright: 105 }, cool: { hue: 200, sat: 120 }, warm: { hue: 20, sat: 120, bright: 105 },
+    vintage: { sat: 60, cont: 90, bright: 95, hue: 30 }, fade: { bright: 110, cont: 80, sat: 70 }, dramatic: { cont: 150, sat: 80, bright: 90 },
+    hdr: { cont: 135, sat: 140, bright: 108, sharp: 4 }, cinematic: { cont: 120, sat: 85, bright: 95, hue: 10, vig: 35 }
+  };
+  const base = { bright: 100, cont: 100, sat: 100, blur: 0, invert: 0, hue: 0, op: 100, rot: filterState.rot, borderWidth: filterState.borderWidth, borderColor: filterState.borderColor, radius: filterState.radius, sharp: 0, denoise: 0, vig: 0 };
+  filterState = { ...base, ...presets[preset] };
+  ['bright', 'cont', 'sat', 'blur', 'invert', 'hue', 'op', 'rot', 'sharp', 'denoise', 'vig'].forEach(k => {
+    const el = document.getElementById('f-' + k);
+    if (el) el.value = filterState[k];
+    updateFilter(k, filterState[k]);
+  });
+}
+function flipImg(dir) { if (dir === 'h') filterFlipH = !filterFlipH; else filterFlipV = !filterFlipV; drawFilterCanvas(); }
+function resetFilters() {
+  filterState = { bright: 100, cont: 100, sat: 100, blur: 0, invert: 0, hue: 0, op: 100, rot: 0, borderWidth: 0, borderColor: '#ffffff', radius: 0, sharp: 0, denoise: 0, vig: 0 };
+  filterFlipH = false; filterFlipV = false; focusSpots = [];
+  const vals = { bright: '100%', cont: '100%', sat: '100%', blur: '0px', invert: '0%', hue: '0°', op: '100%', rot: '0°', bw: '0px', radius: '0px', sharp: '0', denoise: '0', vig: '0%' };
+  ['bright','cont','sat','blur','invert','hue','op','rot','sharp','denoise','vig'].forEach(k=>{ const el=document.getElementById('f-'+k); if(el) el.value=filterState[k]; });
+  document.getElementById('f-bw').value = 0; document.getElementById('f-radius').value = 0; document.getElementById('f-border-color').value = '#ffffff';
+  Object.entries(vals).forEach(([k, v]) => { const lbl = document.getElementById('fv-' + k); if (lbl) lbl.textContent = v; });
+  drawFilterCanvas();
+}
+async function downloadFilteredImg() {
+  const canvas = document.getElementById('filter-canvas');
+  if (!canvas.width) return;
+  const fmt = document.getElementById('filter-fmt').value;
+  const q = parseInt(document.getElementById('fq-slider').value);
+  const blob = await canvasToBlob(canvas, fmt, q);
+  downloadBlob(blob, 'filtered.' + (fmt==='jpeg'?'jpg':fmt));
+  toast('⬇️ Downloaded with filters!');
+}
+function applyFiltersToWorkspace() {
+  const canvas = document.getElementById('filter-canvas');
+  if (!canvas.width) return;
+  pushImageHistory(canvas);
+  toast('✅ Filters workspace par apply ho gaye');
+}
+
+// ══════════════════════════════════════════
+//  PENCIL / SMART RETOUCH — lazy-initialized only (see showPanel)
+// ══════════════════════════════════════════
+let drawState = null;
+const RETOUCH_MODES = ['smart','smooth','sharpen','heal','brighten','darken','saturate','desaturate'];
+const RETOUCH_HINTS = {
+  smart: 'Patch ka local texture/variance dekh kar khud decide karta hai: flat/skin-tone area ho to smooth karega, baal/edge/texture ho to detail nikharega.',
+  smooth: 'Local area ko soften karta hai — daag-dhabbe, texture halka karne ke liye.',
+  sharpen: 'Local contrast/detail badhata hai — aankh, baal, texture ko nikharne ke liye.',
+  heal: 'Daag/blemish ko aaspaas ke pixels se blend karke chhupata hai (clone-stamp jaisa, simple version).',
+  brighten: 'Sirf brush ke neeche ki jagah ko brighten karta hai (local dodge).',
+  darken: 'Sirf brush ke neeche ki jagah ko darken karta hai (local burn).',
+  saturate: 'Color ko zyada vibrant banata hai sirf brush wali jagah par.',
+  desaturate: 'Color ko fade/muted karta hai sirf brush wali jagah par.',
+  pencil: 'Solid line draw karta hai.', marker: 'Soft/translucent highlight jaisa draw karta hai.', eraser: 'Apni draw ki gayi lines hatata hai (original image revert).'
+};
+function onDrToolChange() {
+  const tool = document.getElementById('dr-tool').value;
+  document.getElementById('dr-tool-hint').textContent = RETOUCH_HINTS[tool] || '';
+  const isRetouch = RETOUCH_MODES.includes(tool);
+  document.getElementById('dr-color-wrap').style.display = isRetouch ? 'none' : 'block';
+  document.getElementById('dr-op-label').innerHTML = (isRetouch ? 'Strength' : 'Opacity') + ' <span class="range-val" id="dr-op-val">' + document.getElementById('dr-op').value + '%</span>';
+}
+function initDrawFromWorkspace() {
+  const ws = Workspace.image;
+  const canvas = document.getElementById('draw-canvas');
+  const wrap = canvas.parentElement;
+  if (wrap.clientWidth < 10) { setTimeout(() => { if (Workspace.image) initDrawFromWorkspace(); }, 120); return; }
+  // Same height-aware scaling fix as Crop (issue #2) — tall images used to
+  // render far taller than the viewport here too.
+  const maxW = Math.min(wrap.clientWidth - 16, 900);
+  const maxH = Math.max(300, window.innerHeight * 0.62);
+  const scale = Math.min(1, maxW / ws.img.width, maxH / ws.img.height);
+  canvas.width = Math.max(1, Math.round(ws.img.width * scale));
+  canvas.height = Math.max(1, Math.round(ws.img.height * scale));
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(ws.img, 0, 0, canvas.width, canvas.height);
+  drawState = { ctx, canvas, scale, history: [canvas.toDataURL('image/png')], drawing: false, lastX: 0, lastY: 0, cleanBase: null };
+  bindDrawEvents(canvas);
+  onDrToolChange();
+  renderImageQueue('draw');
+}
+function getDrawPos(canvas, e) {
+  const r = canvas.getBoundingClientRect();
+  return { x: (e.clientX - r.left) * (canvas.width / r.width), y: (e.clientY - r.top) * (canvas.height / r.height) };
+}
+function lerp(a,b,t){ return a+(b-a)*t; }
+function boxBlurPixel(src, w, h, x, y, radius) {
+  let r=0,g=0,b=0,n=0;
+  for(let dy=-radius;dy<=radius;dy++) for(let dx=-radius;dx<=radius;dx++){
+    const xx=x+dx, yy=y+dy; if(xx<0||yy<0||xx>=w||yy>=h) continue;
+    const i=(yy*w+xx)*4; r+=src[i]; g+=src[i+1]; b+=src[i+2]; n++;
+  }
+  return [r/n,g/n,b/n];
+}
+function applyRetouchAt(ctx, cw, ch, cx, cy, size, strength, mode) {
+  const r = Math.max(2, Math.round(size/2));
+  const x0 = clamp(Math.floor(cx-r),0,cw-1), y0 = clamp(Math.floor(cy-r),0,ch-1);
+  const ww = clamp(Math.ceil(r*2), 1, cw-x0), hh = clamp(Math.ceil(r*2), 1, ch-y0);
+  if (ww<=1||hh<=1) return;
+  const imgData = ctx.getImageData(x0,y0,ww,hh);
+  const data = imgData.data;
+  const src = new Uint8ClampedArray(data);
+  let sumR=0,sumG=0,sumB=0; const n = ww*hh;
+  for (let p=0;p<src.length;p+=4){ sumR+=src[p]; sumG+=src[p+1]; sumB+=src[p+2]; }
+  const avg=[sumR/n,sumG/n,sumB/n];
+  let varSum=0;
+  for (let p=0;p<src.length;p+=4){ const d=(src[p]-avg[0])+(src[p+1]-avg[1])+(src[p+2]-avg[2]); varSum += d*d; }
+  const variance = varSum/n;
+  const isSkinTone = avg[0]>50 && avg[0]>avg[2] && (avg[0]-avg[2])<140 && avg[1]>avg[2]*0.55 && avg[0]<250;
+  for (let y=0;y<hh;y++){
+    for (let x=0;x<ww;x++){
+      const idx = (y*ww+x)*4;
+      const dx = (x0+x)-cx, dy=(y0+y)-cy;
+      const dist = Math.sqrt(dx*dx+dy*dy);
+      if (dist>r) continue;
+      const falloff = strength * (1 - dist/r);
+      let nr=src[idx], ng=src[idx+1], nb=src[idx+2];
+      if (mode==='smart') {
+        if (variance < 1100 || isSkinTone) {
+          const [br,bg,bb] = boxBlurPixel(src,ww,hh,x,y,1);
+          nr = lerp(src[idx],br,0.65); ng = lerp(src[idx+1],bg,0.65); nb = lerp(src[idx+2],bb,0.65);
+        } else {
+          nr = src[idx] + (src[idx]-avg[0])*0.55; ng = src[idx+1] + (src[idx+1]-avg[1])*0.55; nb = src[idx+2] + (src[idx+2]-avg[2])*0.55;
+        }
+      } else if (mode==='smooth') { const [br,bg,bb]=boxBlurPixel(src,ww,hh,x,y,2); nr=br; ng=bg; nb=bb; }
+      else if (mode==='sharpen') { nr=src[idx]+(src[idx]-avg[0])*0.8; ng=src[idx+1]+(src[idx+1]-avg[1])*0.8; nb=src[idx+2]+(src[idx+2]-avg[2])*0.8; }
+      else if (mode==='heal') { const [br,bg,bb]=boxBlurPixel(src,ww,hh,x,y,3); nr=br; ng=bg; nb=bb; }
+      else if (mode==='brighten') { nr=src[idx]+45; ng=src[idx+1]+45; nb=src[idx+2]+45; }
+      else if (mode==='darken') { nr=src[idx]-45; ng=src[idx+1]-45; nb=src[idx+2]-45; }
+      else if (mode==='saturate'||mode==='desaturate') {
+        const gray=(src[idx]+src[idx+1]+src[idx+2])/3;
+        const amt = mode==='saturate'?1.6:0.35;
+        nr=gray+(src[idx]-gray)*amt; ng=gray+(src[idx+1]-gray)*amt; nb=gray+(src[idx+2]-gray)*amt;
+      }
+      data[idx]   = clamp(lerp(src[idx], nr, falloff),0,255);
+      data[idx+1] = clamp(lerp(src[idx+1], ng, falloff),0,255);
+      data[idx+2] = clamp(lerp(src[idx+2], nb, falloff),0,255);
+    }
+  }
+  ctx.putImageData(imgData, x0, y0);
+}
+function strokeSegment(x0, y0, x1, y1) {
+  const ds = drawState, ctx = ds.ctx;
+  const tool = document.getElementById('dr-tool').value;
+  const size = parseInt(document.getElementById('dr-size').value);
+  const op = parseInt(document.getElementById('dr-op').value) / 100;
+  if (RETOUCH_MODES.includes(tool)) {
+    const steps = Math.max(1, Math.ceil(Math.hypot(x1-x0,y1-y0)/(size/4)));
+    for (let i=0;i<=steps;i++){
+      const x = x0 + (x1-x0)*i/steps, y = y0 + (y1-y0)*i/steps;
+      applyRetouchAt(ctx, ds.canvas.width, ds.canvas.height, x, y, size, op, tool);
+    }
+    return;
+  }
+  const color = document.getElementById('dr-color').value;
+  ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.lineWidth = size;
+  if (tool === 'eraser') {
+    ctx.save();
+    const mask = document.createElement('canvas');
+    mask.width = ds.canvas.width; mask.height = ds.canvas.height;
+    const mctx = mask.getContext('2d');
+    mctx.lineWidth = size; mctx.lineCap = 'round'; mctx.lineJoin = 'round';
+    mctx.strokeStyle = '#fff';
+    mctx.beginPath(); mctx.moveTo(x0, y0); mctx.lineTo(x1, y1); mctx.stroke();
+    mctx.globalCompositeOperation = 'source-in';
+    mctx.drawImage(ds.cleanBase, 0, 0, mask.width, mask.height);
+    ctx.restore();
+    ctx.drawImage(mask, 0, 0);
+  } else {
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.globalAlpha = tool === 'marker' ? op * 0.45 : op;
+    ctx.strokeStyle = color;
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+}
+function bindDrawEvents(canvas) {
+  drawState.cleanBase = document.createElement('canvas');
+  drawState.cleanBase.width = canvas.width; drawState.cleanBase.height = canvas.height;
+  drawState.cleanBase.getContext('2d').drawImage(canvas, 0, 0);
+  canvas.onpointerdown = e => {
+    e.preventDefault();
+    canvas.setPointerCapture(e.pointerId);
+    drawState.drawing = true;
+    const p = getDrawPos(canvas, e);
+    drawState.lastX = p.x; drawState.lastY = p.y;
+    strokeSegment(p.x, p.y, p.x + 0.01, p.y + 0.01);
+  };
+  canvas.onpointermove = e => {
+    if (!drawState.drawing) return;
+    const p = getDrawPos(canvas, e);
+    strokeSegment(drawState.lastX, drawState.lastY, p.x, p.y);
+    drawState.lastX = p.x; drawState.lastY = p.y;
+  };
+  canvas.onpointerup = canvas.onpointercancel = () => {
+    if (drawState.drawing) { drawState.drawing = false; drawState.history.push(canvas.toDataURL('image/png')); }
+  };
+}
+function undoDraw() {
+  if (!drawState || drawState.history.length <= 1) { toast('Undo karne ke liye kuch nahi hai', 'info'); return; }
+  drawState.history.pop();
+  const dataUrl = drawState.history[drawState.history.length - 1];
+  const img = new Image();
+  img.onload = () => {
+    drawState.ctx.clearRect(0, 0, drawState.canvas.width, drawState.canvas.height);
+    drawState.ctx.drawImage(img, 0, 0);
+    drawState.cleanBase.getContext('2d').clearRect(0,0,drawState.canvas.width,drawState.canvas.height);
+    drawState.cleanBase.getContext('2d').drawImage(img, 0, 0);
+  };
+  img.src = dataUrl;
+}
+function clearDrawing() {
+  if (!drawState) return;
+  const ws = Workspace.image;
+  drawState.ctx.clearRect(0, 0, drawState.canvas.width, drawState.canvas.height);
+  drawState.ctx.drawImage(ws.img, 0, 0, drawState.canvas.width, drawState.canvas.height);
+  drawState.history = [drawState.canvas.toDataURL('image/png')];
+  drawState.cleanBase.getContext('2d').clearRect(0,0,drawState.canvas.width,drawState.canvas.height);
+  drawState.cleanBase.getContext('2d').drawImage(ws.img, 0, 0, drawState.canvas.width, drawState.canvas.height);
+  toast('↺ Saari changes clear ho gayi', 'info');
+}
+function downloadDrawing() {
+  if (!drawState) return;
+  drawState.canvas.toBlob(blob => { downloadBlob(blob, 'retouched.png'); toast('⬇️ Download!'); }, 'image/png');
+}
+function applyDrawToWorkspace() {
+  if (!drawState) return;
+  pushImageHistory(drawState.canvas);
+  toast('✅ Retouch workspace par apply ho gaya');
+}
+
+// ══════════════════════════════════════════
+//  BACKGROUND REMOVER — multi-point sampling + despill
+// ══════════════════════════════════════════
+let bgImg = null, bgDebounce = null, bgResultCanvas = null, bgColorList = [], bgPickMode = false;
+
+function initBgRemoveFromWorkspace() {
+  bgImg = Workspace.image.img;
+  bgColorList = [];
+  pickBgFromCorners();
+  renderImageQueue('bgremove');
+}
+function scheduleBgPreview() { clearTimeout(bgDebounce); bgDebounce = setTimeout(renderBgRemovePreview, 200); }
+document.addEventListener('change', e => {
+  if (e.target && e.target.id === 'bg-newbg') {
+    document.getElementById('bg-newbg-custom').style.display = e.target.value === 'custom' ? 'block' : 'none';
+  }
+});
+function renderBgChips() {
+  document.getElementById('bg-chip-row').innerHTML = bgColorList.map((hex,i) =>
+    `<div class="color-chip"><span class="swatch" style="background:${hex}"></span>${hex.toUpperCase()}<button onclick="removeBgSample(${i})">✕</button></div>`
+  ).join('') || '<span style="font-size:11px;color:var(--text3)">Koi sample nahi — "Auto-pick" dabao ya canvas se click karke chuno</span>';
+}
+function removeBgSample(i) { bgColorList.splice(i,1); renderBgChips(); scheduleBgPreview(); }
+function clearBgSamples() { bgColorList = []; renderBgChips(); scheduleBgPreview(); }
+function toggleBgPickMode() {
+  bgPickMode = !bgPickMode;
+  document.getElementById('bg-pickmode-btn').textContent = '🎯 Canvas se Pick Karo (' + (bgPickMode ? 'ON' : 'OFF') + ')';
+  const canvas = document.getElementById('bgremove-canvas');
+  canvas.style.cursor = bgPickMode ? 'crosshair' : 'default';
+}
+function pickBgFromCorners() {
+  if (!bgImg) return;
+  const c = document.createElement('canvas'); c.width = bgImg.width; c.height = bgImg.height;
+  const cx = c.getContext('2d'); cx.drawImage(bgImg, 0, 0);
+  const corners = [[2,2],[c.width-3,2],[2,c.height-3],[c.width-3,c.height-3]];
+  bgColorList = corners.map(([x,y]) => { const d = cx.getImageData(x,y,1,1).data; return rgbToHex(d[0],d[1],d[2]); });
+  renderBgChips();
+  scheduleBgPreview();
+}
+function rgbToHex(r,g,b){ return '#' + [r,g,b].map(v=>Math.round(v).toString(16).padStart(2,'0')).join(''); }
+function hexToRgbArr(hex) {
+  const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return m ? [parseInt(m[1],16), parseInt(m[2],16), parseInt(m[3],16)] : [255,255,255];
+}
+function renderBgRemovePreview() {
+  if (!bgImg) return;
+  const tol = parseInt(document.getElementById('bg-tol').value);
+  const feather = parseInt(document.getElementById('bg-feather').value);
+  const despill = parseInt(document.getElementById('bg-despill').value) / 100;
+  const colorRgbs = (bgColorList.length ? bgColorList : ['#ffffff']).map(hexToRgbArr);
+  const newBgSel = document.getElementById('bg-newbg').value;
+  const newBg = newBgSel === 'custom' ? document.getElementById('bg-newbg-custom').value : newBgSel;
+
+  const canvas = document.getElementById('bgremove-canvas');
+  canvas.width = bgImg.width; canvas.height = bgImg.height;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(bgImg, 0, 0);
+  const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imgData.data;
+  const threshold = tol * 4.4;
+  const featherBand = threshold * (feather / 10 + 0.15);
+  for (let i = 0; i < data.length; i += 4) {
+    let minDist = Infinity, nearest = colorRgbs[0];
+    for (const [tr,tg,tb] of colorRgbs) {
+      const dr = data[i]-tr, dg = data[i+1]-tg, db = data[i+2]-tb;
+      const dist = Math.sqrt(dr*dr+dg*dg+db*db);
+      if (dist < minDist) { minDist = dist; nearest = [tr,tg,tb]; }
+    }
+    if (minDist < threshold) {
+      data[i+3] = 0;
+    } else if (minDist < threshold + featherBand) {
+      const t = (minDist - threshold) / featherBand;
+      data[i+3] = Math.round(data[i+3] * t);
+      if (despill > 0) {
+        data[i]   = clamp(data[i]   + (data[i]-nearest[0])*despill*0.4, 0, 255);
+        data[i+1] = clamp(data[i+1] + (data[i+1]-nearest[1])*despill*0.4, 0, 255);
+        data[i+2] = clamp(data[i+2] + (data[i+2]-nearest[2])*despill*0.4, 0, 255);
+      }
+    }
+  }
+  ctx.putImageData(imgData, 0, 0);
+
+  if (newBg !== 'transparent') {
+    const out = document.createElement('canvas'); out.width = canvas.width; out.height = canvas.height;
+    const octx = out.getContext('2d');
+    octx.fillStyle = newBg; octx.fillRect(0,0,out.width,out.height);
+    octx.drawImage(canvas, 0, 0);
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.drawImage(out, 0, 0);
+  }
+  bgResultCanvas = canvas;
+  canvas.onclick = e => {
+    if (!bgPickMode) return;
+    const r = canvas.getBoundingClientRect();
+    const x = Math.floor((e.clientX - r.left) * (canvas.width / r.width));
+    const y = Math.floor((e.clientY - r.top) * (canvas.height / r.height));
+    const srcCtx = document.createElement('canvas');
+    srcCtx.width = bgImg.width; srcCtx.height = bgImg.height;
+    const sc = srcCtx.getContext('2d'); sc.drawImage(bgImg,0,0);
+    const d = sc.getImageData(clamp(x,0,bgImg.width-1), clamp(y,0,bgImg.height-1), 1, 1).data;
+    bgColorList.push(rgbToHex(d[0],d[1],d[2]));
+    renderBgChips();
+    scheduleBgPreview();
+    toast('🎯 Sample add ho gaya');
+  };
+}
+function downloadBgRemoved() {
+  if (!bgResultCanvas) { toast('Pehle image load karo', 'error'); return; }
+  bgResultCanvas.toBlob(blob => { downloadBlob(blob, 'bg-removed.png'); toast('⬇️ Download! (offline best-effort result)'); }, 'image/png');
+}
+function applyBgRemoveToWorkspace() {
+  if (!bgResultCanvas) return;
+  pushImageHistory(bgResultCanvas);
+  toast('✅ Workspace par apply ho gaya');
+}
+
+// ══════════════════════════════════════════
+//  PALETTE EXTRACTOR
+// ══════════════════════════════════════════
+function initPaletteFromWorkspace() { document.getElementById('palette-results').innerHTML = ''; }
+function extractPalette() {
+  const ws = Workspace.image; if (!ws) return;
+  const c = document.createElement('canvas');
+  const scale = Math.min(1, 200 / Math.max(ws.img.width, ws.img.height));
+  c.width = Math.max(1, Math.round(ws.img.width * scale));
+  c.height = Math.max(1, Math.round(ws.img.height * scale));
+  const ctx = c.getContext('2d'); ctx.drawImage(ws.img, 0, 0, c.width, c.height);
+  const data = ctx.getImageData(0, 0, c.width, c.height).data;
+  const buckets = {};
+  let totR=0, totG=0, totB=0, n=0;
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i] >> 4 << 4, g = data[i+1] >> 4 << 4, b = data[i+2] >> 4 << 4;
+    const key = r+','+g+','+b;
+    buckets[key] = (buckets[key]||0) + 1;
+    totR += data[i]; totG += data[i+1]; totB += data[i+2]; n++;
+  }
+  const sorted = Object.entries(buckets).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const avg = rgbToHex(totR/n, totG/n, totB/n);
+  let html = `<div class="card"><div class="card-title">AVERAGE COLOR</div>
+    <div style="display:flex;align-items:center;gap:12px"><div style="width:50px;height:50px;border-radius:10px;background:${avg};border:1px solid var(--border)"></div>
+    <div class="stat-val" style="font-family:'JetBrains Mono',monospace">${avg.toUpperCase()}</div></div></div>
+    <div class="card"><div class="card-title">TOP COLORS</div><div style="display:flex;flex-wrap:wrap;gap:10px">`;
+  sorted.forEach(([key]) => {
+    const [r,g,b] = key.split(',').map(Number);
+    const hex = rgbToHex(r,g,b);
+    html += `<div style="text-align:center" onclick="navigator.clipboard && navigator.clipboard.writeText('${hex}');toast('📋 ${hex} copy ho gaya')" >
+      <div style="width:56px;height:56px;border-radius:10px;background:${hex};border:1px solid var(--border);cursor:pointer"></div>
+      <div style="font-size:10.5px;color:var(--text2);font-family:'JetBrains Mono',monospace;margin-top:4px">${hex}</div></div>`;
+  });
+  html += `</div></div>`;
+  document.getElementById('palette-results').innerHTML = html;
+  toast('✅ Palette nikal li — color par click karke hex copy karo');
+}
+
+// ══════════════════════════════════════════
+//  WATERMARK
+// ══════════════════════════════════════════
+let wmImg = null, wmOverlayImg = null, wmPos = 'tc', wmTab = 'text';
+
+function setWmTopMode(mode) {
+  document.getElementById('wm-top-mode-single').classList.toggle('active', mode==='single');
+  document.getElementById('wm-top-mode-batch').classList.toggle('active', mode==='batch');
+  document.getElementById('wm-single-section').style.display = mode==='single' ? 'block' : 'none';
+  document.getElementById('wm-batch-section').style.display = mode==='batch' ? 'block' : 'none';
+  if (mode === 'batch') renderWmBatchJobs();
+}
+function initWatermarkFromWorkspace() { wmImg = Workspace.image.img; drawWatermark(); }
+async function loadWmImage(input) {
+  if (!input.files[0]) return;
+  wmOverlayImg = await loadImageFromFile(input.files[0]);
+  drawWatermark();
+}
+function switchWmTab(tab, el) {
+  wmTab = tab;
+  document.querySelectorAll('#panel-watermark .tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('#panel-watermark .tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('wmt-' + tab).classList.add('active');
+  drawWatermark();
+}
+function setWmPos(el) {
+  document.querySelectorAll('.wm-pos').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  wmPos = el.dataset.pos;
+  drawWatermark();
+}
+function drawWatermarkOnCanvas(canvas, srcImg, opts) {
+  canvas.width = srcImg.width; canvas.height = srcImg.height;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(srcImg, 0, 0);
+  const op = opts.op, rot = opts.rot * Math.PI / 180, tile = opts.tile;
+  const pad = 20;
+  if (tile) {
+    if (opts.tab === 'text') {
+      ctx.font = `bold ${opts.fs}px Space Grotesk`;
+      const tw = ctx.measureText(opts.text).width || opts.fs;
+      ctx.save(); ctx.globalAlpha = op; ctx.fillStyle = opts.color;
+      for (let y = 0; y < canvas.height + opts.fs; y += opts.fs * 2.5) {
+        for (let x = 0; x < canvas.width + tw; x += tw * 1.5) {
+          ctx.save(); ctx.translate(x, y); ctx.rotate(rot);
+          ctx.fillText(opts.text, 0, 0);
+          ctx.restore();
+        }
+      }
+      ctx.restore();
+    } else if (opts.overlayImg) {
+      const ow = srcImg.width * opts.imgSizePct, oh = ow * (opts.overlayImg.height / opts.overlayImg.width);
+      ctx.save(); ctx.globalAlpha = op;
+      for (let y = -oh; y < canvas.height + oh; y += oh * 1.6) {
+        for (let x = -ow; x < canvas.width + ow; x += ow * 1.6) {
+          ctx.save(); ctx.translate(x + ow / 2, y + oh / 2); ctx.rotate(rot);
+          ctx.drawImage(opts.overlayImg, -ow / 2, -oh / 2, ow, oh);
+          ctx.restore();
+        }
+      }
+      ctx.restore();
+    }
+    return canvas;
+  }
+  let x, y;
+  if (opts.tab === 'text') {
+    ctx.font = `bold ${opts.fs}px Space Grotesk`;
+    ctx.fillStyle = opts.color;
+    const tw = ctx.measureText(opts.text).width;
+    const positions = {
+      tl: [pad, opts.fs + pad], tc: [canvas.width / 2 - tw / 2, opts.fs + pad], tr: [canvas.width - tw - pad, opts.fs + pad],
+      ml: [pad, canvas.height / 2], mc: [canvas.width / 2 - tw / 2, canvas.height / 2], mr: [canvas.width - tw - pad, canvas.height / 2],
+      bl: [pad, canvas.height - pad], bc: [canvas.width / 2 - tw / 2, canvas.height - pad], br: [canvas.width - tw - pad, canvas.height - pad]
+    };
+    [x, y] = positions[opts.pos] || positions.mc;
+    ctx.save(); ctx.globalAlpha = op;
+    ctx.translate(x + tw / 2, y - opts.fs / 2.5); ctx.rotate(rot);
+    ctx.fillText(opts.text, -tw / 2, opts.fs / 2.5);
+    ctx.restore();
+  } else if (opts.overlayImg) {
+    const ow = srcImg.width * opts.imgSizePct, oh = ow * (opts.overlayImg.height / opts.overlayImg.width);
+    const positions = {
+      tl: [pad, pad], tc: [canvas.width / 2 - ow / 2, pad], tr: [canvas.width - ow - pad, pad],
+      ml: [pad, canvas.height / 2 - oh / 2], mc: [canvas.width / 2 - ow / 2, canvas.height / 2 - oh / 2], mr: [canvas.width - ow - pad, canvas.height / 2 - oh / 2],
+      bl: [pad, canvas.height - oh - pad], bc: [canvas.width / 2 - ow / 2, canvas.height - oh - pad], br: [canvas.width - ow - pad, canvas.height - oh - pad]
+    };
+    [x, y] = positions[opts.pos] || positions.mc;
+    ctx.save(); ctx.globalAlpha = op;
+    ctx.translate(x + ow / 2, y + oh / 2); ctx.rotate(rot);
+    ctx.drawImage(opts.overlayImg, -ow / 2, -oh / 2, ow, oh);
+    ctx.restore();
+  }
+  return canvas;
+}
+function drawWatermark() {
+  if (!wmImg) return;
+  const canvas = document.getElementById('wm-canvas');
+  drawWatermarkOnCanvas(canvas, wmImg, {
+    tab: wmTab, text: document.getElementById('wm-text').value, fs: parseInt(document.getElementById('wm-fs').value),
+    color: document.getElementById('wm-color').value, overlayImg: wmOverlayImg, imgSizePct: parseInt(document.getElementById('wm-is').value)/100,
+    op: parseInt(document.getElementById('wm-op').value)/100, rot: parseInt(document.getElementById('wm-rot').value),
+    pos: wmPos, tile: document.getElementById('wm-tile').checked
+  });
+}
+function downloadWatermark() {
+  const canvas = document.getElementById('wm-canvas');
+  if (!canvas.width) return;
+  canvas.toBlob(blob => { downloadBlob(blob, 'watermarked.png'); toast('⬇️ Download!'); }, 'image/png');
+}
+function applyWatermarkToWorkspace() {
+  const canvas = document.getElementById('wm-canvas');
+  if (!canvas.width) return;
+  pushImageHistory(canvas);
+  toast('✅ Watermark workspace par apply ho gaya');
+}
+
+// ---- Batch Watermark (issue #6/#7 pattern): same settings, many images ----
+let wmBatchTab = 'text', wmBatchOverlayImg = null, wmBatchPos = 'tc';
+let wmBatchJobs = [], wmBatchIdCounter = 1;
+function switchWmBatchTab(tab, el) {
+  wmBatchTab = tab;
+  document.querySelectorAll('#wm-batch-section .tabs .tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('#wm-batch-section .tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('wmbt-' + tab).classList.add('active');
+}
+function setWmBatchPos(el) {
+  document.querySelectorAll('#wmb-pos-grid .wm-pos').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  wmBatchPos = el.dataset.pos;
+}
+async function loadWmBatchImage(input) {
+  if (!input.files[0]) return;
+  wmBatchOverlayImg = await loadImageFromFile(input.files[0]);
+  document.getElementById('wmb-img-label').textContent = '✅ ' + input.files[0].name;
+}
+function wmBatchAddFiles(input) {
+  Array.from(input.files || []).forEach(file => {
+    wmBatchJobs.push({ id: wmBatchIdCounter++, file, name: file.name, status: 'idle', resultBlob: null });
+  });
+  input.value = '';
+  renderWmBatchJobs();
+}
+function renderWmBatchJobs() {
+  const wrap = document.getElementById('wm-batch-jobs-wrap');
+  if (!wrap) return;
+  if (!wmBatchJobs.length) { wrap.innerHTML = '<p style="font-size:12px;color:var(--text3)">Koi image add nahi ki abhi.</p>'; return; }
+  wrap.innerHTML = wmBatchJobs.map(j => `
+    <div class="file-list-row"><span class="name">${escapeHtml(j.name)}</span>
+      ${j.status==='done' ? `<button class="btn btn-success btn-sm" onclick="wmBatchDownload(${j.id})">⬇️</button>` : j.status==='error' ? `<span style="color:var(--error);font-size:11px">Error</span>` : `<span style="color:var(--text3);font-size:11px">Pending</span>`}
+    </div>`).join('');
+}
+async function wmBatchRunJob(job) {
+  try {
+    const img = await loadImageFromFile(job.file);
+    const canvas = document.createElement('canvas');
+    drawWatermarkOnCanvas(canvas, img, {
+      tab: wmBatchTab, text: document.getElementById('wmb-text').value, fs: parseInt(document.getElementById('wmb-fs').value),
+      color: document.getElementById('wmb-color').value, overlayImg: wmBatchOverlayImg, imgSizePct: parseInt(document.getElementById('wmb-is').value)/100,
+      op: parseInt(document.getElementById('wmb-op').value)/100, rot: parseInt(document.getElementById('wmb-rot').value),
+      pos: wmBatchPos, tile: false
+    });
+    job.resultBlob = await canvasToBlob(canvas, 'png', 95);
+    job.status = 'done';
+  } catch (e) { job.status = 'error'; }
+  renderWmBatchJobs();
+}
+async function wmBatchRunAll() {
+  if (wmBatchTab === 'img' && !wmBatchOverlayImg) { toast('Pehle logo image upload karo', 'error'); return; }
+  for (const j of wmBatchJobs) { if (j.status !== 'done') await wmBatchRunJob(j); }
+  toast('✅ Sab images par watermark apply ho gaya');
+}
+function wmBatchDownload(id) {
+  const job = wmBatchJobs.find(j => j.id === id);
+  if (!job || !job.resultBlob) return;
+  downloadBlob(job.resultBlob, job.name.replace(/\.[^.]+$/,'') + '-watermarked.png');
+}
+function wmBatchDownloadAll() { wmBatchJobs.filter(j=>j.resultBlob).forEach((j,i) => setTimeout(()=>wmBatchDownload(j.id), i*150)); }
+
+// ══════════════════════════════════════════
+//  OCR (offline, on-device — Tesseract.js)
+// ══════════════════════════════════════════
+let ocrText = '';
+function initOcrFromWorkspace() {
+  document.getElementById('ocr-result').innerHTML = '';
+  document.getElementById('ocr-dl-btn').style.display = 'none';
+  document.getElementById('ocr-copy-btn').style.display = 'none';
+  ocrText = '';
+}
+async function doOcr() {
+  const ws = Workspace.image; if (!ws) return;
+  if (typeof Tesseract === 'undefined') {
+    toast('❌ OCR library load nahi hui — internet check karo (sirf pehli baar chahiye hota hai)', 'error');
+    return;
+  }
+  const out = document.getElementById('ocr-result');
+  const progWrap = document.getElementById('ocr-progress-wrap'), progFill = document.getElementById('ocr-progress-fill');
+  out.innerHTML = '⏳ Shuru ho raha hai...';
+  progWrap.style.display = 'block'; progFill.style.width = '0%';
+  try {
+    const lang = document.getElementById('ocr-lang').value;
+    const { data } = await Tesseract.recognize(ws.img.src, lang, {
+      logger: m => {
+        if (m.status) out.innerHTML = `⏳ ${m.status}...`;
+        if (m.progress != null) progFill.style.width = Math.round(m.progress*100) + '%';
+      }
+    });
+    progWrap.style.display = 'none';
+    ocrText = (data.text || '').trim();
+    out.innerHTML = `<div class="card"><div class="card-title">EXTRACTED TEXT</div>
+      <textarea readonly style="width:100%;min-height:220px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:12px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.6">${escapeHtml(ocrText || '(koi text nahi mila)')}</textarea></div>`;
+    document.getElementById('ocr-dl-btn').style.display = 'inline-flex';
+    document.getElementById('ocr-copy-btn').style.display = 'inline-flex';
+    toast('✅ Text extract ho gaya!');
+  } catch (e) {
+    progWrap.style.display = 'none';
+    out.innerHTML = '<p style="color:var(--error);font-size:12px">OCR fail ho gaya: ' + escapeHtml(e.message) + '</p>';
+    toast('❌ OCR error', 'error');
+  }
+}
+function downloadOcrText() { if (!ocrText) return; downloadBlob(new Blob([ocrText], { type: 'text/plain' }), 'extracted-text.txt'); toast('⬇️ .txt downloaded'); }
+function copyOcrText() { if (!ocrText) return; navigator.clipboard && navigator.clipboard.writeText(ocrText); toast('📄 Copy ho gaya'); }
+
+// ══════════════════════════════════════════
+//  METADATA / EXIF — real offline parser (reads raw JPEG bytes)
+// ══════════════════════════════════════════
+function parseJpegExif(buffer) {
+  try {
+    const view = new DataView(buffer);
+    if (view.byteLength < 4 || view.getUint16(0) !== 0xFFD8) return null;
+    let offset = 2;
+    while (offset + 4 <= view.byteLength) {
+      const marker = view.getUint16(offset);
+      if (marker === 0xFFD9 || marker === 0xFFDA) break;
+      if ((marker & 0xFF00) !== 0xFF00) break;
+      const size = view.getUint16(offset + 2);
+      if (marker === 0xFFE1 && offset + 10 <= view.byteLength &&
+          view.getUint32(offset + 4) === 0x45786966 && view.getUint16(offset + 8) === 0x0000) {
+        return parseTiff(view, offset + 10);
+      }
+      offset += 2 + size;
+    }
+  } catch (e) { /* fall through */ }
+  return null;
+}
+function parseTiff(view, tiffStart) {
+  const little = view.getUint16(tiffStart) === 0x4949;
+  const get16 = o => view.getUint16(o, little);
+  const get32 = o => view.getUint32(o, little);
+  function readIFD(ifdOffset) {
+    const entries = get16(tiffStart + ifdOffset);
+    const result = {};
+    const typeSizes = {1:1,2:1,3:2,4:4,5:8,7:1,9:4,10:8};
+    for (let i = 0; i < entries; i++) {
+      const entryOffset = tiffStart + ifdOffset + 2 + i * 12;
+      const tag = get16(entryOffset);
+      const type = get16(entryOffset + 2);
+      const count = get32(entryOffset + 4);
+      const tSize = (typeSizes[type] || 1) * count;
+      const valueOffset = tSize > 4 ? tiffStart + get32(entryOffset + 8) : entryOffset + 8;
+      let value = null;
+      try {
+        if (type === 2) {
+          let s = '';
+          for (let j = 0; j < count - 1; j++) s += String.fromCharCode(view.getUint8(valueOffset + j));
+          value = s;
+        } else if (type === 3) {
+          value = count === 1 ? get16(valueOffset) : Array.from({length:count},(_,j)=>get16(valueOffset+j*2));
+        } else if (type === 4 || type === 9) {
+          value = count === 1 ? get32(valueOffset) : Array.from({length:count},(_,j)=>get32(valueOffset+j*4));
+        } else if (type === 5 || type === 10) {
+          const readRat = (o) => { const num=get32(o), den=get32(o+4); return den ? num/den : 0; };
+          value = count === 1 ? readRat(valueOffset) : Array.from({length:count},(_,j)=>readRat(valueOffset+j*8));
+        } else if (type === 1) {
+          value = count === 1 ? view.getUint8(valueOffset) : Array.from({length:count},(_,j)=>view.getUint8(valueOffset+j));
+        }
+      } catch (e) { value = null; }
+      result[tag] = value;
+    }
+    return result;
+  }
+  const ifd0Offset = get32(tiffStart + 4);
+  const ifd0 = readIFD(ifd0Offset);
+  let exifIfd = {}, gpsIfd = {};
+  if (ifd0[0x8769]) { try { exifIfd = readIFD(ifd0[0x8769]); } catch(e){} }
+  if (ifd0[0x8825]) { try { gpsIfd = readIFD(ifd0[0x8825]); } catch(e){} }
+  return { ifd0, exifIfd, gpsIfd };
+}
+function buildExifSummary(parsed) {
+  const { ifd0, exifIfd, gpsIfd } = parsed;
+  const out = {};
+  if (ifd0[0x010F]) out['Camera Make'] = String(ifd0[0x010F]).trim().replace(/\0+$/,'');
+  if (ifd0[0x0110]) out['Camera Model'] = String(ifd0[0x0110]).trim().replace(/\0+$/,'');
+  if (ifd0[0x0131]) out['Software'] = String(ifd0[0x0131]).trim().replace(/\0+$/,'');
+  if (ifd0[0x0132]) out['File Modified (EXIF tag)'] = String(ifd0[0x0132]).trim();
+  if (exifIfd[0x9003]) out['Date Taken'] = String(exifIfd[0x9003]).trim();
+  else if (exifIfd[0x9004]) out['Date Digitized'] = String(exifIfd[0x9004]).trim();
+  if (typeof exifIfd[0x829A] === 'number') out['Exposure Time'] = (exifIfd[0x829A] < 1 ? '1/' + Math.round(1/exifIfd[0x829A]) : exifIfd[0x829A]) + ' s';
+  if (typeof exifIfd[0x829D] === 'number') out['Aperture'] = 'f/' + exifIfd[0x829D].toFixed(1);
+  if (exifIfd[0x8827]) out['ISO'] = Array.isArray(exifIfd[0x8827]) ? exifIfd[0x8827][0] : exifIfd[0x8827];
+  if (typeof exifIfd[0x920A] === 'number') out['Focal Length'] = exifIfd[0x920A].toFixed(1) + ' mm';
+  if (ifd0[0x0112]) out['Orientation Tag'] = ifd0[0x0112];
+  if (gpsIfd[1] && gpsIfd[2] && gpsIfd[3] && gpsIfd[4]) {
+    try {
+      const toDeg = arr => arr[0] + arr[1]/60 + arr[2]/3600;
+      let lat = toDeg(gpsIfd[2]); if (gpsIfd[1] === 'S') lat = -lat;
+      let lon = toDeg(gpsIfd[4]); if (gpsIfd[3] === 'W') lon = -lon;
+      out['GPS Location'] = lat.toFixed(6) + ', ' + lon.toFixed(6);
+      out['_gpsLink'] = `https://www.google.com/maps?q=${lat.toFixed(6)},${lon.toFixed(6)}`;
+    } catch (e) {}
+  }
+  return out;
+}
+async function initMetadataFromWorkspace() {
+  const ws = Workspace.image;
+  const fileInfoHtml = `<div class="card"><div class="card-title">FILE INFO</div>${statHtml([
+    ['File Name', escapeHtml(ws.name), 'var(--text)'],
+    ['Size (Current)', fmtSize(ws.size), 'var(--accent)'],
+    ['Type', ws.type, 'var(--accent3)'],
+    ['Edited in App', ws.editedSinceUpload ? 'Yes' : 'No', 'var(--text2)']
+  ])}${ws.originalFile ? statHtml([
+    ['File Last Modified', new Date(ws.originalFile.lastModified).toLocaleString(), 'var(--text)'],
+    ['Original Upload Size', fmtSize(ws.originalFile.size), 'var(--text2)']
+  ]) : ''}</div>
+  <div class="card"><div class="card-title">DIMENSIONS</div>${statHtml([
+    ['Width', ws.img.width + ' px', 'var(--success)'],
+    ['Height', ws.img.height + ' px', 'var(--success)'],
+    ['Aspect Ratio', (ws.img.width / ws.img.height).toFixed(3), 'var(--text2)'],
+    ['Megapixels', ((ws.img.width * ws.img.height) / 1000000).toFixed(2) + ' MP', 'var(--accent)']
+  ])}</div>`;
+  document.getElementById('meta-results').innerHTML = fileInfoHtml + '<div class="card"><div class="card-title">EXIF / CAMERA DATA</div><div id="exif-block">⏳ Reading...</div></div>';
+
+  const isJpeg = ws.originalFile && /jpe?g/i.test(ws.originalFile.type || '') ;
+  const exifBlock = document.getElementById('exif-block');
+  if (!ws.originalFile) {
+    exifBlock.innerHTML = `<p style="font-size:12px;color:var(--text3)">Original file uplabdh nahi (image dusre tool se aayi thi).</p>`;
+    return;
+  }
+  if (!isJpeg) {
+    exifBlock.innerHTML = `<p style="font-size:12px;color:var(--text3)">EXIF/camera metadata sirf JPEG files mein hota hai. Yeh file <b>${escapeHtml((ws.originalFile.type||'unknown'))}</b> hai, isliye yahan kuch nahi hai.</p>`;
+    return;
+  }
+  try {
+    const ab = await ws.originalFile.arrayBuffer();
+    const parsed = parseJpegExif(ab);
+    if (!parsed) {
+      exifBlock.innerHTML = `<p style="font-size:12px;color:var(--text3)">Is file mein koi embedded camera metadata nahi mila — ya to original device/app ne kabhi save nahi kiya, ya WhatsApp/Instagram jaisi app ne bhejte waqt strip kar diya (privacy ke liye aam baat hai).</p>`;
+      return;
+    }
+    const summary = buildExifSummary(parsed);
+    const gpsLink = summary['_gpsLink']; delete summary['_gpsLink'];
+    const keys = Object.keys(summary);
+    if (!keys.length) {
+      exifBlock.innerHTML = `<p style="font-size:12px;color:var(--text3)">EXIF block mila lekin usme readable tags nahi the (kuch app sirf khaali structure chhod dete hain).</p>`;
+      return;
+    }
+    let html = statHtml(keys.map(k => [k, escapeHtml(String(summary[k])), 'var(--text)']));
+    if (gpsLink) html += `<p style="margin-top:10px;font-size:12px"><a href="${gpsLink}" target="_blank" rel="noopener" style="color:var(--accent3)">📍 Google Maps par dekho</a></p>`;
+    exifBlock.innerHTML = html;
+  } catch (e) {
+    exifBlock.innerHTML = `<p style="font-size:12px;color:var(--text3)">Metadata read karte waqt error aaya — file shayad standard EXIF format mein nahi hai.</p>`;
+  }
+}
+
+// ══════════════════════════════════════════
+//  IMG → PDF (new tool, #7): Single mode (one PDF, all images as pages)
+//  and Batch mode (multiple independent groups, each its own PDF).
+// ══════════════════════════════════════════
+function setI2pTopMode(mode) {
+  document.getElementById('i2p-top-mode-single').classList.toggle('active', mode==='single');
+  document.getElementById('i2p-top-mode-batch').classList.toggle('active', mode==='batch');
+  document.getElementById('i2p-single-section').style.display = mode==='single' ? 'block' : 'none';
+  document.getElementById('i2p-batch-section').style.display = mode==='batch' ? 'block' : 'none';
+  if (mode === 'batch') renderI2pBatchGroups();
+}
+let i2pFiles = [];
+function onI2pFilesChange(input) {
+  i2pFiles = i2pFiles.concat(Array.from(input.files || []));
+  input.value = '';
+  renderI2pList();
+}
+function renderI2pList() {
+  document.getElementById('i2p-list').innerHTML = i2pFiles.map((f, i) =>
+    `<div class="file-list-row"><span style="font-size:16px">📷</span><span class="name">${escapeHtml(f.name)} <span style="color:var(--text3)">(${fmtSize(f.size)})</span></span>
+     <div class="order-btns"><button onclick="moveI2pFile(${i},-1)">▲</button><button onclick="moveI2pFile(${i},1)">▼</button></div>
+     <button class="btn btn-danger btn-sm" onclick="removeI2pFile(${i})">✕</button></div>`
+  ).join('');
+  const has = i2pFiles.length > 0;
+  document.getElementById('i2p-settings-card').style.display = has ? 'block' : 'none';
+  document.getElementById('i2p-actions').style.display = has ? 'flex' : 'none';
+}
+function moveI2pFile(i, dir) { const j = i+dir; if (j<0||j>=i2pFiles.length) return; [i2pFiles[i],i2pFiles[j]]=[i2pFiles[j],i2pFiles[i]]; renderI2pList(); }
+function removeI2pFile(i) { i2pFiles.splice(i,1); renderI2pList(); }
+function clearI2pList() { i2pFiles = []; renderI2pList(); }
+async function buildImagesPdf(files, opts) {
+  const { jsPDF } = window.jspdf;
+  const sizes = { a4: [210, 297], a3: [297, 420], letter: [215.9, 279.4] };
+  let pdf = null;
+  for (let i = 0; i < files.length; i++) {
+    const img = await loadImageFromFile(files[i]);
+    let pw, ph;
+    if (opts.size === 'fit') { pw = img.width * (25.4/96); ph = img.height * (25.4/96); }
+    else {
+      const base = sizes[opts.size] || sizes.a4;
+      const wantLandscape = opts.orient === 'landscape' || (opts.orient === 'auto' && img.width > img.height);
+      [pw, ph] = wantLandscape ? [Math.max(...base), Math.min(...base)] : [Math.min(...base), Math.max(...base)];
+    }
+    const o = ph >= pw ? 'p' : 'l';
+    if (!pdf) pdf = new jsPDF({ orientation: o, unit: 'mm', format: [pw, ph], compress: true });
+    else pdf.addPage([pw, ph], o);
+    const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+    c.getContext('2d').drawImage(img, 0, 0);
+    const imgData = c.toDataURL('image/jpeg', opts.quality / 100);
+    const imgRatio = img.width / img.height, pageRatio = pw / ph;
+    let dw, dh;
+    if (imgRatio > pageRatio) { dw = pw; dh = pw / imgRatio; } else { dh = ph; dw = ph * imgRatio; }
+    pdf.addImage(imgData, 'JPEG', (pw-dw)/2, (ph-dh)/2, dw, dh);
+  }
+  return pdf.output('blob');
+}
+async function doI2pSingle() {
+  if (!i2pFiles.length) { toast('Pehle images add karo', 'error'); return; }
+  toast('⏳ PDF ban raha hai...', 'info');
+  try {
+    const blob = await buildImagesPdf(i2pFiles, {
+      size: document.getElementById('i2p-size').value, orient: document.getElementById('i2p-orient').value,
+      quality: parseInt(document.getElementById('i2p-q').value)
+    });
+    downloadBlob(blob, 'images.pdf');
+    toast('✅ PDF Created! ' + fmtSize(blob.size));
+  } catch (e) { toast('Error: ' + e.message, 'error'); }
+}
+// ---- Batch groups ----
+let i2pGroups = [], i2pGroupIdCounter = 1;
+function i2pBatchAddGroup() {
+  i2pGroups.push({ id: i2pGroupIdCounter++, files: [], size: 'a4', orient: 'auto', quality: 90, status: 'idle', resultBlob: null });
+  renderI2pBatchGroups();
+}
+function i2pBatchRemoveGroup(id) { i2pGroups = i2pGroups.filter(g => g.id !== id); renderI2pBatchGroups(); }
+function i2pGroupAddFiles(id, input) {
+  const g = i2pGroups.find(g => g.id === id); if (!g) return;
+  g.files = g.files.concat(Array.from(input.files || []));
+  input.value = '';
+  renderI2pBatchGroups();
+}
+function i2pGroupSet(id, patch) { const g = i2pGroups.find(g=>g.id===id); if (g) Object.assign(g, patch); }
+function renderI2pBatchGroups() {
+  const wrap = document.getElementById('i2p-batch-groups-wrap');
+  if (!wrap) return;
+  if (!i2pGroups.length) { wrap.innerHTML = '<p style="font-size:12px;color:var(--text3)">Koi group nahi hai — "+ New Group" se shuru karo.</p>'; return; }
+  wrap.innerHTML = i2pGroups.map(g => `
+    <div class="card" style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div style="font-size:13px;font-weight:600">Group #${g.id} <span style="color:var(--text3);font-weight:400">(${g.files.length} images)</span></div>
+        <button class="btn btn-danger btn-xs" onclick="i2pBatchRemoveGroup(${g.id})">✕ Remove Group</button>
+      </div>
+      <input type="file" accept="image/*" multiple style="margin-bottom:10px" onchange="i2pGroupAddFiles(${g.id},this)">
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">${g.files.map(f=>`<span style="font-size:11px;background:var(--surface2);padding:3px 8px;border-radius:10px;color:var(--text2)">${escapeHtml(f.name)}</span>`).join('')}</div>
+      <div class="grid-3">
+        <div><label>Page Size</label><select onchange="i2pGroupSet(${g.id},{size:this.value})">
+          <option value="a4" ${g.size==='a4'?'selected':''}>A4</option>
+          <option value="a3" ${g.size==='a3'?'selected':''}>A3</option>
+          <option value="letter" ${g.size==='letter'?'selected':''}>Letter</option>
+          <option value="fit" ${g.size==='fit'?'selected':''}>Fit to Image</option>
+        </select></div>
+        <div><label>Orientation</label><select onchange="i2pGroupSet(${g.id},{orient:this.value})">
+          <option value="auto" ${g.orient==='auto'?'selected':''}>Auto</option>
+          <option value="portrait" ${g.orient==='portrait'?'selected':''}>Portrait</option>
+          <option value="landscape" ${g.orient==='landscape'?'selected':''}>Landscape</option>
+        </select></div>
+        <div><label>Quality</label><input type="number" min="1" max="100" value="${g.quality}" onchange="i2pGroupSet(${g.id},{quality:parseInt(this.value)||90})"></div>
+      </div>
+      <div class="btn-group" style="margin-top:10px">
+        <button class="btn btn-primary btn-sm" onclick="i2pBatchRunGroup(${g.id})" ${g.status==='running'?'disabled':''}>${g.status==='running'?'⏳ Running...':'📑 Create PDF'}</button>
+        ${g.resultBlob ? `<button class="btn btn-success btn-sm" onclick="i2pGroupDownload(${g.id})">⬇️ Download (${fmtSize(g.resultBlob.size)})</button>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+async function i2pBatchRunGroup(id) {
+  const g = i2pGroups.find(g => g.id === id);
+  if (!g || !g.files.length) { toast('Group mein images add karo pehle', 'error'); return; }
+  g.status = 'running'; renderI2pBatchGroups();
+  try {
+    g.resultBlob = await buildImagesPdf(g.files, { size: g.size, orient: g.orient, quality: g.quality });
+    g.status = 'done';
+    toast(`✅ Group #${g.id} ka PDF ban gaya!`);
+  } catch (e) { g.status = 'error'; toast('Error: ' + e.message, 'error'); }
+  renderI2pBatchGroups();
+}
+function i2pGroupDownload(id) {
+  const g = i2pGroups.find(g => g.id === id);
+  if (!g || !g.resultBlob) return;
+  downloadBlob(g.resultBlob, `group-${g.id}.pdf`);
+}
+async function i2pBatchRunAll() { for (const g of i2pGroups) { if (g.status!=='done'&&g.status!=='running') await i2pBatchRunGroup(g.id); } }
+function i2pBatchDownloadAll() { i2pGroups.filter(g=>g.resultBlob).forEach((g,i) => setTimeout(()=>i2pGroupDownload(g.id), i*200)); }
+
+// ══════════════════════════════════════════
+//  BONUS: SIMPLE OFFLINE IMAGE LOCKER — FIXED (issue #3)
+// ══════════════════════════════════════════
+function initLockFromWorkspace() {}
+function strToKeyBytes(str) {
+  const enc = new TextEncoder().encode(str);
+  let seed = 0; for (const b of enc) seed = (seed * 31 + b) >>> 0;
+  const key = new Uint8Array(256);
+  for (let i = 0; i < 256; i++) { seed = (seed * 1103515245 + 12345) >>> 0; key[i] = seed & 0xff; }
+  return key;
+}
+function xorBuffer(buf, keyBytes) {
+  const out = new Uint8Array(buf);
+  for (let i = 0; i < out.length; i++) out[i] ^= keyBytes[i % keyBytes.length];
+  return out;
+}
+async function doLockImage() {
+  const ws = Workspace.image;
+  const pass = document.getElementById('lock-pass').value;
+  if (!ws) { toast('Pehle image load karo', 'error'); return; }
+  if (!pass) { toast('Password daalo', 'error'); return; }
+  const c = document.createElement('canvas'); c.width = ws.img.width; c.height = ws.img.height;
+  c.getContext('2d').drawImage(ws.img, 0, 0);
+  const blob = await canvasToBlob(c, 'png', 95);
+  const buf = await blob.arrayBuffer();
+  const key = strToKeyBytes(pass);
+  const encrypted = xorBuffer(buf, key);
+  // FIX (#3): bytesToBase64 chunks the conversion instead of spreading the
+  // whole array into String.fromCharCode — this is the exact reason Lock
+  // silently never finished before (and therefore Unlock had nothing valid
+  // to work with either).
+  const payload = { v: 1, name: ws.name, type: 'image/png', data: bytesToBase64(encrypted) };
+  const outBlob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+  downloadBlob(outBlob, (ws.name.replace(/\.[^.]+$/, '') || 'image') + '.lock');
+  toast('🔒 Image lock ho gayi! .lock file download ho gayi');
+}
+async function doUnlockImage() {
+  const fileInput = document.getElementById('unlock-file-input');
+  const pass = document.getElementById('unlock-pass').value;
+  const resDiv = document.getElementById('unlock-result');
+  if (!fileInput.files[0]) { toast('.lock file select karo', 'error'); return; }
+  if (!pass) { toast('Password daalo', 'error'); return; }
+  try {
+    const text = await fileInput.files[0].text();
+    const payload = JSON.parse(text);
+    const encBytes = base64ToBytes(payload.data);
+    const key = strToKeyBytes(pass);
+    const decBytes = xorBuffer(encBytes, key);
+    const blob = new Blob([decBytes], { type: payload.type || 'image/png' });
+    const url = URL.createObjectURL(blob);
+    resDiv.innerHTML = `<img src="${url}" style="max-width:100%;border-radius:10px;border:1px solid var(--border)"><div class="btn-group"><button class="btn btn-success btn-sm" onclick="downloadBlob(window._unlockedBlob,'${escapeHtml(payload.name||'unlocked.png')}')">⬇️ Download</button></div>`;
+    window._unlockedBlob = blob;
+    toast('🔓 Unlock ho gaya! Agar image saaf dikh rahi hai to password sahi tha');
+  } catch (e) {
+    resDiv.innerHTML = '<p style="color:var(--error);font-size:12px">Galat password ya corrupt file.</p>';
+    toast('❌ Unlock fail — password check karo', 'error');
+  }
+}
+
+// ══════════════════════════════════════════
+//  GLOBAL DRAG & DROP for all dropzones
+// ══════════════════════════════════════════
+document.querySelectorAll('.dropzone').forEach(dz => {
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
+  dz.addEventListener('drop', e => {
+    e.preventDefault(); dz.classList.remove('drag');
+    const input = dz.querySelector('input[type=file]');
+    if (input && e.dataTransfer.files.length) {
+      const dt = new DataTransfer();
+      Array.from(e.dataTransfer.files).forEach(f => dt.items.add(f));
+      input.files = dt.files;
+      input.dispatchEvent(new Event('change'));
+    }
+  });
+});
+
+refreshAllImagePanels();
+</script>
+</body>
+</html>
