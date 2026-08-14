@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quotation Maker — ProToolkit Premium</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --border: #2e3248;
+    --accent: #6c63ff;
+    --accent2: #a78bfa;
+    --accent3: #22d3ee;
+    --text: #e8eaf6;
+    --text2: #8b90b8;
+    --danger: #f87171;
+    --success: #34d399;
+    --warning: #fbbf24;
+    --radius: 12px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+    --gst-color: #f59e0b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 20px; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow); }
+  .logo { font-size: 1.4rem; font-weight: 800; background: linear-gradient(135deg, var(--accent), var(--accent3)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .header-right { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+  .container { max-width: 1440px; margin: 0 auto; padding: 20px; }
+  .tool-header { margin-bottom: 24px; }
+  .tool-header h2 { font-size: 1.8rem; font-weight: 700; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .tool-header p { color: var(--text2); margin-top: 4px; font-size: 0.95rem; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; overflow: auto; transition: all 0.3s; }
+  .card:hover { border-color: var(--accent); }
+  .card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 14px; color: var(--accent2); display: flex; align-items: center; gap: 8px; }
+
+  .row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .col { flex: 1; min-width: 180px; }
+
+  label { display: block; font-size: 0.82rem; color: var(--text2); margin-bottom: 5px; font-weight: 500; }
+  input, select, textarea { width: 100%; background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 9px 12px; border-radius: 8px; font-size: 0.9rem; outline: none; transition: all 0.2s; font-family: inherit; }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(108,99,255,0.15); }
+  textarea { resize: vertical; min-height: 80px; }
+  select option { background: var(--surface); }
+
+  .btn { padding: 9px 20px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.3s; display: inline-flex; align-items: center; gap: 6px; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #5a52e0; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(108,99,255,0.35); }
+  .btn-success { background: var(--success); color: #0a2a1e; }
+  .btn-success:hover { background: #28b882; transform: translateY(-2px); }
+  .btn-danger { background: var(--danger); color: #fff; }
+  .btn-danger:hover { transform: translateY(-2px); }
+  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text2); }
+  .btn-outline:hover { border-color: var(--accent); color: var(--accent); background: rgba(108,99,255,0.05); }
+  .btn-sm { padding: 5px 12px; font-size: 0.8rem; }
+  .btn-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+
+  .preview-frame { background: #fff; color: #111; border-radius: var(--radius); padding: 32px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); font-family: 'Segoe UI', sans-serif; min-height: 400px; overflow: auto; }
+
+  .watermark-container { position: relative; overflow: hidden; }
+  .watermark-text { 
+    position: absolute; 
+    bottom: 15px; 
+    right: 15px; 
+    font-size: 14px; 
+    color: rgba(0,0,0,0.06); 
+    font-weight: 700; 
+    letter-spacing: 2px; 
+    pointer-events: none; 
+    transform: rotate(-15deg); 
+    z-index: 10; 
+    white-space: nowrap; 
+    font-family: 'Segoe UI', sans-serif;
+    user-select: none;
+  }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  /* Watermark Settings */
+  .wm-settings { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .wm-settings .col { min-width: 130px; }
+  .wm-settings input[type="text"] { width: 100%; }
+  .wm-settings input[type="number"] { width: 100%; }
+  .wm-settings input[type="color"] { width: 44px; height: 38px; padding: 2px; border-radius: 6px; cursor: pointer; }
+
+  .gst-highlight { border-left: 4px solid var(--gst-color) !important; }
+  .gst-badge { background: var(--gst-color); color: #fff; padding: 2px 10px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; }
+
+  .signature-img { max-width: 200px; max-height: 60px; border: 1px dashed var(--border); border-radius: 4px; padding: 4px; }
+
+  .badge-recommended { background: linear-gradient(135deg, #f59e0b, #f97316); color: #fff; padding: 2px 10px; border-radius: 12px; font-size: 0.6rem; font-weight: 700; text-transform: uppercase; margin-left: 6px; }
+
+  .item-row { display: flex; gap: 8px; align-items: flex-end; margin-bottom: 8px; flex-wrap: wrap; }
+  .item-row .col-item { flex: 1; min-width: 100px; }
+
+  @media (max-width: 768px) { 
+    .grid-2 { grid-template-columns: 1fr; } 
+    .container { padding: 12px; } 
+    .card { padding: 14px; } 
+    .col { min-width: 140px; }
+    .wm-settings .col { min-width: 100px; }
+    .item-row { gap: 4px; }
+    .item-row .col-item { min-width: 70px; }
+  }
+
+  @media print { 
+    .no-print { display: none !important; } 
+    body { background: #fff; } 
+    .preview-frame { box-shadow: none; padding: 20px; }
+    .watermark-text { color: rgba(0,0,0,0.12) !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--surface2); border-radius: 10px; }
+  ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header no-print">
+  <span class="logo">📋 Quotation Maker</span>
+  <div class="header-right">
+    <button class="btn btn-primary" onclick="printQuotation()">🖨️ PDF</button>
+    <button class="btn btn-success" onclick="downloadQuotationImage()">⬇️ PNG</button>
+  </div>
+</div>
+
+<div class="container">
+  <div class="tool-header no-print">
+    <h2>📋 Professional Quotation Maker <span class="gst-badge">GST Ready</span> <span class="badge-recommended">Premium</span></h2>
+    <p>GST quotation with items, signature, terms, and custom watermark</p>
+  </div>
+
+  <div class="grid-2">
+    <!-- Left: Input Form -->
+    <div>
+      <!-- Business Info -->
+      <div class="card gst-highlight">
+        <h3>🏢 Business Details</h3>
+        <div class="row">
+          <div class="col"><label>Business Name</label><input id="q-biz" oninput="buildQuotation()" placeholder="Rahul Enterprises"></div>
+          <div class="col"><label>GSTIN</label><input id="q-gst" oninput="buildQuotation()" placeholder="27AABCU9603R1ZX"></div>
+        </div>
+        <div style="margin-top:10px;"><label>Address</label><textarea id="q-addr" oninput="buildQuotation()" rows="2" placeholder="Mumbai, Maharashtra"></textarea></div>
+        <div style="margin-top:10px;"><label>Registration No.</label><input id="q-reg" oninput="buildQuotation()" placeholder="MSME / Udyam"></div>
+      </div>
+
+      <!-- Client & Quote Info -->
+      <div class="card">
+        <h3>👤 Client & Quote Details</h3>
+        <div class="row">
+          <div class="col"><label>Client Name</label><input id="q-client" oninput="buildQuotation()" placeholder="XYZ Ltd"></div>
+          <div class="col"><label>Quote #</label><input id="q-num" oninput="buildQuotation()" placeholder="QUO-001" readonly style="opacity:0.6;"></div>
+        </div>
+        <div class="row" style="margin-top:10px;">
+          <div class="col"><label>Date</label><input type="date" id="q-date" oninput="buildQuotation()"></div>
+          <div class="col"><label>Valid Till</label><input type="date" id="q-valid" oninput="buildQuotation()"></div>
+        </div>
+        <div class="row" style="margin-top:10px;">
+          <div class="col"><label>GST %</label>
+            <select id="q-gst-rate" onchange="buildQuotation()">
+              <option value="0" selected>0% (Default)</option>
+              <option value="5">5%</option>
+              <option value="12">12%</option>
+              <option value="18">18%</option>
+              <option value="28">28%</option>
+            </select>
+          </div>
+          <div class="col"><label>Currency</label>
+            <select id="q-currency" onchange="buildQuotation()">
+              <option value="₹">₹ (INR)</option>
+              <option value="$">$ (USD)</option>
+              <option value="€">€ (EUR)</option>
+              <option value="£">£ (GBP)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Items -->
+      <div class="card">
+        <h3>📦 Items</h3>
+        <div id="q-items"></div>
+        <button class="btn btn-outline btn-sm" onclick="addQItem()">+ Add Item</button>
+      </div>
+
+      <!-- Terms -->
+      <div class="card">
+        <h3>📜 Terms & Conditions</h3>
+        <textarea id="q-terms" oninput="buildQuotation()" rows="4" placeholder="1. 50% advance payment required&#10;2. Delivery within 7 working days&#10;3. Warranty: 1 year&#10;4. Taxes extra as applicable">1. 50% advance payment required
+2. Delivery within 7 working days
+3. Warranty: 1 year
+4. Taxes extra as applicable</textarea>
+      </div>
+
+      <!-- Signature -->
+      <div class="card">
+        <h3>✍️ Signature</h3>
+        <input type="file" id="q-sign" accept="image/*" onchange="loadSignature('q-sign','q-sign-preview')">
+        <div id="q-sign-preview" style="margin-top:8px;"></div>
+      </div>
+
+      <!-- Watermark Settings -->
+      <div class="card">
+        <h3>💧 Watermark Settings</h3>
+        <div class="wm-settings">
+          <div class="col"><label>Color</label><input type="color" id="wmColor" value="#000000" oninput="updateWatermark()"></div>
+          <div class="col"><label>Rotation</label><input type="number" id="wmRotation" value="-15" min="-90" max="90" oninput="updateWatermark()"></div>
+          <div class="col"><label>Opacity</label><input type="number" id="wmOpacity" value="0.06" min="0.01" max="0.5" step="0.01" oninput="updateWatermark()"></div>
+          <div class="col"><label>Size</label><input type="number" id="wmSize" value="14" min="8" max="36" oninput="updateWatermark()"></div>
+        </div>
+        <div style="margin-top:6px;font-size:0.7rem;color:var(--text2);">
+          💡 Watermark: <span id="wmPreview">✨ Created by Hanuman Singh ✨</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Preview -->
+    <div>
+      <div class="card">
+        <h3>👁️ Live Preview</h3>
+        <div id="quotation-preview" class="preview-frame watermark-container" style="min-height:450px;position:relative;">
+          <div class="watermark-text">✨ Created by Hanuman Singh ✨</div>
+        </div>
+        <div class="btn-group no-print">
+          <button class="btn btn-primary" onclick="printQuotation()">🖨️ PDF</button>
+          <button class="btn btn-success" onclick="downloadQuotationImage()">⬇️ PNG</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// QUOTATION MAKER — Premium with GST & Watermark
+// ============================================================
+
+// ----- GLOBAL STATE -----
+let qItems = [];
+let qSignature = null;
+
+// ============================================================
+// WATERMARK (Global)
+// ============================================================
+function updateWatermark() {
+  const text = '✨ Created by Hanuman Singh ✨';
+  const color = document.getElementById('wmColor').value;
+  const rotation = parseFloat(document.getElementById('wmRotation').value) || -15;
+  const opacity = parseFloat(document.getElementById('wmOpacity').value) || 0.06;
+  const size = parseInt(document.getElementById('wmSize').value) || 14;
+
+  document.querySelectorAll('.watermark-text').forEach(el => {
+    el.textContent = text;
+    el.style.transform = `rotate(${rotation}deg)`;
+    el.style.fontSize = size + 'px';
+    el.style.opacity = opacity;
+    if (color.startsWith('#')) {
+      const hex = color.replace('#', '');
+      const r = parseInt(hex.substring(0,2), 16);
+      const g = parseInt(hex.substring(2,4), 16);
+      const b = parseInt(hex.substring(4,6), 16);
+      el.style.color = `rgba(${r},${g},${b},${opacity})`;
+    } else {
+      el.style.color = color;
+    }
+  });
+  document.getElementById('wmPreview').textContent = text;
+}
+
+// ============================================================
+// SIGNATURE LOADER
+// ============================================================
+function loadSignature(inputId, previewId) {
+  const file = document.getElementById(inputId).files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    qSignature = e.target.result;
+    document.getElementById(previewId).innerHTML = `<img src="${qSignature}" class="signature-img">`;
+    buildQuotation();
+  };
+  reader.readAsDataURL(file);
+}
+
+// ============================================================
+// ITEMS
+// ============================================================
+function addQItem() {
+  const id = Date.now();
+  qItems.push({id, desc: '', qty: 1, rate: 0, unit: 'None'});
+  renderQItems();
+  buildQuotation();
+}
+
+function renderQItems() {
+  const container = document.getElementById('q-items');
+  if (!container) return;
+  container.innerHTML = qItems.map((item, i) => `
+    <div class="item-row" style="border:1px solid var(--border);padding:10px;border-radius:8px;margin-bottom:8px;background:var(--surface2);">
+      <div class="col-item" style="flex:3;min-width:120px;">
+        <label>Description</label>
+        <input value="${item.desc}" oninput="qItems[${i}].desc=this.value;buildQuotation()" placeholder="Item description">
+      </div>
+      <div class="col-item" style="flex:1;min-width:60px;">
+        <label>Qty</label>
+        <input type="number" value="${item.qty}" min="1" oninput="qItems[${i}].qty=this.value;buildQuotation()">
+      </div>
+      <div class="col-item" style="flex:1;min-width:70px;">
+        <label>Unit</label>
+        <select onchange="qItems[${i}].unit=this.value;buildQuotation()">
+          <option value="None" ${item.unit==='None'?'selected':''}>None</option>
+          <option value="KG" ${item.unit==='KG'?'selected':''}>KG</option>
+          <option value="LTR" ${item.unit==='LTR'?'selected':''}>LTR</option>
+          <option value="PKG" ${item.unit==='PKG'?'selected':''}>PKG</option>
+          <option value="PCS" ${item.unit==='PCS'?'selected':''}>PCS</option>
+          <option value="BOX" ${item.unit==='BOX'?'selected':''}>BOX</option>
+          <option value="MTR" ${item.unit==='MTR'?'selected':''}>MTR</option>
+          <option value="FT" ${item.unit==='FT'?'selected':''}>FT</option>
+          <option value="INCH" ${item.unit==='INCH'?'selected':''}>INCH</option>
+          <option value="G" ${item.unit==='G'?'selected':''}>G</option>
+          <option value="ML" ${item.unit==='ML'?'selected':''}>ML</option>
+          <option value="DOZ" ${item.unit==='DOZ'?'selected':''}>DOZ</option>
+        </select>
+      </div>
+      <div class="col-item" style="flex:1;min-width:80px;">
+        <label>Rate</label>
+        <input type="number" value="${item.rate}" min="0" step="0.01" oninput="qItems[${i}].rate=this.value;buildQuotation()">
+      </div>
+      <div style="display:flex;align-items:flex-end;">
+        <button class="btn btn-danger btn-sm" onclick="qItems.splice(${i},1);renderQItems();buildQuotation()">✕</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ============================================================
+// CALCULATIONS
+// ============================================================
+function calcQTotals(items, gstRate) {
+  const subtotal = items.reduce((s, it) => s + (parseFloat(it.qty) || 0) * (parseFloat(it.rate) || 0), 0);
+  const gst = subtotal * (parseFloat(gstRate) || 0) / 100;
+  return { subtotal, gst, total: subtotal + gst };
+}
+
+function fmtQMoney(amount, currency) {
+  const sym = document.getElementById('q-currency').value || '₹';
+  return sym + parseFloat(amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+// ============================================================
+// BUILD QUOTATION
+// ============================================================
+function buildQuotation() {
+  const biz = document.getElementById('q-biz').value || 'Business Name';
+  const bizAddr = document.getElementById('q-addr').value;
+  const bizGst = document.getElementById('q-gst').value;
+  const reg = document.getElementById('q-reg').value;
+  const client = document.getElementById('q-client').value || 'Client Name';
+  const num = document.getElementById('q-num').value || 'QUO-001';
+  const date = document.getElementById('q-date').value;
+  const valid = document.getElementById('q-valid').value;
+  const gstRate = document.getElementById('q-gst-rate').value;
+  const currency = document.getElementById('q-currency').value;
+  const terms = document.getElementById('q-terms').value;
+
+  const { subtotal, gst, total } = calcQTotals(qItems, gstRate);
+  const signHtml = qSignature ? `<img src="${qSignature}" class="signature-img">` : '___________________';
+
+  let rows = qItems.map((it, i) => {
+    const amt = (parseFloat(it.qty) || 0) * (parseFloat(it.rate) || 0);
+    return `<tr>
+      <td style="padding:6px 8px;text-align:center;">${i + 1}</td>
+      <td style="padding:6px 8px;">${it.desc || 'Item'}</td>
+      <td style="padding:6px 8px;text-align:center;">${it.qty}</td>
+      <td style="padding:6px 8px;text-align:center;">${it.unit || 'None'}</td>
+      <td style="padding:6px 8px;text-align:right;">${fmtQMoney(it.rate, currency)}</td>
+      <td style="padding:6px 8px;text-align:right;">${fmtQMoney(amt, currency)}</td>
+    </tr>`;
+  }).join('');
+
+  const html = `
+    <div style="font-family:'Segoe UI',sans-serif;color:#111;max-width:800px;margin:0 auto;">
+      <!-- Header -->
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;border-bottom:3px solid #065f46;padding-bottom:16px;">
+        <div>
+          <div style="font-size:1.6rem;font-weight:800;color:#065f46;">${biz}</div>
+          ${bizAddr ? `<div style="font-size:0.8rem;color:#555;">${bizAddr.replace(/\n/g, '<br>')}</div>` : ''}
+          ${bizGst ? `<div style="font-size:0.78rem;color:#666;">GSTIN: ${bizGst}</div>` : ''}
+          ${reg ? `<div style="font-size:0.78rem;color:#666;">Reg: ${reg}</div>` : ''}
+        </div>
+        <div style="text-align:right;">
+          <div style="background:#065f46;color:#fff;padding:8px 20px;border-radius:6px;font-size:1.2rem;font-weight:700;">QUOTATION</div>
+          <div style="margin-top:8px;font-size:0.82rem;color:#555;"># ${num}</div>
+          <div style="font-size:0.82rem;color:#555;">Date: ${date || 'N/A'}</div>
+          ${valid ? `<div style="font-size:0.82rem;color:#d97706;">Valid Till: ${valid}</div>` : ''}
+        </div>
+      </div>
+
+      <!-- Client -->
+      <div style="background:#f0fdf4;padding:12px 16px;border-radius:6px;margin-bottom:16px;">
+        <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;color:#888;">Prepared For</div>
+        <strong style="font-size:1rem;">${client}</strong>
+      </div>
+
+      <!-- Items Table -->
+      <table style="width:100%;border-collapse:collapse;font-size:0.82rem;margin-bottom:12px;">
+        <thead>
+          <tr style="background:#065f46;color:#fff;">
+            <th style="padding:8px 10px;text-align:center;">#</th>
+            <th style="padding:8px 10px;text-align:left;">Description</th>
+            <th style="padding:8px 10px;text-align:center;">Qty</th>
+            <th style="padding:8px 10px;text-align:center;">Unit</th>
+            <th style="padding:8px 10px;text-align:right;">Rate</th>
+            <th style="padding:8px 10px;text-align:right;">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows || `<tr><td colspan="6" style="text-align:center;padding:20px;color:#999;">No items added</td></tr>`}
+        </tbody>
+      </table>
+
+      <!-- Totals -->
+      <div style="display:flex;justify-content:flex-end;">
+        <div style="min-width:240px;">
+          <div style="display:flex;justify-content:space-between;padding:4px 0;border-top:1px solid #e2e8f0;">
+            <span>Subtotal:</span>
+            <span>${fmtQMoney(subtotal, currency)}</span>
+          </div>
+          ${parseFloat(gstRate) > 0 ? `
+          <div style="display:flex;justify-content:space-between;padding:4px 0;">
+            <span>GST (${gstRate}%):</span>
+            <span>${fmtQMoney(gst, currency)}</span>
+          </div>
+          ` : ''}
+          <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:1.1rem;font-weight:800;border-top:2px solid #065f46;color:#065f46;">
+            <span>Total:</span>
+            <span>${fmtQMoney(total, currency)}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Terms -->
+      ${terms ? `
+      <div style="margin-top:16px;padding:12px 16px;background:#f0fdf4;border-radius:6px;border-left:3px solid #065f46;">
+        <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;color:#888;">Terms & Conditions</div>
+        <pre style="font-size:0.82rem;color:#374151;white-space:pre-wrap;font-family:inherit;margin-top:4px;">${terms}</pre>
+      </div>
+      ` : ''}
+
+      <!-- Footer -->
+      <div style="margin-top:16px;padding-top:12px;border-top:1px solid #e2e8f0;display:flex;justify-content:flex-end;font-size:0.78rem;color:#666;align-items:center;">
+        <span>Signature: ${signHtml}</span>
+      </div>
+      
+      <div style="text-align:center;margin-top:12px;font-size:0.7rem;color:#999;">
+        This is a computer generated quotation
+      </div>
+    </div>
+  `;
+
+  const preview = document.getElementById('quotation-preview');
+  if (!preview) return;
+  const wm = preview.querySelector('.watermark-text');
+  preview.innerHTML = html;
+  if (wm) preview.appendChild(wm);
+  updateWatermark();
+}
+
+// ============================================================
+// PRINT / DOWNLOAD
+// ============================================================
+function printQuotation() {
+  const preview = document.getElementById('quotation-preview');
+  if (!preview) return;
+  const content = preview.innerHTML;
+  const win = window.open('', '_blank');
+  if (!win) return;
+  win.document.write(`
+    <html>
+      <head>
+        <title>Quotation</title>
+        <style>
+          body { margin: 0; padding: 20px; font-family: 'Segoe UI', sans-serif; }
+          @media print { * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; } }
+          .watermark-text { color: rgba(0,0,0,0.12) !important; }
+        </style>
+      </head>
+      <body>${content}</body>
+    </html>
+  `);
+  win.document.close();
+  win.focus();
+  win.print();
+}
+
+async function downloadQuotationImage() {
+  const preview = document.getElementById('quotation-preview');
+  if (!preview) return;
+
+  if (!window.html2canvas) {
+    await new Promise((resolve) => {
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+      script.onload = resolve;
+      script.onerror = () => { alert('html2canvas load failed. Check internet.'); resolve(); };
+      document.head.appendChild(script);
+    });
+  }
+  if (!window.html2canvas) return;
+
+  try {
+    const canvas = await html2canvas(preview, { 
+      scale: 8, 
+      backgroundColor: '#ffffff', 
+      useCORS: true, 
+      logging: false,
+      allowTaint: true
+    });
+    const link = document.createElement('a');
+    link.download = 'quotation-4800px.png';
+    link.href = canvas.toDataURL('image/png');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } catch(e) {
+    alert('Error capturing image: ' + e.message);
+  }
+}
+
+// ============================================================
+// INIT
+// ============================================================
+function initQuotation() {
+  // Set default date
+  if (!document.getElementById('q-date').value) {
+    document.getElementById('q-date').value = new Date().toISOString().split('T')[0];
+  }
+  // Set valid date (30 days from now)
+  if (!document.getElementById('q-valid').value) {
+    const d = new Date();
+    d.setDate(d.getDate() + 30);
+    document.getElementById('q-valid').value = d.toISOString().split('T')[0];
+  }
+  // Generate quotation number
+  if (!document.getElementById('q-num').value) {
+    const num = 'QUO-' + String(Date.now()).slice(-6);
+    document.getElementById('q-num').value = num;
+  }
+  // Set GST default to 0%
+  document.getElementById('q-gst-rate').value = '0';
+  // Add default item
+  if (qItems.length === 0) {
+    qItems.push({id: Date.now(), desc: '', qty: 1, rate: 0, unit: 'None'});
+    renderQItems();
+  }
+  // Set default terms
+  if (!document.getElementById('q-terms').value) {
+    document.getElementById('q-terms').value = `1. 50% advance payment required
+2. Delivery within 7 working days
+3. Warranty: 1 year
+4. Taxes extra as applicable`;
+  }
+  buildQuotation();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  initQuotation();
+  updateWatermark();
+});
+
+window.addEventListener('load', function() {
+  buildQuotation();
+  updateWatermark();
+});
+</script>
+
+</body>
+</html>

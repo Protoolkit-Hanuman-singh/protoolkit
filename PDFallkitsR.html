@@ -1,0 +1,3419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>PixelForge — PDF Toolkit</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.0.4/tesseract.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+  :root{--bg:#0a0a0f;--surface:#12121a;--surface2:#1a1a26;--surface3:#22222f;--border:#2a2a3d;--accent:#7c6af7;--accent2:#f76a8a;--accent3:#6af7c8;--text:#e8e8f0;--text2:#9090b0;--text3:#5a5a7a;--success:#4ade80;--warning:#fbbf24;--error:#f87171;--radius:12px;--radius-sm:8px;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+  header{padding:14px 18px;border-bottom:1px solid var(--border);background:rgba(10,10,15,0.95);backdrop-filter:blur(12px);position:sticky;top:0;z-index:250;display:flex;align-items:center;gap:14px;}
+  .hamburger{display:none;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:18px;width:38px;height:38px;border-radius:var(--radius-sm);cursor:pointer;flex-shrink:0;align-items:center;justify-content:center;}
+  .logo{font-size:19px;font-weight:700;letter-spacing:-0.5px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap;}
+  .logo span{font-weight:300;opacity:0.7;}
+  .badge{font-size:10px;font-family:'JetBrains Mono',monospace;background:var(--surface3);color:var(--accent3);padding:3px 8px;border-radius:20px;border:1px solid var(--border);white-space:nowrap;margin-left:auto;}
+  .app{display:flex;min-height:calc(100vh - 57px);position:relative;}
+  .sidebar{width:220px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);padding:16px 0 40px;}
+  .sidebar-section{padding:14px 16px 4px;font-size:9px;font-weight:600;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:10px 18px;cursor:pointer;font-size:13px;color:var(--text2);transition:all 0.15s;border-left:2px solid transparent;}
+  .nav-item:hover{background:var(--surface2);color:var(--text);}
+  .nav-item.active{background:var(--surface2);color:var(--accent);border-left-color:var(--accent);}
+  .nav-item .icon{font-size:16px;width:20px;text-align:center;}
+  .drawer-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:199;}
+  .drawer-backdrop.show{display:block;}
+  .main{flex:1;padding:24px;overflow-y:auto;max-width:1080px;}
+  .panel{display:none;animation:fadeIn 0.2s ease;}
+  .panel.active{display:block;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+  .panel-title{font-size:21px;font-weight:700;margin-bottom:6px;letter-spacing:-0.5px;}
+  .panel-sub{font-size:13px;color:var(--text2);margin-bottom:20px;line-height:1.5;}
+  .dropzone{border:2px dashed var(--border);border-radius:var(--radius);padding:36px 20px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--surface);position:relative;}
+  .dropzone:hover,.dropzone.drag{border-color:var(--accent);background:rgba(124,106,247,0.05);}
+  .dropzone-icon{font-size:38px;margin-bottom:10px;}
+  .dropzone-text{font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px;}
+  .dropzone-sub{font-size:12px;color:var(--text3);}
+  .dz-spinner{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:var(--surface);border-radius:var(--radius);}
+  .dropzone.loading .dz-spinner{display:flex;}
+  .dropzone.loading .dropzone-icon,.dropzone.loading .dropzone-text,.dropzone.loading .dropzone-sub{opacity:0.15;}
+  .spinner{width:30px;height:30px;border:3px solid var(--surface3);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .ws-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;margin-bottom:18px;}
+  .ws-thumb{width:42px;height:42px;border-radius:8px;object-fit:cover;background:var(--surface3);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;}
+  .ws-info{flex:1;min-width:140px;}
+  .ws-name{font-size:13px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:280px;}
+  .ws-meta{font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-top:2px;}
+  .ws-actions{display:flex;gap:6px;flex-wrap:wrap;}
+  .ws-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--success);margin-right:5px;box-shadow:0 0 6px var(--success);}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:16px;}
+  .card-title{font-size:12px;font-weight:700;color:var(--text2);margin-bottom:14px;letter-spacing:0.4px;}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+  .grid-4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;}
+  label{font-size:12px;color:var(--text2);display:block;margin-bottom:6px;}
+  input[type="range"]{-webkit-appearance:none;width:100%;height:4px;background:var(--surface3);border-radius:2px;outline:none;}
+  input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid var(--bg);}
+  input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid var(--bg);}
+  input[type="number"],input[type="text"],select,textarea{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:var(--radius-sm);font-size:14px;font-family:inherit;outline:none;transition:border-color 0.15s;}
+  input[type="number"]:focus,input[type="text"]:focus,select:focus,textarea:focus{border-color:var(--accent);}
+  select option{background:var(--surface2);}
+  .btn{display:inline-flex;align-items:center;gap:7px;padding:11px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;border:none;transition:all 0.15s;white-space:nowrap;}
+  .btn-primary{background:var(--accent);color:#fff;}
+  .btn-primary:hover{background:#9080ff;transform:translateY(-1px);}
+  .btn-secondary{background:var(--surface3);color:var(--text);border:1px solid var(--border);}
+  .btn-secondary:hover{background:var(--surface2);}
+  .btn-success{background:#166534;color:var(--success);border:1px solid #166534;}
+  .btn-success:hover{background:#14532d;}
+  .btn-danger{background:#7f1d1d;color:var(--error);border:1px solid #7f1d1d;}
+  .btn-sm{padding:7px 12px;font-size:12px;}
+  .btn-xs{padding:4px 8px;font-size:11px;}
+  .btn:disabled{opacity:0.4;cursor:not-allowed;transform:none !important;}
+  .btn-group{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;}
+  .stat-row{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;}
+  .stat{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;flex:1;min-width:95px;}
+  .stat-label{font-size:9px;color:var(--text3);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:0.5px;}
+  .stat-val{font-size:15px;font-weight:700;color:var(--text);margin-top:2px;font-family:'JetBrains Mono',monospace;word-break:break-word;}
+  #toast{position:fixed;bottom:24px;right:24px;left:auto;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:12px 18px;border-radius:var(--radius);font-size:13px;z-index:999;transform:translateY(60px) translateX(0);transition:transform 0.3s ease,opacity .3s ease;opacity:0;pointer-events:none;display:flex;align-items:center;gap:8px;max-width:90vw;box-shadow:0 8px 32px rgba(0,0,0,0.5);}
+  #toast.show{transform:translateY(0);opacity:1;}
+  #toast.success .t-icon::before{content:'✓';color:var(--success);}
+  #toast.error .t-icon::before{content:'✕';color:var(--error);}
+  #toast.info .t-icon::before{content:'ℹ';color:var(--accent);}
+  .tabs{display:flex;gap:4px;margin-bottom:18px;border-bottom:1px solid var(--border);overflow-x:auto;}
+  .tab{padding:9px 16px;font-size:13px;cursor:pointer;color:var(--text2);border-bottom:2px solid transparent;transition:all 0.15s;margin-bottom:-1px;white-space:nowrap;}
+  .tab:hover{color:var(--text);}
+  .tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600;}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+  input[type="color"]{width:46px;height:38px;padding:2px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;}
+  .checkbox-wrap{display:flex;align-items:center;gap:8px;cursor:pointer;}
+  .checkbox-wrap input[type="checkbox"]{width:18px;height:18px;accent-color:var(--accent);cursor:pointer;}
+  .checkbox-wrap span{font-size:13px;color:var(--text2);}
+  ::-webkit-scrollbar{width:6px;height:6px;}
+  ::-webkit-scrollbar-track{background:var(--bg);}
+  ::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:3px;}
+  .section-divider{border:none;border-top:1px solid var(--border);margin:18px 0;}
+  .hint-banner{display:flex;gap:10px;align-items:flex-start;background:rgba(124,106,247,0.08);border:1px solid rgba(124,106,247,0.3);border-radius:var(--radius);padding:12px 14px;font-size:12px;color:var(--text2);margin-bottom:18px;line-height:1.5;}
+  .warn-banner{display:flex;gap:10px;align-items:flex-start;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.3);border-radius:var(--radius);padding:12px 14px;font-size:12px;color:var(--text2);margin-bottom:18px;line-height:1.5;}
+  .file-list-row{display:flex;align-items:center;gap:10px;padding:9px 10px;background:var(--surface2);border-radius:8px;margin-bottom:6px;font-size:12.5px;color:var(--text2);}
+  .file-list-row .name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .file-list-row .order-btns{display:flex;gap:2px;}
+  .file-list-row .order-btns button{background:var(--surface3);border:1px solid var(--border);color:var(--text2);border-radius:4px;width:22px;height:22px;cursor:pointer;font-size:11px;}
+  .credit-footer{text-align:center;padding:18px 10px 6px;font-size:11px;color:var(--text3);}
+  .credit-footer b{color:var(--accent3);}
+  .mode-toggle{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+  .mode-btn{flex:1;min-width:140px;padding:10px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface2);color:var(--text2);font-size:12.5px;font-weight:600;cursor:pointer;text-align:center;transition:all .15s;}
+  .mode-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .progress-bar{height:6px;background:var(--surface3);border-radius:4px;overflow:hidden;margin:10px 0;}
+  .progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent3));transition:width 0.2s ease;width:0%;}
+  .progress-label{font-size:11px;color:var(--text2);font-family:'JetBrains Mono',monospace;display:flex;justify-content:space-between;}
+  .quality-note{font-size:11px;color:var(--accent3);background:rgba(106,247,200,0.06);border:1px solid rgba(106,247,200,0.2);border-radius:8px;padding:8px 10px;margin-top:8px;line-height:1.5;}
+  .pdf-pages{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;}
+  .pdf-page-thumb{width:96px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;overflow:hidden;text-align:center;cursor:pointer;transition:all 0.15s;position:relative;}
+  .pdf-page-thumb:hover{border-color:var(--accent);}
+  .pdf-page-thumb.selected{border-color:var(--accent);box-shadow:0 0 0 2px rgba(124,106,247,0.3);}
+  .pdf-page-thumb canvas,.pdf-page-thumb img{width:100%;display:block;}
+  .pdf-page-thumb .pnum{font-size:10px;color:var(--text3);padding:3px;font-family:'JetBrains Mono',monospace;}
+  .pdf-page-thumb .sel-badge{position:absolute;top:4px;right:4px;background:var(--accent);color:#fff;width:18px;height:18px;border-radius:50%;font-size:10px;display:none;align-items:center;justify-content:center;}
+  .pdf-page-thumb.selected .sel-badge{display:flex;}
+  .pdf-page-thumb .mini-actions{display:flex;justify-content:center;gap:2px;padding:0 2px 4px;}
+  .pdf-page-thumb .mini-actions button{flex:1;background:var(--surface3);border:1px solid var(--border);color:var(--text2);font-size:10px;border-radius:4px;padding:3px 0;cursor:pointer;}
+  .pdf-page-thumb .mini-actions button:hover{background:var(--accent);color:#fff;}
+  .range-chip{display:inline-flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:5px 8px 5px 12px;font-size:12px;font-family:'JetBrains Mono',monospace;}
+  .range-chip button{background:var(--surface3);border:none;color:var(--text2);width:18px;height:18px;border-radius:50%;cursor:pointer;font-size:11px;}
+  /* ===== PDF BUILDER (drag/drop writer) ===== */
+  .builder-shell{display:flex;gap:14px;align-items:flex-start;}
+  .builder-toolbar{width:220px;flex-shrink:0;display:flex;flex-direction:column;gap:8px;}
+  .builder-tool-btn{display:flex;align-items:center;gap:8px;padding:11px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;}
+  .builder-tool-btn:hover{border-color:var(--accent);}
+  .builder-canvas-wrap{flex:1;min-width:0;overflow:auto;background:#3a3a4a;border-radius:var(--radius);padding:20px;display:flex;justify-content:center;max-height:75vh;touch-action:none;}
+  .builder-page{position:relative;background:#fff;box-shadow:0 8px 40px rgba(0,0,0,0.5);flex-shrink:0;overflow:hidden;touch-action:none;}
+  .builder-el{position:absolute;cursor:move;box-sizing:border-box;touch-action:none;user-select:none;}
+  .builder-el.selected{outline:2px solid var(--accent);outline-offset:1px;}
+  .builder-el .el-handle{position:absolute;width:14px;height:14px;background:var(--accent);border:2px solid #fff;border-radius:50%;display:none;touch-action:none;}
+  .builder-el.selected .el-handle{display:block;}
+  .builder-el .el-handle.se{right:-7px;bottom:-7px;cursor:nwse-resize;}
+  .builder-el .el-handle.rot{top:-26px;left:50%;margin-left:-7px;cursor:grab;background:var(--accent3);display:none;}
+  .builder-el.selected .el-handle.rot{display:block;}
+  .builder-el .el-handle.del{top:-22px;right:-7px;background:var(--error);width:18px;height:18px;border-radius:6px;display:none;cursor:pointer;font-size:11px;color:#fff;align-items:center;justify-content:center;}
+  .builder-el.selected .el-handle.del{display:flex;}
+  .builder-props{width:240px;flex-shrink:0;}
+  .layer-row{display:flex;align-items:center;gap:8px;padding:7px 9px;background:var(--surface2);border-radius:8px;margin-bottom:5px;font-size:12px;cursor:pointer;border:1px solid transparent;}
+  .layer-row.selected{border-color:var(--accent);}
+  .layer-row .name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  @media (max-width:1000px){
+    .builder-shell{flex-direction:column;}
+    .builder-toolbar{width:100%;flex-direction:row;flex-wrap:wrap;}
+    .builder-tool-btn{flex:1;min-width:90px;justify-content:center;}
+    .builder-props{width:100%;}
+  }
+  @media (max-width:860px){
+    .hamburger{display:flex;}
+    .sidebar{position:fixed;top:0;left:0;height:100vh;width:250px;z-index:200;transform:translateX(-105%);transition:transform 0.25s ease;box-shadow:10px 0 40px rgba(0,0,0,0.4);padding-top:60px;overflow-y:auto;}
+    .sidebar.open{transform:translateX(0);}
+    .app{flex-direction:column;}
+    .main{padding:14px;padding-bottom:30px;max-width:100%;}
+    .grid-2,.grid-3,.grid-4{grid-template-columns:1fr;}
+    .panel-title{font-size:18px;}
+    .ws-name{max-width:50vw;}
+    #toast{bottom:18px;left:14px;right:14px;max-width:none;}
+    .badge{display:none;}
+    .btn{padding:13px 18px;font-size:14px;}
+    .nav-item{padding:13px 18px;font-size:14px;}
+    input[type="range"]::-webkit-slider-thumb{width:24px;height:24px;}
+    .mode-btn{min-width:100%;}
+    .pdf-page-thumb{width:86px;}
+  }
+</style>
+</head>
+<body>
+
+<div id="toast"><span class="t-icon"></span><span id="toast-msg"></span></div>
+<div class="drawer-backdrop" id="drawer-backdrop" onclick="closeDrawer()"></div>
+<iframe id="print-frame" style="display:none"></iframe>
+<input type="file" id="universal-pdf-input" accept="application/pdf" style="display:none" onchange="onPdfDropzoneChange(this)">
+
+<header>
+  <button class="hamburger" onclick="toggleDrawer()">☰</button>
+  <div class="logo">PixelForge <span>PDF</span></div>
+  <div class="badge">OFFLINE · v5.1</div>
+</header>
+
+<div class="app">
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-section">Create</div>
+    <div class="nav-item active" data-panel="builder" onclick="showPanel('builder',event)"><span class="icon">✍️</span><span>PDF Builder (Writer)</span></div>
+    <div class="nav-item" data-panel="img-to-pdf" onclick="showPanel('img-to-pdf',event)"><span class="icon">📑</span><span>Img → PDF</span></div>
+    <div class="sidebar-section">Organize</div>
+    <div class="nav-item" data-panel="pdf-merge" onclick="showPanel('pdf-merge',event)"><span class="icon">📎</span><span>Merge</span></div>
+    <div class="nav-item" data-panel="pdf-split" onclick="showPanel('pdf-split',event)"><span class="icon">✂️</span><span>Split (multi-range)</span></div>
+    <div class="nav-item" data-panel="pdf-rotate" onclick="showPanel('pdf-rotate',event)"><span class="icon">🔃</span><span>Rotate / Reorder</span></div>
+    <div class="sidebar-section">Optimize</div>
+    <div class="nav-item" data-panel="pdf-compress" onclick="showPanel('pdf-compress',event)"><span class="icon">🗜️</span><span>Compress</span></div>
+    <div class="nav-item" data-panel="pdf-to-img" onclick="showPanel('pdf-to-img',event)"><span class="icon">🖼️</span><span>PDF → Img</span></div>
+    <div class="sidebar-section">Content</div>
+    <div class="nav-item" data-panel="pdf-text" onclick="showPanel('pdf-text',event)"><span class="icon">📋</span><span>PDF → Text</span></div>
+    <div class="nav-item" data-panel="pdf-img-ocr" onclick="showPanel('pdf-img-ocr',event)"><span class="icon">🖨️</span><span>PDF → Searchable (OCR)</span></div>
+    <div class="nav-item" data-panel="pdf-stamp" onclick="showPanel('pdf-stamp',event)"><span class="icon">🏷️</span><span>Watermark / Page #</span></div>
+    <div class="sidebar-section">Print & Security</div>
+    <div class="nav-item" data-panel="pdf-print" onclick="showPanel('pdf-print',event)"><span class="icon">🖨️</span><span>Print Studio</span></div>
+    <div class="nav-item" data-panel="pdf-lock" onclick="showPanel('pdf-lock',event)"><span class="icon">🔐</span><span>Lock / Unlock</span></div>
+  </nav>
+
+  <main class="main">
+    <!-- ═══════════════ PDF BUILDER (WRITER) ═══════════════ -->
+    <div class="panel active" id="panel-builder">
+      <div class="panel-title">✍️ PDF Builder — apna PDF likho aur design karo</div>
+      <div class="panel-sub">Text boxes, images, tables — sab drag karo, resize karo, position fix karo. Jaisa Word/Canva mein banate ho, waisa hi yahan offline.</div>
+
+      <div class="card" style="margin-bottom:14px">
+        <div class="grid-4">
+          <div><label>Page Size</label>
+            <select id="bld-page-size" onchange="builderChangePageSize()">
+              <option value="a4" selected>A4</option>
+              <option value="letter">Letter</option>
+              <option value="a5">A5</option>
+              <option value="legal">Legal</option>
+            </select>
+          </div>
+          <div><label>Orientation</label>
+            <select id="bld-orient" onchange="builderChangePageSize()">
+              <option value="portrait" selected>Portrait</option>
+              <option value="landscape">Landscape</option>
+            </select>
+          </div>
+          <div><label>Page</label>
+            <select id="bld-page-select" onchange="builderSwitchPage(this.value)"></select>
+          </div>
+          <div style="display:flex;align-items:flex-end;gap:6px">
+            <button class="btn btn-secondary btn-sm" onclick="builderAddPage()">➕ Page</button>
+            <button class="btn btn-danger btn-sm" onclick="builderDeletePage()">🗑 Page</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="builder-shell">
+        <div class="builder-toolbar">
+          <div class="card-title" style="margin-bottom:2px">ADD ELEMENT</div>
+          <div class="builder-tool-btn" onclick="builderAddText()">🔤 Text Box</div>
+          <div class="builder-tool-btn" onclick="builderAddHeading()">🅰️ Heading</div>
+          <div class="builder-tool-btn" onclick="document.getElementById('bld-img-input').click()">🖼️ Image</div>
+          <input type="file" id="bld-img-input" accept="image/*" style="display:none" onchange="builderAddImage(this)">
+          <div class="builder-tool-btn" onclick="builderAddTable()">▦ Table</div>
+          <div class="builder-tool-btn" onclick="builderAddShape('rect')">▭ Rectangle</div>
+          <div class="builder-tool-btn" onclick="builderAddShape('line')">➖ Line</div>
+          <div class="builder-tool-btn" onclick="document.getElementById('bld-bg-input').click()">🎨 Background Img</div>
+          <input type="file" id="bld-bg-input" accept="image/*" style="display:none" onchange="builderSetBackground(this)">
+          <div class="builder-tool-btn" onclick="builderAddWatermarkEl()">🔖 Watermark Text</div>
+          <div class="builder-tool-btn" onclick="builderAddPageNumEl()">🔢 Page Number</div>
+          <hr class="section-divider" style="margin:6px 0">
+          <div class="card-title" style="margin-bottom:2px">PAGE BACKGROUND</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="color" id="bld-page-bg" value="#ffffff" onchange="builderSetPageColor(this.value)">
+            <span style="font-size:11.5px;color:var(--text2)">Page color</span>
+          </div>
+          <div style="margin-top:8px" id="bld-bg-fit-row" style="display:none">
+            <label>Background Fit</label>
+            <select id="bld-bg-fit" onchange="builderSetBgFit(this.value)">
+              <option value="cover">Cover (crop, fill page)</option>
+              <option value="contain">Contain (no crop)</option>
+              <option value="stretch">Stretch (exact fit)</option>
+            </select>
+          </div>
+          <button class="btn btn-secondary btn-xs" style="margin-top:6px" onclick="builderClearBackground()">🗑 Clear BG Image</button>
+        </div>
+
+        <div class="builder-canvas-wrap">
+          <div class="builder-page" id="builder-page"></div>
+        </div>
+
+        <div class="builder-props">
+          <div class="card-title">PROPERTIES</div>
+          <div id="builder-props-body"><p style="font-size:12px;color:var(--text3)">Kisi element ko select karo (click karo) properties dekhne ke liye.</p></div>
+          <hr class="section-divider">
+          <div class="card-title">LAYERS (is page ke elements)</div>
+          <div id="builder-layers"></div>
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="builderGeneratePdf('download')">⬇️ Generate & Download PDF</button>
+        <button class="btn btn-secondary" onclick="builderGeneratePdf('preview')">👁️ Preview</button>
+        <button class="btn btn-danger btn-sm" onclick="builderResetAll()">🗑 Reset Everything</button>
+      </div>
+      <div id="builder-preview-wrap" style="margin-top:14px"></div>
+    </div>
+
+    <!-- ═══════════════ IMG TO PDF ═══════════════ -->
+    <div class="panel" id="panel-img-to-pdf">
+      <div class="panel-title">📑 Images → PDF</div>
+      <div class="panel-sub">Multiple images ko ek PDF me convert karo — order set kar sakte ho.</div>
+
+      <div class="dropzone" id="dzwrap-i2p" onclick="document.getElementById('i2p-input').click()">
+        <input type="file" id="i2p-input" accept="image/*" multiple style="display:none" onchange="onI2PFilesChange(this)">
+        <div class="dz-spinner"><div class="spinner"></div></div>
+        <div class="dropzone-icon">📑</div>
+        <div class="dropzone-text">Images select karo (multiple)</div>
+        <div class="dropzone-sub">JPG, PNG, WEBP, etc. — add karte raho, list judti rahegi</div>
+      </div>
+
+      <div id="i2p-loaded" style="display:none">
+        <div id="i2p-list" style="margin:12px 0"></div>
+
+        <div class="card">
+          <div class="card-title">PDF SETTINGS</div>
+          <div class="grid-2">
+            <div>
+              <label>Page Size</label>
+              <select id="i2p-size">
+                <option value="a4">A4</option>
+                <option value="a3">A3</option>
+                <option value="letter">Letter</option>
+                <option value="legal">Legal</option>
+                <option value="fit">Fit to Image</option>
+              </select>
+            </div>
+            <div>
+              <label>Orientation</label>
+              <select id="i2p-orient">
+                <option value="auto">Auto (per image)</option>
+                <option value="portrait">Portrait</option>
+                <option value="landscape">Landscape</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-top:12px">
+            <label>Image Quality in PDF <span class="range-val" id="i2p-q-val" style="position:static">92%</span></label>
+            <input type="range" id="i2p-q" min="1" max="100" value="92" oninput="document.getElementById('i2p-q-val').textContent=this.value+'%'">
+          </div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="doI2P()">📑 Create PDF</button>
+          <button class="btn btn-danger btn-sm" onclick="clearI2PList()">🗑 Clear List</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ PDF MERGE ═══════════════ -->
+    <div class="panel" id="panel-pdf-merge">
+      <div class="panel-title">📎 PDF Merge</div>
+      <div class="panel-sub">Multiple PDFs ko ek me combine karo — order set karo, 100% lossless (pages copy hote hain, rasterize nahi).</div>
+
+      <div class="dropzone" id="dzwrap-pdfm" onclick="document.getElementById('pdfm-input').click()">
+        <input type="file" id="pdfm-input" accept="application/pdf" multiple style="display:none" onchange="onPdfMergeFilesChange(this)">
+        <div class="dz-spinner"><div class="spinner"></div></div>
+        <div class="dropzone-icon">📎</div>
+        <div class="dropzone-text">Multiple PDFs drop karo</div>
+        <div class="dropzone-sub">2 ya zyada PDF files</div>
+      </div>
+
+      <div class="btn-group" style="margin-top:10px">
+        <button class="btn btn-secondary btn-sm" onclick="addWorkspacePdfToMerge()">📥 Add Current Workspace PDF</button>
+      </div>
+
+      <div id="pdfm-list" style="margin-top:12px"></div>
+
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="doPdfMerge()" id="pdfm-btn" disabled>📎 Merge PDFs</button>
+        <button class="btn btn-danger btn-sm" onclick="clearMergeList()">🗑 Clear List</button>
+      </div>
+    </div>
+
+    <!-- ═══════════════ PDF SPLIT (multi-range, point 10) ═══════════════ -->
+    <div class="panel" id="panel-pdf-split">
+      <div class="panel-title">✂️ PDF Split</div>
+      <div class="panel-sub">120-page PDF mein se "1–10, 13–50, 67–90, 105–120" jaisi multiple ranges ek hi baar mein, alag-alag PDF files ban jayengi — ek ek karke split karne ki zarurat nahi.</div>
+
+      <div class="mode-toggle">
+        <div class="mode-btn active" id="split-top-mode-single" onclick="setSplitTopMode('single')">📄 Single PDF (Workspace)</div>
+        <div class="mode-btn" id="split-top-mode-batch" onclick="setSplitTopMode('batch')">📚 Batch — Multiple Files</div>
+      </div>
+
+      <div id="split-single-section">
+      <div class="dropzone" id="dzwrap-pdfs" onclick="document.getElementById('pdfs-input').click()">
+        <input type="file" id="pdfs-input" accept="application/pdf" style="display:none" onchange="onPdfDropzoneChange(this)">
+        <div class="dz-spinner"><div class="spinner"></div></div>
+        <div class="dropzone-icon">✂️</div>
+        <div class="dropzone-text">PDF file load karo</div>
+      </div>
+
+      <div class="ws-bar" id="wsbar-pdfs" style="display:none"></div>
+
+      <div id="pdfs-loaded" style="display:none">
+        <div id="pdfs-stats"></div>
+
+        <div class="card" style="margin-top:16px">
+          <div class="card-title">SPLIT MODE</div>
+          <div class="tabs">
+            <div class="tab active" onclick="switchSplitTab('all',this)">Every Page Separate</div>
+            <div class="tab" onclick="switchSplitTab('ranges',this)">Multi-Range (1 baar mein)</div>
+            <div class="tab" onclick="switchSplitTab('select',this)">Manually Select Pages</div>
+          </div>
+
+          <div class="tab-panel active" id="st-all">
+            <p style="font-size:13px;color:var(--text2)">Har page (current order/rotation ke saath) alag PDF file me save hoga — vector quality, lossless.</p>
+          </div>
+
+          <div class="tab-panel" id="st-ranges">
+            <label>Ranges (comma se separate karo)</label>
+            <input type="text" id="split-ranges-input" placeholder="e.g. 1-10, 13-50, 67-90, 105-120" oninput="parseSplitRangesPreview()">
+            <div id="split-ranges-preview" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px"></div>
+            <p style="font-size:11px;color:var(--text3);margin-top:8px">Har range ka alag PDF file banega — ek hi click mein saari files mil jayengi, alag-alag karke split karne ki zarurat nahi.</p>
+          </div>
+
+          <div class="tab-panel" id="st-select">
+            <p style="font-size:12px;color:var(--text3);margin-bottom:8px">Pages click karke select karo (ek hi output PDF banega un sab pages ka). Bade PDFs mein thumbnails 50-50 ke chunks mein load hote hain.</p>
+            <div class="pdf-pages" id="split-thumbs"></div>
+          </div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="doPdfSplit()">✂️ Split PDF</button>
+        </div>
+        <div id="pdfs-result" style="margin-top:16px"></div>
+      </div>
+      </div>
+
+      <div id="split-batch-section" style="display:none">
+        <div class="hint-banner">📚 Multiple PDFs add karo — har file ki apni split setting (all pages / ranges) rakho, sab independently process karo.</div>
+        <div class="btn-group" style="margin-top:0;margin-bottom:14px">
+          <button class="btn btn-primary" onclick="document.getElementById('split-batch-input').click()">➕ Add Files</button>
+          <input type="file" id="split-batch-input" accept="application/pdf" multiple style="display:none" onchange="splitBatchAddFiles(this)">
+          <button class="btn btn-secondary" onclick="splitBatchRunAll()">✂️ Run All Pending</button>
+          <button class="btn btn-success" onclick="splitBatchDownloadAll()">⬇️ Download All Done</button>
+        </div>
+        <div id="split-batch-jobs-wrap"></div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ PDF ROTATE / REORDER ═══════════════ -->
+    <div class="panel" id="panel-pdf-rotate">
+      <div class="panel-title">🔃 PDF Rotate / Reorder</div>
+      <div class="panel-sub">Click karke select karo, phir rotate / move / delete karo. Output 100% lossless.</div>
+
+      <div class="dropzone" id="dzwrap-pdfr" onclick="document.getElementById('pdfr-input').click()">
+        <input type="file" id="pdfr-input" accept="application/pdf" style="display:none" onchange="onPdfDropzoneChange(this)">
+        <div class="dz-spinner"><div class="spinner"></div></div>
+        <div class="dropzone-icon">🔃</div>
+        <div class="dropzone-text">PDF load karo</div>
+      </div>
+
+      <div class="ws-bar" id="wsbar-pdfr" style="display:none"></div>
+
+      <div id="pdfr-loaded" style="display:none">
+        <div class="card">
+          <div class="card-title">PAGES (click select karo · ▲▼ se move karo)</div>
+          <div class="pdf-pages" id="pdfr-thumbs"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">ACTIONS ON SELECTED</div>
+          <div class="btn-group" style="margin-top:0">
+            <button class="btn btn-secondary btn-sm" onclick="rotateSel(90)">↻ 90°</button>
+            <button class="btn btn-secondary btn-sm" onclick="rotateSel(-90)">↺ -90°</button>
+            <button class="btn btn-secondary btn-sm" onclick="rotateSel(180)">↔ 180°</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteSel()">🗑 Delete</button>
+            <button class="btn btn-secondary btn-sm" onclick="selectAllPages()">☑ Select All</button>
+            <button class="btn btn-secondary btn-sm" onclick="reversePageOrder()">🔁 Reverse Order</button>
+          </div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="doPdfRotate()">⬇️ Save & Download PDF (lossless)</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ PDF COMPRESS ═══════════════ -->
+    <div class="panel" id="panel-pdf-compress">
+      <div class="panel-title">🗜️ PDF Compress</div>
+      <div class="panel-sub">Digital (text) PDFs ke pages losslessly copy hote hain, sirf scanned/image-heavy pages re-compress hote hain — isliye text PDF kabhi badi nahi hoti, aur scanned PDF jitni chhoti karni ho kar sakte ho.</div>
+
+      <div class="mode-toggle">
+        <div class="mode-btn active" id="pdfc-top-mode-single" onclick="setPdfcTopMode('single')">📄 Single PDF (Workspace)</div>
+        <div class="mode-btn" id="pdfc-top-mode-batch" onclick="setPdfcTopMode('batch')">📚 Batch — Multiple Files</div>
+      </div>
+
+      <div id="pdfc-single-section">
+      <div class="dropzone" id="dzwrap-pdfc" onclick="document.getElementById('pdfc-input').click()">
+        <input type="file" id="pdfc-input" accept="application/pdf" style="display:none" onchange="onPdfDropzoneChange(this)">
+        <div class="dz-spinner"><div class="spinner"></div></div>
+        <div class="dropzone-icon">🗜️</div>
+        <div class="dropzone-text">PDF file drop karo</div>
+        <div class="dropzone-sub">.pdf files only</div>
+      </div>
+
+      <div class="ws-bar" id="wsbar-pdfc" style="display:none"></div>
+
+      <div id="pdfc-loaded" style="display:none">
+        <div id="pdfc-stats"></div>
+
+        <div class="card" style="margin-top:16px">
+          <div class="mode-toggle">
+            <div class="mode-btn active" id="pdfc-mode-quality" onclick="setPdfcMode('quality')">🎛️ Manual Quality</div>
+            <div class="mode-btn" id="pdfc-mode-target" onclick="setPdfcMode('target')">🎯 Smart Target Size</div>
+          </div>
+
+          <div id="pdfc-quality-block">
+            <div class="card-title">COMPRESSION SETTINGS</div>
+            <div class="grid-2">
+              <div>
+                <label>Image Quality in PDF <span class="range-val" id="pdfc-q-val" style="position:static">70%</span></label>
+                <input type="range" id="pdfc-q" min="1" max="100" value="70" oninput="syncPdfcQNum(this.value)">
+              </div>
+              <div>
+                <label>Exact Value (1–100)</label>
+                <input type="number" id="pdfc-q-num" min="1" max="100" value="70" oninput="syncPdfcQSlider(this.value)">
+              </div>
+            </div>
+            <div class="grid-2" style="margin-top:12px">
+              <div>
+                <label>Preset</label>
+                <select id="pdfc-preset" onchange="applyPdfPreset(this.value)">
+                  <option value="custom">Custom</option>
+                  <option value="screen">Screen (72 dpi) — sabse chhota size</option>
+                  <option value="ebook">eBook (120 dpi)</option>
+                  <option value="print">Print (200 dpi)</option>
+                  <option value="high">High Quality (300 dpi)</option>
+                </select>
+              </div>
+            </div>
+            <div class="quality-note">ℹ️ Sirf image/scanned pages par yeh quality lagu hoti hai — text/digital pages hamesha lossless copy hote hain, isliye unki size badhne ka sawaal hi nahi.</div>
+          </div>
+
+          <div id="pdfc-target-block" style="display:none">
+            <div class="card-title">TARGET SIZE</div>
+            <label>Target Size (KB)</label>
+            <input type="number" id="pdfc-target-kb" placeholder="e.g. 100" min="1">
+            <p style="font-size:11px;color:var(--text3);margin-top:8px">App khud best quality dhoondega jo is size ke under fit ho jaye (binary search) — chahe original 10MB ho aur target 50KB ho.</p>
+          </div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="doPdfCompress()">⚡ Compress PDF</button>
+        </div>
+
+        <div id="pdfc-progress" style="display:none;margin-top:14px">
+          <div class="progress-label"><span id="pdfc-progress-label">Starting...</span><span id="pdfc-progress-pct">0%</span></div>
+          <div class="progress-bar"><div class="progress-bar-fill" id="pdfc-progress-fill"></div></div>
+        </div>
+
+        <div id="pdfc-result" style="display:none;margin-top:16px">
+          <div class="stat-row" id="pdfc-result-stats"></div>
+          <div class="btn-group">
+            <button class="btn btn-success" id="pdfc-dl-btn">⬇️ Download PDF</button>
+            <button class="btn btn-secondary" id="pdfc-print-btn">🖨️ Print Result</button>
+            <button class="btn btn-secondary" id="pdfc-apply-btn">✅ Use as Workspace PDF</button>
+          </div>
+        </div>
+      </div>
+      </div>
+
+      <div id="pdfc-batch-section" style="display:none">
+        <div class="hint-banner">📚 Yahan ek sath kitni bhi PDFs add karo — har file ki apni settings (quality ya target KB) alag se set kar sakte ho, aur sabko independently compress kar sakte ho. Kisi ek ka wait nahi karna padega dusre ke liye.</div>
+        <div class="btn-group" style="margin-top:0;margin-bottom:14px">
+          <button class="btn btn-primary" onclick="document.getElementById('batch-input').click()">➕ Add Files</button>
+          <input type="file" id="batch-input" accept="application/pdf" multiple style="display:none" onchange="batchAddFiles(this)">
+          <button class="btn btn-secondary" onclick="batchRunAll()">⚡ Run All Pending</button>
+          <button class="btn btn-success" onclick="batchDownloadAll()">⬇️ Download All Done</button>
+        </div>
+        <div id="batch-jobs-wrap"></div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ PDF TO IMAGES ═══════════════ -->
+    <div class="panel" id="panel-pdf-to-img">
+      <div class="panel-title">🖼️ PDF → Images</div>
+      <div class="panel-sub">PDF pages (current order/rotation) ko images me convert karo.</div>
+
+      <div class="mode-toggle">
+        <div class="mode-btn active" id="p2i-top-mode-single" onclick="setP2iTopMode('single')">📄 Single PDF (Workspace)</div>
+        <div class="mode-btn" id="p2i-top-mode-batch" onclick="setP2iTopMode('batch')">📚 Batch — Multiple Files</div>
+      </div>
+
+      <div id="p2i-single-section">
+      <div class="dropzone" id="dzwrap-p2i" onclick="document.getElementById('p2i-input').click()">
+        <input type="file" id="p2i-input" accept="application/pdf" style="display:none" onchange="onPdfDropzoneChange(this)">
+        <div class="dz-spinner"><div class="spinner"></div></div>
+        <div class="dropzone-icon">🖼️</div>
+        <div class="dropzone-text">PDF drop karo</div>
+      </div>
+
+      <div class="ws-bar" id="wsbar-p2i" style="display:none"></div>
+
+      <div id="p2i-loaded" style="display:none">
+        <div class="card" style="margin-top:16px">
+          <div class="card-title">SETTINGS</div>
+          <div class="grid-2">
+            <div>
+              <label>Output Format</label>
+              <select id="p2i-fmt">
+                <option value="jpeg">JPEG</option>
+                <option value="png">PNG</option>
+                <option value="webp">WEBP</option>
+              </select>
+            </div>
+            <div>
+              <label>Resolution (DPI scale)</label>
+              <select id="p2i-dpi">
+                <option value="1">72 DPI (screen)</option>
+                <option value="2" selected>144 DPI (standard)</option>
+                <option value="3">216 DPI (high)</option>
+                <option value="4">288 DPI (very high)</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-top:12px">
+            <label>Quality <span class="range-val" id="p2i-q-val" style="position:static">92%</span></label>
+            <input type="range" id="p2i-q" min="1" max="100" value="92" oninput="document.getElementById('p2i-q-val').textContent=this.value+'%'">
+          </div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="doP2I()">🖼️ Convert Pages</button>
+        </div>
+
+        <div id="p2i-progress" style="display:none;margin-top:14px">
+          <div class="progress-label"><span id="p2i-progress-label">Starting...</span><span id="p2i-progress-pct">0%</span></div>
+          <div class="progress-bar"><div class="progress-bar-fill" id="p2i-progress-fill"></div></div>
+        </div>
+
+        <div id="p2i-results" style="margin-top:16px"></div>
+      </div>
+      </div>
+
+      <div id="p2i-batch-section" style="display:none">
+        <div class="hint-banner">📚 Multiple PDFs add karo, har ek ki apni format/DPI setting rakho, sab independently convert karo.</div>
+        <div class="btn-group" style="margin-top:0;margin-bottom:14px">
+          <button class="btn btn-primary" onclick="document.getElementById('p2i-batch-input').click()">➕ Add Files</button>
+          <input type="file" id="p2i-batch-input" accept="application/pdf" multiple style="display:none" onchange="p2iBatchAddFiles(this)">
+          <button class="btn btn-secondary" onclick="p2iBatchRunAll()">🖼️ Run All Pending</button>
+          <button class="btn btn-success" onclick="p2iBatchDownloadAll()">⬇️ Download All Done</button>
+        </div>
+        <div id="p2i-batch-jobs-wrap"></div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ PDF TEXT EXTRACT (fixed crash + garble) ═══════════════ -->
+    <div class="panel" id="panel-pdf-text">
+      <div class="panel-title">📋 PDF → Text Extract</div>
+      <div class="panel-sub">PDF ke andar ka text nikalo — chunked processing se ab bade files (100+ pages) bhi crash nahi karte, aur progress bar dikhta hai.</div>
+
+      <div class="dropzone" id="dzwrap-pdftext" onclick="document.getElementById('pdftext-input').click()">
+        <input type="file" id="pdftext-input" accept="application/pdf" style="display:none" onchange="onPdfDropzoneChange(this)">
+        <div class="dz-spinner"><div class="spinner"></div></div>
+        <div class="dropzone-icon">📋</div>
+        <div class="dropzone-text">PDF load karo</div>
+      </div>
+
+      <div class="ws-bar" id="wsbar-pdftext" style="display:none"></div>
+
+      <div id="pdftext-loaded" style="display:none">
+        <div class="warn-banner">⚠️ Agar PDF "scanned" hai (yaani photo/image ke roop mein hai, real text nahi), to yahan se text nahi niklega — uske liye <b>"PDF → Searchable (OCR)"</b> tool use karo, jo image se bhi text padh leta hai.</div>
+        <div class="btn-group" style="margin-top:0">
+          <button class="btn btn-primary" id="pdftext-run-btn" onclick="doPdfTextExtract()">📋 Extract Text</button>
+          <button class="btn btn-secondary" id="pdftext-cancel-btn" style="display:none" onclick="cancelPdfTextExtract()">⏹ Cancel</button>
+        </div>
+        <div id="pdftext-progress" style="display:none;margin-top:14px">
+          <div class="progress-label"><span id="pdftext-progress-label">Starting...</span><span id="pdftext-progress-pct">0%</span></div>
+          <div class="progress-bar"><div class="progress-bar-fill" id="pdftext-progress-fill"></div></div>
+        </div>
+        <div id="pdftext-result" style="margin-top:14px"></div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ PDF → SEARCHABLE (OCR for scanned PDFs) ═══════════════ -->
+    <div class="panel" id="panel-pdf-img-ocr">
+      <div class="panel-title">🖨️ PDF → Searchable (OCR)</div>
+      <div class="panel-sub">Scanned ya image-based PDF se bhi text nikaalo — har page ko image banake offline OCR (Tesseract.js) chalata hai. Garbled "?" wale text ka yeh sabse reliable fallback hai.</div>
+
+      <div class="dropzone" id="dzwrap-pdfocr" onclick="document.getElementById('pdfocr-input').click()">
+        <input type="file" id="pdfocr-input" accept="application/pdf" style="display:none" onchange="onPdfDropzoneChange(this)">
+        <div class="dz-spinner"><div class="spinner"></div></div>
+        <div class="dropzone-icon">🖨️</div>
+        <div class="dropzone-text">PDF load karo (scanned ya image-based)</div>
+      </div>
+
+      <div class="ws-bar" id="wsbar-pdfocr" style="display:none"></div>
+
+      <div id="pdfocr-loaded" style="display:none">
+        <div class="card">
+          <div class="grid-2">
+            <div>
+              <label>Language</label>
+              <select id="pdfocr-lang">
+                <option value="eng" selected>English</option>
+                <option value="hin">Hindi (हिन्दी)</option>
+                <option value="eng+hin">English + Hindi</option>
+              </select>
+            </div>
+            <div>
+              <label>Pages</label>
+              <input type="text" id="pdfocr-pages" placeholder="e.g. 1-5 (blank = all pages)">
+            </div>
+          </div>
+          <div class="grid-2" style="margin-top:10px">
+            <div>
+              <label>Render Scale (zyada = behtar accuracy, slow)</label>
+              <select id="pdfocr-scale">
+                <option value="2">2x (fast)</option>
+                <option value="3" selected>3x (recommended)</option>
+                <option value="4">4x (best accuracy, slow)</option>
+              </select>
+            </div>
+            <div>
+              <label>Pre-process</label>
+              <select id="pdfocr-preprocess">
+                <option value="none">None</option>
+                <option value="bw" selected>Black & White + Contrast (sharper)</option>
+              </select>
+            </div>
+          </div>
+          <p style="font-size:11px;color:var(--text3);margin-top:8px">⏱️ OCR har page par time leta hai (~5-20 sec/page, scale jitna zyada utna slow). Bade PDF mein sirf zaroori pages ka range daalo to fast hoga. Higher scale + B&W preprocessing se accuracy kaafi better hoti hai, especially chhote/blurry text par.</p>
+        </div>
+        <div class="btn-group" style="margin-top:0">
+          <button class="btn btn-primary" id="pdfocr-run-btn" onclick="doPdfOcr()">🖨️ Run OCR</button>
+        </div>
+        <div id="pdfocr-progress" style="display:none;margin-top:14px">
+          <div class="progress-label"><span id="pdfocr-progress-label">Starting...</span><span id="pdfocr-progress-pct">0%</span></div>
+          <div class="progress-bar"><div class="progress-bar-fill" id="pdfocr-progress-fill"></div></div>
+        </div>
+        <div id="pdfocr-result" style="margin-top:14px"></div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ PDF STAMP ═══════════════ -->
+    <div class="panel" id="panel-pdf-stamp">
+      <div class="panel-title">🏷️ Watermark / Page Numbers</div>
+      <div class="panel-sub">PDF par watermark ya page numbers add karo — lossless vector overlay, image quality 100% intact. Live preview niche dikhta hai.</div>
+
+      <div class="dropzone" id="dzwrap-pstamp" onclick="document.getElementById('pstamp-input').click()">
+        <input type="file" id="pstamp-input" accept="application/pdf" style="display:none" onchange="onPdfDropzoneChange(this)">
+        <div class="dz-spinner"><div class="spinner"></div></div>
+        <div class="dropzone-icon">🏷️</div>
+        <div class="dropzone-text">PDF load karo</div>
+      </div>
+
+      <div class="ws-bar" id="wsbar-pstamp" style="display:none"></div>
+
+      <div id="pstamp-loaded" style="display:none">
+        <div class="card">
+          <div class="tabs">
+            <div class="tab active" onclick="switchStampTab('wm',this)">🔒 Text Watermark</div>
+            <div class="tab" onclick="switchStampTab('img',this)">Image/Logo Watermark</div>
+            <div class="tab" onclick="switchStampTab('num',this)">Page Numbers</div>
+          </div>
+
+          <div class="tab-panel active" id="stamp-wm">
+            <div class="hint-banner" id="wm-lock-banner">🔒 Watermark <b>locked</b> hai — default <b>"@HANUMAN SINGH"</b> auto-apply hota hai. Customize (text/rotation/color/etc.) karne ke liye password se unlock karo.</div>
+            <div id="wm-lock-row" style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+              <input type="text" id="wm-unlock-pass" placeholder="Password (qchahiye ya 1234567890)" style="flex:1;min-width:180px">
+              <button class="btn btn-secondary btn-sm" onclick="wmUnlock()">🔓 Unlock</button>
+            </div>
+            <button class="btn btn-secondary btn-xs" id="wm-relock-btn" style="display:none;margin-bottom:10px" onclick="wmRelock()">🔒 Re-lock (default "@HANUMAN SINGH" pe wapas)</button>
+
+            <label>Watermark Text</label>
+            <input type="text" id="pst-text" value="@HANUMAN SINGH" style="margin-bottom:12px" oninput="renderStampPreview()">
+            <div class="grid-2">
+              <div><label>Font Size</label><input type="number" id="pst-fs" value="48" oninput="renderStampPreview()"></div>
+              <div><label>Opacity (%)</label><input type="number" id="pst-op" value="30" min="5" max="100" oninput="renderStampPreview()"></div>
+            </div>
+            <div class="grid-2" style="margin-top:10px">
+              <div><label>Rotation (°) — number</label><input type="number" id="pst-rot" value="-30" oninput="syncRotFromNumber()"></div>
+              <div><label>Color</label><input type="color" id="pst-color" value="#7c6af7" oninput="renderStampPreview()"></div>
+            </div>
+            <div style="margin-top:10px">
+              <label>Rotation (drag slider) <span id="pst-rot-val" style="color:var(--accent3);font-family:'JetBrains Mono',monospace">-30°</span></label>
+              <input type="range" id="pst-rot-slider" min="-180" max="180" value="-30" oninput="syncRotFromSlider(this.value)">
+            </div>
+          </div>
+
+          <div class="tab-panel" id="stamp-img">
+            <label>Logo / Stamp Image</label>
+            <div class="dropzone" style="padding:16px" onclick="document.getElementById('pst-img-input').click()">
+              <input type="file" id="pst-img-input" accept="image/*" style="display:none" onchange="loadStampImage(this)">
+              <div style="font-size:12px;color:var(--text2)" id="pst-img-label">Logo upload karo</div>
+            </div>
+            <div class="grid-2" style="margin-top:10px">
+              <div><label>Size (% of page width)</label><input type="number" id="pst-img-size" value="20" min="2" max="100" oninput="renderStampPreview()"></div>
+              <div><label>Opacity (%)</label><input type="number" id="pst-img-op" value="80" min="5" max="100" oninput="renderStampPreview()"></div>
+            </div>
+            <label style="margin-top:10px">Position</label>
+            <select id="pst-img-pos" onchange="renderStampPreview()">
+              <option value="center" selected>Center</option>
+              <option value="tl">Top Left</option><option value="tr">Top Right</option>
+              <option value="bl">Bottom Left</option><option value="br">Bottom Right</option>
+            </select>
+          </div>
+
+          <div class="tab-panel" id="stamp-num">
+            <div class="grid-2">
+              <div>
+                <label>Format</label>
+                <select id="psn-fmt" onchange="renderStampPreview()">
+                  <option value="{n}">1, 2, 3…</option>
+                  <option value="Page {n}">Page 1, Page 2…</option>
+                  <option value="{n}/{total}" selected>1 / 12</option>
+                  <option value="Page {n} of {total}">Page 1 of 12</option>
+                </select>
+              </div>
+              <div>
+                <label>Position</label>
+                <select id="psn-pos" onchange="renderStampPreview()">
+                  <option value="bc" selected>Bottom Center</option>
+                  <option value="br">Bottom Right</option>
+                  <option value="bl">Bottom Left</option>
+                  <option value="tc">Top Center</option>
+                </select>
+              </div>
+            </div>
+            <div class="grid-2" style="margin-top:10px">
+              <div><label>Font Size</label><input type="number" id="psn-fs" value="22" oninput="renderStampPreview()"></div>
+              <div><label>Start From</label><input type="number" id="psn-start" value="1" min="1" oninput="renderStampPreview()"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" id="stamp-preview-card">
+          <div class="card-title">LIVE PREVIEW (Page 1)</div>
+          <div id="stamp-preview-wrap" style="display:flex;justify-content:center;background:#3a3a4a;border-radius:8px;padding:14px;overflow:auto;max-height:500px"></div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="doPdfStamp()">🏷️ Apply & Download</button>
+          <button class="btn btn-secondary" onclick="applyStampToWorkspace()">✅ Use as Workspace PDF</button>
+        </div>
+        <div id="pstamp-result" style="margin-top:16px"></div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ PRINT STUDIO (point 13) ═══════════════ -->
+    <div class="panel" id="panel-pdf-print">
+      <div class="panel-title">🖨️ Print Studio</div>
+      <div class="panel-sub">PDF print karo — defaults theek hain, ya e-Mitra/Studio jaise multi-copy photo sheet ke liye custom layout banao.</div>
+
+      <div class="dropzone" id="dzwrap-pprint" onclick="document.getElementById('pprint-input').click()">
+        <input type="file" id="pprint-input" accept="application/pdf" style="display:none" onchange="onPdfDropzoneChange(this)">
+        <div class="dz-spinner"><div class="spinner"></div></div>
+        <div class="dropzone-icon">🖨️</div>
+        <div class="dropzone-text">PDF load karo (workspace se)</div>
+      </div>
+
+      <div class="ws-bar" id="wsbar-pprint" style="display:none"></div>
+
+      <div id="pprint-loaded" style="display:none">
+        <div class="card">
+          <div class="mode-toggle">
+            <div class="mode-btn active" id="pprint-mode-default" onclick="setPrintMode('default')">🖨️ Standard Print</div>
+            <div class="mode-btn" id="pprint-mode-custom" onclick="setPrintMode('custom')">🪪 Custom Multi-Copy Sheet (e-Mitra style)</div>
+          </div>
+
+          <div id="pprint-default-block">
+            <p style="font-size:12.5px;color:var(--text2)">PDF ek nayi tab mein khulegi, jahan se browser ka normal print dialog use kar sakte ho.</p>
+          </div>
+
+          <div id="pprint-custom-block" style="display:none">
+            <p style="font-size:12px;color:var(--text2);margin-bottom:10px">PDF ke pehle page ko ek sheet par multiple copies mein print-layout banayega — e-Mitra/Studio jaisi 4×6 inch par 8 photo sheet.</p>
+            <div class="grid-3">
+              <div><label>Copies</label>
+                <select id="pprint-copies">
+                  <option value="2">2</option><option value="4">4</option>
+                  <option value="6">6</option><option value="8" selected>8</option>
+                  <option value="12">12</option><option value="16">16</option>
+                </select>
+              </div>
+              <div><label>Item Size</label>
+                <select id="pprint-itemsize">
+                  <option value="passport">Passport (35×45mm)</option>
+                  <option value="stamp">Stamp (25×25mm)</option>
+                  <option value="emitra" selected>e-Mitra (3.5×4.5cm)</option>
+                  <option value="custom">Custom (below)</option>
+                </select>
+              </div>
+              <div><label>Sheet Size</label>
+                <select id="pprint-sheetsize">
+                  <option value="4x6" selected>4×6 inch</option>
+                  <option value="5x7">5×7 inch</option>
+                  <option value="a4">A4</option>
+                </select>
+              </div>
+            </div>
+            <div class="grid-2" id="pprint-custom-size-row" style="display:none;margin-top:10px">
+              <div><label>Width (mm)</label><input type="number" id="pprint-custom-w" value="35"></div>
+              <div><label>Height (mm)</label><input type="number" id="pprint-custom-h" value="45"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="doPrintStudio()">🖨️ Print</button>
+          <button class="btn btn-success" onclick="doPrintStudioDownload()">⬇️ Download as PDF instead</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ PDF LOCK / UNLOCK ═══════════════ -->
+    <div class="panel" id="panel-pdf-lock">
+      <div class="panel-title">🔐 PDF Lock / Unlock</div>
+      <div class="panel-sub">PDF ko password se encrypt karo. Offline, kisi server ki zarurat nahi.</div>
+
+      <div class="dropzone" id="dzwrap-pdflock" onclick="document.getElementById('pdflock-input').click()">
+        <input type="file" id="pdflock-input" accept="application/pdf" style="display:none" onchange="onPdfDropzoneChange(this)">
+        <div class="dz-spinner"><div class="spinner"></div></div>
+        <div class="dropzone-icon">🔐</div>
+        <div class="dropzone-text">PDF load karo (workspace se)</div>
+      </div>
+
+      <div class="ws-bar" id="wsbar-pdflock" style="display:none"></div>
+
+      <div id="pdflock-loaded" style="display:none">
+        <div class="card">
+          <div class="card-title">🔒 LOCK</div>
+          <label>Password (PDF open karne ke liye chahiye)</label>
+          <input type="text" id="pdflock-pass" placeholder="Password likho">
+          <div class="btn-group">
+            <button class="btn btn-primary" onclick="doPdfLockReal()">🔐 Encrypt & Download</button>
+          </div>
+          <p style="font-size:11px;color:var(--text3);margin-top:8px">Yeh ek <b>.lockpdf</b> file banata hai jo sirf isi tool mein sahi password se khulegi (browser-native PDF encryption standard yahan available nahi, isliye yeh wrapper-style protection hai).</p>
+        </div>
+      </div>
+
+      <hr class="section-divider">
+      <div class="card">
+        <div class="card-title">🔓 UNLOCK (.lockpdf)</div>
+        <input type="file" id="pdfunlock-input" accept=".lockpdf,.lock,.json" style="margin-bottom:10px">
+        <input type="text" id="pdfunlock-pass" placeholder="PDF ka password daalo">
+        <div class="btn-group">
+          <button class="btn btn-secondary" onclick="doPdfUnlockReal()">🔓 Unlock & Download</button>
+        </div>
+        <div id="pdfunlock-result" style="margin-top:12px"></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div class="credit-footer">PixelForge PDF Toolkit — fully offline, no uploads, no APIs</div>
+
+<script>
+// SCRIPT_SLOT
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+const Workspace = { pdf: null };
+
+function toggleDrawer() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('drawer-backdrop').classList.toggle('show'); }
+function closeDrawer() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('drawer-backdrop').classList.remove('show'); }
+
+function showPanel(id, evt) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const panel = document.getElementById('panel-' + id);
+  if (panel) panel.classList.add('active');
+  const navEl = (evt && evt.currentTarget) || document.querySelector('.nav-item[data-panel="' + id + '"]');
+  if (navEl) navEl.classList.add('active');
+  closeDrawer();
+  document.querySelector('.main').scrollTo({ top: 0, behavior: 'smooth' });
+  if (id === 'builder') requestAnimationFrame(() => builderRenderPage());
+}
+
+let toastTimer;
+function toast(msg, type='success') {
+  const t = document.getElementById('toast');
+  clearTimeout(toastTimer);
+  t.className = 'show ' + type;
+  document.getElementById('toast-msg').textContent = msg;
+  toastTimer = setTimeout(() => t.className = '', 3200);
+}
+function fmtSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1048576) return (bytes/1024).toFixed(1) + ' KB';
+  return (bytes/1048576).toFixed(2) + ' MB';
+}
+function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function clampQuality(q) { q = parseInt(q); if (isNaN(q)) return 70; return clamp(q, 1, 100); }
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1000);
+}
+// Convert a Uint8Array to a base64 string WITHOUT spreading it into
+// String.fromCharCode (spreading large typed arrays as function arguments
+// blows the JS call-stack — this was the root cause of the "Maximum call
+// stack size exceeded" crash in PDF Lock for any reasonably sized PDF).
+function bytesToBase64(bytes) {
+  let binary = '';
+  const chunkSize = 0x8000; // 32k chars at a time, safe for all browsers
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
+  }
+  return btoa(binary);
+}
+function base64ToBytes(b64) {
+  const binary = atob(b64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+function statHtml(items) {
+  return `<div class="stat-row">${items.map(([l,v,c]) =>
+    `<div class="stat"><div class="stat-label">${l}</div><div class="stat-val" style="color:${c||'var(--text)'}">${v}</div></div>`
+  ).join('')}</div>`;
+}
+function loadImageFromFile(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = e => { const img = new Image(); img.onload = () => res(img); img.onerror = () => rej(new Error('Image load fail')); img.src = e.target.result; };
+    r.onerror = () => rej(new Error('File read fail'));
+    r.readAsDataURL(file);
+  });
+}
+// Yield control back to the event loop — used to keep big-PDF processing
+// from freezing/crashing the tab (point 8's crash-on-long-file fix).
+function yieldToUI() { return new Promise(res => setTimeout(res, 0)); }
+
+function printBlob(blob) {
+  const url = URL.createObjectURL(blob);
+  let printed = false;
+  try {
+    const win = window.open(url, '_blank');
+    if (win) {
+      const tryPrint = () => { if (printed) return; printed = true; try { win.focus(); win.print(); } catch (e) {} };
+      win.addEventListener ? win.addEventListener('load', tryPrint) : null;
+      setTimeout(tryPrint, 900);
+      toast('🖨️ Nayi tab khuli — print dialog na aaye to wahan ke print icon se print karo', 'info');
+    } else {
+      toast('Popup block ho gaya — PDF nayi tab mein khol rahe hain', 'info');
+      window.location.href = url;
+    }
+  } catch (e) {
+    toast('Print open nahi hua, download ho raha hai', 'error');
+    downloadBlob(blob, 'print.pdf');
+  }
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+
+// ══════════════════════════════════════════
+//  WORKSPACE: PDF
+//
+//  FIX (issue #2): previously there was ONE shared Workspace.pdf, and
+//  "Clear" in any panel nulled it for every panel. Now each panel has its
+//  own independent "detached" flag (PanelDetached[key]) — loading a new
+//  file still auto-broadcasts to every panel (the part you liked), but
+//  hitting Clear in panel X only hides it from panel X; every other panel
+//  keeps using it untouched.
+//
+//  FIX (issue #3): race condition where switching the PDF mid-process made
+//  the OLD running job's result land on the NEW file (or vice-versa). Every
+//  load/clear now bumps `workspaceGen`. Every long-running async job
+//  captures `const myGen = workspaceGen` at the start and re-checks it
+//  before writing its final result — if the generation changed underneath
+//  it (user loaded/cleared a different file), the stale job silently
+//  discards its result instead of overwriting the new one.
+// ══════════════════════════════════════════
+const PDF_PANELS = [
+  { key: 'pdfc', dz: 'dzwrap-pdfc', bar: 'wsbar-pdfc', body: 'pdfc-loaded', onLoad: initPdfCompressFromWorkspace },
+  { key: 'pdfs', dz: 'dzwrap-pdfs', bar: 'wsbar-pdfs', body: 'pdfs-loaded', onLoad: initPdfSplitFromWorkspace },
+  { key: 'pdfr', dz: 'dzwrap-pdfr', bar: 'wsbar-pdfr', body: 'pdfr-loaded', onLoad: initPdfRotateFromWorkspace },
+  { key: 'p2i',  dz: 'dzwrap-p2i',  bar: 'wsbar-p2i',  body: 'p2i-loaded',  onLoad: initP2IFromWorkspace },
+  { key: 'pstamp', dz: 'dzwrap-pstamp', bar: 'wsbar-pstamp', body: 'pstamp-loaded', onLoad: initStampFromWorkspace },
+  { key: 'pdftext', dz: 'dzwrap-pdftext', bar: 'wsbar-pdftext', body: 'pdftext-loaded', onLoad: initPdfTextFromWorkspace },
+  { key: 'pdfocr', dz: 'dzwrap-pdfocr', bar: 'wsbar-pdfocr', body: 'pdfocr-loaded', onLoad: initPdfOcrFromWorkspace },
+  { key: 'pprint', dz: 'dzwrap-pprint', bar: 'wsbar-pprint', body: 'pprint-loaded', onLoad: initPrintStudioFromWorkspace },
+  { key: 'pdflock', dz: 'dzwrap-pdflock', bar: 'wsbar-pdflock', body: 'pdflock-loaded', onLoad: function(){} },
+];
+let workspaceGen = 0;
+const PanelDetached = {}; // panelKey -> true once that panel's Clear was pressed for the current file
+
+async function setWorkspacePdf(file) {
+  const ab = await file.arrayBuffer();
+  const doc = await pdfjsLib.getDocument({ data: ab }).promise;
+  Workspace.pdf = {
+    name: file.name, size: file.size, file, doc,
+    pages: Array.from({ length: doc.numPages }, (_, i) => ({ num: i + 1, rotation: 0 }))
+  };
+  workspaceGen++;
+  // a genuinely new file broadcasts to every panel again, including ones
+  // that had previously been individually cleared
+  Object.keys(PanelDetached).forEach(k => delete PanelDetached[k]);
+  toast('✅ ' + file.name + ' load ho gayi (' + doc.numPages + ' pages)');
+  refreshAllPdfPanels();
+}
+async function onPdfDropzoneChange(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  const dz = input.closest('.dropzone');
+  if (dz) dz.classList.add('loading');
+  try { await setWorkspacePdf(file); }
+  catch (e) { toast('❌ PDF load error: ' + e.message, 'error'); }
+  finally { if (dz) dz.classList.remove('loading'); input.value = ''; }
+}
+function triggerReplacePdf() { document.getElementById('universal-pdf-input').click(); }
+// panelKey is passed by each panel's Clear button — only that panel detaches.
+function clearWorkspacePdf(panelKey) {
+  if (panelKey) {
+    PanelDetached[panelKey] = true;
+    workspaceGen++; // invalidate any in-flight job that was using this panel's file
+    refreshAllPdfPanels();
+    toast('🗑 Is panel se PDF clear ho gayi (baaki panels untouched)', 'info');
+  } else {
+    // legacy/global clear (no panel context) — clears everywhere
+    Workspace.pdf = null;
+    pdfSplitLastDoc = null; pdfrLastDoc = null;
+    workspaceGen++;
+    PDF_PANELS.forEach(p => PanelDetached[p.key] = true);
+    refreshAllPdfPanels();
+    toast('🗑 PDF workspace clear', 'info');
+  }
+}
+function printWorkspacePdf() {
+  const ws = Workspace.pdf;
+  if (!ws || !ws.file) { toast('Pehle PDF load karo', 'error'); return; }
+  printBlob(ws.file);
+}
+function fillWorkspaceBar(el, panelKey) {
+  const ws = Workspace.pdf;
+  el.innerHTML = `
+    <div class="ws-thumb">📄</div>
+    <div class="ws-info">
+      <div class="ws-name"><span class="ws-dot"></span>${escapeHtml(ws.name)}</div>
+      <div class="ws-meta">${ws.pages.length} pages · ${fmtSize(ws.size)}</div>
+    </div>
+    <div class="ws-actions">
+      <button class="btn btn-secondary btn-sm" onclick="printWorkspacePdf()">🖨️ Print</button>
+      <button class="btn btn-secondary btn-sm" onclick="triggerReplacePdf()">🔄 Change</button>
+      <button class="btn btn-danger btn-sm" onclick="clearWorkspacePdf('${panelKey}')">🗑 Clear (sirf is panel se)</button>
+    </div>`;
+}
+function refreshAllPdfPanels() {
+  PDF_PANELS.forEach(p => {
+    const loaded = !!Workspace.pdf && !PanelDetached[p.key];
+    const dz = document.getElementById(p.dz), bar = document.getElementById(p.bar), body = document.getElementById(p.body);
+    if (dz) dz.style.display = loaded ? 'none' : 'block';
+    if (bar) { bar.style.display = loaded ? 'flex' : 'none'; if (loaded) fillWorkspaceBar(bar, p.key); }
+    if (body) body.style.display = loaded ? 'block' : 'none';
+    if (loaded && p.onLoad) p.onLoad();
+  });
+}
+// FIX (issue #1, partial): renderPageToCanvasWithRotation is used heavily
+// in thumbnail grids and batch loops. For 200+ page documents, keeping
+// hundreds of full-resolution <canvas> elements alive simultaneously is
+// what exhausts memory and crashes the tab. Callers that only need a
+// thumbnail/snapshot should now convert to a dataURL and immediately
+// release the canvas (see renderSplitThumbs/renderPdfrThumbs below).
+//
+// FIX (round 3): the freeze + tofu/box-glyph rendering + crash on big
+// files came from a DIFFERENT cause than page count — a single
+// poster-sized or very-high-DPI-scanned page can demand a canvas of, say,
+// 12000×16000px. That's ~768MB for ONE canvas (width × height × 4 bytes),
+// allocated synchronously in one tick — enough to instantly exhaust
+// available memory regardless of how careful the rest of the app is, and
+// the box-glyph rendering you saw is the browser's renderer itself
+// starving for memory right before the tab dies. Now every canvas render
+// is hard-capped to MAX_CANVAS_DIM on its longest side; if a page would
+// exceed that, we silently scale the request down to fit. This trades a
+// little resolution on extreme pages for never blowing up the tab.
+const MAX_CANVAS_DIM = 3000; // px, on the longer side — safe across all devices
+async function renderPageToCanvasWithRotation(doc, pageObj, scale) {
+  const page = await doc.getPage(pageObj.num);
+  let vp = page.getViewport({ scale, rotation: pageObj.rotation });
+  if (vp.width > MAX_CANVAS_DIM || vp.height > MAX_CANVAS_DIM) {
+    const capScale = Math.min(MAX_CANVAS_DIM / vp.width, MAX_CANVAS_DIM / vp.height) * scale;
+    vp = page.getViewport({ scale: capScale, rotation: pageObj.rotation });
+  }
+  const c = document.createElement('canvas');
+  c.width = Math.max(1, Math.round(vp.width));
+  c.height = Math.max(1, Math.round(vp.height));
+  await page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
+  // FIX (root cause of "background apps also crashed"): pdf.js decodes the
+  // FULL-RESOLUTION embedded image internally as part of rendering, even
+  // when the output canvas/thumbnail is tiny — and it keeps that decoded
+  // data cached on the Page object until told otherwise. Across 300-400
+  // pages of a scanned PDF, those decoded buffers pile up and can exhaust
+  // total SYSTEM memory (not just the tab), which is exactly what takes
+  // other background apps down with it. page.cleanup() releases that
+  // page's cached resources immediately after we've extracted our canvas.
+  try { page.cleanup(); } catch (e) {}
+  return c;
+}
+function freeCanvas(c) { try { c.width = 0; c.height = 0; } catch(e) {} }
+
+document.addEventListener('DOMContentLoaded', () => { refreshAllPdfPanels(); builderInit(); });
+refreshAllPdfPanels();
+
+document.querySelectorAll('.dropzone').forEach(dz => {
+  if (dz.dataset.dndBound) return;
+  dz.dataset.dndBound = '1';
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
+  dz.addEventListener('drop', e => {
+    e.preventDefault(); dz.classList.remove('drag');
+    const input = dz.querySelector('input[type=file]');
+    if (input && e.dataTransfer.files.length) {
+      const dt = new DataTransfer();
+      Array.from(e.dataTransfer.files).forEach(f => dt.items.add(f));
+      input.files = dt.files;
+      input.dispatchEvent(new Event('change'));
+    }
+  });
+});
+
+// ══════════════════════════════════════════
+//  PDF BUILDER / WRITER (point 15)
+//  Coordinate system: everything is stored in PDF points (1/72 inch) with
+//  TOP-LEFT origin (matches screen/DOM convention). When generating the
+//  actual PDF via pdf-lib (which uses BOTTOM-LEFT origin), we convert with
+//  pdfY = pageHeight - topY - elementHeight at draw time — this is the only
+//  place the coordinate flip happens, so the editor itself stays simple.
+// ══════════════════════════════════════════
+const PAGE_SIZES_PT = { a4: [595.28, 841.89], letter: [612, 792], a5: [419.53, 595.28], legal: [612, 1008] };
+let Builder = {
+  pages: [ { w: 595.28, h: 841.89, bgColor: '#ffffff', bgImageData: null, bgFit: 'cover', elements: [] } ],
+  curPage: 0,
+  selectedId: null,
+  zoom: 1,
+  nextId: 1
+};
+
+function builderInit() {
+  builderRefreshPageSelect();
+  builderRenderPage();
+}
+function builderNewId() { return 'el' + (Builder.nextId++); }
+function builderCurPage() { return Builder.pages[Builder.curPage]; }
+
+function builderChangePageSize() {
+  const sizeKey = document.getElementById('bld-page-size').value;
+  const orient = document.getElementById('bld-orient').value;
+  let [w, h] = PAGE_SIZES_PT[sizeKey];
+  if (orient === 'landscape') [w, h] = [h, w];
+  const p = builderCurPage();
+  p.w = w; p.h = h;
+  builderRenderPage();
+}
+function builderRefreshPageSelect() {
+  const sel = document.getElementById('bld-page-select');
+  sel.innerHTML = Builder.pages.map((p, i) => `<option value="${i}">Page ${i+1}</option>`).join('');
+  sel.value = Builder.curPage;
+}
+function builderSwitchPage(idx) {
+  Builder.curPage = parseInt(idx);
+  Builder.selectedId = null;
+  const p = builderCurPage();
+  document.getElementById('bld-page-bg').value = p.bgColor || '#ffffff';
+  builderUpdateBgFitRow();
+  builderRenderPage();
+  builderRenderProps();
+}
+function builderUpdateBgFitRow() {
+  const p = builderCurPage();
+  const row = document.getElementById('bld-bg-fit-row');
+  if (!row) return;
+  row.style.display = p.bgImageData ? 'block' : 'none';
+  const sel = document.getElementById('bld-bg-fit');
+  if (sel) sel.value = p.bgFit || 'cover';
+}
+function builderAddPage() {
+  const cur = builderCurPage();
+  Builder.pages.push({ w: cur.w, h: cur.h, bgColor: '#ffffff', bgImageData: null, bgFit: 'cover', elements: [] });
+  Builder.curPage = Builder.pages.length - 1;
+  builderRefreshPageSelect();
+  builderRenderPage();
+  toast('➕ Naya page add ho gaya');
+}
+function builderDeletePage() {
+  if (Builder.pages.length <= 1) { toast('Kam se kam 1 page rehna chahiye', 'error'); return; }
+  Builder.pages.splice(Builder.curPage, 1);
+  Builder.curPage = clamp(Builder.curPage, 0, Builder.pages.length - 1);
+  Builder.selectedId = null;
+  builderRefreshPageSelect();
+  builderRenderPage();
+  toast('🗑 Page delete ho gaya', 'info');
+}
+function builderSetPageColor(hex) { builderCurPage().bgColor = hex; builderRenderPage(); }
+function builderSetBgFit(fit) { builderCurPage().bgFit = fit; builderRenderPage(); }
+function builderSetBackground(input) {
+  const file = input.files[0]; if (!file) return;
+  loadImageFromFile(file).then(img => {
+    const p = builderCurPage();
+    p.bgImageData = img.src;
+    if (!p.bgFit) p.bgFit = 'cover';
+    builderUpdateBgFitRow();
+    builderRenderPage();
+    toast('🎨 Background image set ho gaya');
+  });
+  input.value = '';
+}
+function builderClearBackground() { builderCurPage().bgImageData = null; builderUpdateBgFitRow(); builderRenderPage(); }
+
+function builderAddElement(el) {
+  el.id = builderNewId();
+  if (el.rotation === undefined) el.rotation = 0;
+  builderCurPage().elements.push(el);
+  Builder.selectedId = el.id;
+  builderRenderPage();
+  builderRenderProps();
+}
+function builderAddText() {
+  builderAddElement({ type: 'text', x: 60, y: 60, w: 220, h: 30, text: 'Apna text yahan likho', fontSize: 14, color: '#000000', align: 'left', bold: false, italic: false, font: 'Helvetica', rotation: 0 });
+}
+function builderAddHeading() {
+  builderAddElement({ type: 'text', x: 60, y: 50, w: 400, h: 40, text: 'Heading Text', fontSize: 26, color: '#111111', align: 'left', bold: true, italic: false, font: 'Helvetica', rotation: 0 });
+}
+function builderAddWatermarkEl() {
+  // Issue #5: same locked watermark concept as the Stamp tool — defaults
+  // to "@HANUMAN SINGH", locked=true. Unlock with the same passwords from
+  // the properties panel to customize text/rotation/etc.
+  builderAddElement({ type: 'watermark', x: 100, y: 350, w: 350, h: 80, text: WM_DEFAULT_TEXT, fontSize: 40, color: '#7c6af7', opacity: 30, rotation: -30, locked: true });
+}
+function builderAddPageNumEl() {
+  builderAddElement({ type: 'pagenum', x: 250, y: 800, w: 100, h: 24, format: '{n}/{total}', fontSize: 12, color: '#444444', align: 'center', rotation: 0 });
+}
+function builderAddImage(input) {
+  const file = input.files[0]; if (!file) return;
+  loadImageFromFile(file).then(img => {
+    const maxW = 250;
+    const ratio = Math.min(1, maxW / img.width);
+    builderAddElement({ type: 'image', x: 80, y: 80, w: img.width*ratio, h: img.height*ratio, src: img.src, naturalW: img.width, naturalH: img.height, rotation: 0 });
+  });
+  input.value = '';
+}
+function builderAddTable() {
+  const rows = 3, cols = 3;
+  const data = Array.from({length: rows}, (_, r) => Array.from({length: cols}, (_, c) => r===0 ? `Header ${c+1}` : `Cell ${r},${c+1}`));
+  builderAddElement({ type: 'table', x: 60, y: 120, w: 320, h: 100, rows, cols, data, fontSize: 10, headerBg: '#7c6af7', headerColor: '#ffffff', borderColor: '#888888', rotation: 0 });
+}
+function builderAddShape(shapeType) {
+  if (shapeType === 'rect') builderAddElement({ type: 'rect', x: 80, y: 100, w: 180, h: 100, fillColor: '#7c6af7', fillOpacity: 20, borderColor: '#7c6af7', borderWidth: 2, rotation: 0 });
+  else builderAddElement({ type: 'line', x: 60, y: 150, w: 300, h: 0, borderColor: '#222222', borderWidth: 2, rotation: 0 });
+}
+function builderFindEl(id) { return builderCurPage().elements.find(e => e.id === id); }
+function builderDeleteEl(id) {
+  const p = builderCurPage();
+  p.elements = p.elements.filter(e => e.id !== id);
+  if (Builder.selectedId === id) Builder.selectedId = null;
+  builderRenderPage(); builderRenderProps();
+}
+function builderDuplicateEl(id) {
+  const el = builderFindEl(id); if (!el) return;
+  const copy = JSON.parse(JSON.stringify(el));
+  copy.id = builderNewId(); copy.x += 14; copy.y += 14;
+  builderCurPage().elements.push(copy);
+  Builder.selectedId = copy.id;
+  builderRenderPage(); builderRenderProps();
+}
+
+// ---- Rendering the visual canvas (screen-space, scaled by Builder.zoom) ----
+function builderRenderPage() {
+  const wrap = document.querySelector('.builder-canvas-wrap');
+  if (!wrap) return;
+  const page = builderCurPage();
+  const pageEl = document.getElementById('builder-page');
+  const availW = Math.max(280, wrap.clientWidth - 40);
+  Builder.zoom = Math.min(1, availW / page.w, (window.innerHeight*0.65) / page.h);
+  const dispW = page.w * Builder.zoom, dispH = page.h * Builder.zoom;
+  pageEl.style.width = dispW + 'px';
+  pageEl.style.height = dispH + 'px';
+  if (page.bgImageData) {
+    const fit = page.bgFit || 'cover';
+    const sizeMap = { cover: 'cover', contain: 'contain', stretch: '100% 100%' };
+    pageEl.style.background = `url(${page.bgImageData}) center/${sizeMap[fit]} no-repeat`;
+    pageEl.style.backgroundColor = page.bgColor;
+  } else {
+    pageEl.style.background = page.bgColor;
+  }
+  pageEl.innerHTML = '';
+  page.elements.forEach(el => pageEl.appendChild(builderRenderElDom(el)));
+  builderRenderLayers();
+}
+function builderElLabel(el) {
+  if (el.type === 'text') return (el.bold ? '🅰️ ' : '🔤 ') + (el.text || '').slice(0, 18);
+  if (el.type === 'image') return '🖼️ Image';
+  if (el.type === 'table') return `▦ Table ${el.rows}×${el.cols}`;
+  if (el.type === 'rect') return '▭ Rectangle';
+  if (el.type === 'line') return '➖ Line';
+  if (el.type === 'watermark') return '🔖 ' + el.text;
+  if (el.type === 'pagenum') return '🔢 Page Number';
+  return el.type;
+}
+function builderRenderElDom(el) {
+  const z = Builder.zoom;
+  const div = document.createElement('div');
+  div.className = 'builder-el' + (Builder.selectedId === el.id ? ' selected' : '');
+  div.style.left = (el.x * z) + 'px';
+  div.style.top = (el.y * z) + 'px';
+  div.style.width = (el.w * z) + 'px';
+  div.style.height = (Math.max(el.h, el.type==='line'?2:el.h) * z) + 'px';
+  div.dataset.id = el.id;
+  const rot = el.rotation || 0;
+  if (el.type !== 'watermark') div.style.transform = rot ? `rotate(${rot}deg)` : '';
+
+  let inner = '';
+  if (el.type === 'text') {
+    inner = `<div style="width:100%;height:100%;font-size:${el.fontSize*z}px;color:${el.color};font-weight:${el.bold?'700':'400'};font-style:${el.italic?'italic':'normal'};text-align:${el.align};font-family:${el.font==='Times'?'Georgia,serif':el.font==='Courier'?'monospace':'Space Grotesk,sans-serif'};overflow:hidden;line-height:1.25;white-space:pre-wrap;word-break:break-word;pointer-events:none">${escapeHtml(el.text)}</div>`;
+  } else if (el.type === 'watermark') {
+    inner = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:${el.fontSize*z}px;color:${el.color};opacity:${el.opacity/100};transform:rotate(${el.rotation}deg);font-weight:700;pointer-events:none;white-space:nowrap">${escapeHtml(el.text)}</div>`;
+  } else if (el.type === 'pagenum') {
+    const preview = el.format.replace('{n}','1').replace('{total}', String(Builder.pages.length));
+    inner = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:${el.align==='center'?'center':el.align==='right'?'flex-end':'flex-start'};font-size:${el.fontSize*z}px;color:${el.color};pointer-events:none">${preview}</div>`;
+  } else if (el.type === 'image') {
+    inner = `<img src="${el.src}" style="width:100%;height:100%;object-fit:fill;pointer-events:none;display:block">`;
+  } else if (el.type === 'rect') {
+    inner = `<div style="width:100%;height:100%;background:${el.fillColor};opacity:${el.fillOpacity/100};border:${el.borderWidth*z}px solid ${el.borderColor};box-sizing:border-box;pointer-events:none"></div>`;
+  } else if (el.type === 'line') {
+    inner = `<div style="width:100%;height:${Math.max(1,el.borderWidth*z)}px;background:${el.borderColor};margin-top:${(el.h*z)/2}px;pointer-events:none"></div>`;
+  } else if (el.type === 'table') {
+    let rowsHtml = '';
+    const rowH = 100/el.rows;
+    for (let r=0;r<el.rows;r++) {
+      let cellsHtml = '';
+      for (let c=0;c<el.cols;c++) {
+        const isHeader = r===0;
+        cellsHtml += `<td style="border:1px solid ${el.borderColor};padding:${2*z}px ${4*z}px;font-size:${el.fontSize*z}px;background:${isHeader?el.headerBg:'transparent'};color:${isHeader?el.headerColor:'#000'};font-weight:${isHeader?'700':'400'};overflow:hidden">${escapeHtml(el.data[r][c]||'')}</td>`;
+      }
+      rowsHtml += `<tr style="height:${rowH}%">${cellsHtml}</tr>`;
+    }
+    inner = `<table style="width:100%;height:100%;border-collapse:collapse;table-layout:fixed;pointer-events:none">${rowsHtml}</table>`;
+  }
+  div.innerHTML = inner + `<div class="el-handle se"></div><div class="el-handle del">✕</div>`;
+
+  div.addEventListener('pointerdown', e => builderStartDrag(e, el, div));
+  div.querySelector('.el-handle.del').addEventListener('click', e => { e.stopPropagation(); builderDeleteEl(el.id); });
+  div.querySelector('.el-handle.se').addEventListener('pointerdown', e => { e.stopPropagation(); e.preventDefault(); builderStartResize(e, el, div); });
+  return div;
+}
+function builderRenderLayers() {
+  const layersDiv = document.getElementById('builder-layers');
+  if (!layersDiv) return;
+  const els = builderCurPage().elements;
+  if (!els.length) { layersDiv.innerHTML = '<p style="font-size:11.5px;color:var(--text3)">Is page par koi element nahi hai.</p>'; return; }
+  layersDiv.innerHTML = els.map(el => `<div class="layer-row ${Builder.selectedId===el.id?'selected':''}" onclick="builderSelectEl('${el.id}')">
+    <span class="name">${builderElLabel(el)}</span>
+    <button class="btn btn-xs btn-secondary" onclick="event.stopPropagation();builderDuplicateEl('${el.id}')">⧉</button>
+    <button class="btn btn-xs btn-danger" onclick="event.stopPropagation();builderDeleteEl('${el.id}')">✕</button>
+  </div>`).join('');
+}
+function builderSelectEl(id) { Builder.selectedId = id; builderRenderPage(); builderRenderProps(); }
+
+// ---- Drag / Resize via pointer events ----
+// FIX (issue #1): dragging elements (especially table/line) used to feel
+// "sticky" and would drag the whole page/scroll the viewport along with it.
+// Root cause: pointerdown wasn't calling preventDefault() and elements
+// lacked touch-action:none, so the browser's native touch-scroll/selection
+// gesture competed with our drag handler on every move event, causing janky
+// movement + page scroll. Fix: preventDefault + setPointerCapture + CSS
+// touch-action:none (see stylesheet) on every draggable/resizable node.
+function builderStartDrag(e, el, div) {
+  e.stopPropagation();
+  e.preventDefault();
+  Builder.selectedId = el.id;
+  builderRenderPage(); builderRenderProps();
+  const liveDivInitial = document.querySelector(`.builder-el[data-id="${el.id}"]`);
+  try { liveDivInitial && liveDivInitial.setPointerCapture(e.pointerId); } catch(err) {}
+  const z = Builder.zoom;
+  const startX = e.clientX, startY = e.clientY;
+  const origX = el.x, origY = el.y;
+  const pageW = builderCurPage().w, pageH = builderCurPage().h;
+  function onMove(ev) {
+    ev.preventDefault();
+    const dx = (ev.clientX - startX) / z, dy = (ev.clientY - startY) / z;
+    el.x = clamp(origX + dx, 0, Math.max(0, pageW - el.w));
+    el.y = clamp(origY + dy, 0, Math.max(0, pageH - el.h));
+    const liveDiv = document.querySelector(`.builder-el[data-id="${el.id}"]`);
+    if (liveDiv) { liveDiv.style.left = (el.x*z)+'px'; liveDiv.style.top = (el.y*z)+'px'; }
+  }
+  function onUp(ev) {
+    document.removeEventListener('pointermove', onMove);
+    document.removeEventListener('pointerup', onUp);
+    try { liveDivInitial && liveDivInitial.releasePointerCapture(e.pointerId); } catch(err) {}
+    builderRenderProps();
+  }
+  document.addEventListener('pointermove', onMove, { passive: false });
+  document.addEventListener('pointerup', onUp, { passive: false });
+}
+function builderStartResize(e, el, div) {
+  e.stopPropagation();
+  e.preventDefault();
+  const handle = e.target;
+  try { handle.setPointerCapture(e.pointerId); } catch(err) {}
+  const z = Builder.zoom;
+  const startX = e.clientX, startY = e.clientY;
+  const origW = el.w, origH = el.h;
+  const pageW = builderCurPage().w, pageH = builderCurPage().h;
+  function onMove(ev) {
+    ev.preventDefault();
+    const dx = (ev.clientX - startX) / z, dy = (ev.clientY - startY) / z;
+    el.w = clamp(origW + dx, 16, pageW - el.x);
+    if (el.type !== 'line') el.h = clamp(origH + dy, el.type==='text'||el.type==='watermark'||el.type==='pagenum' ? 14 : 16, pageH - el.y);
+    const liveDiv = document.querySelector(`.builder-el[data-id="${el.id}"]`);
+    if (liveDiv) { liveDiv.style.width=(el.w*z)+'px'; liveDiv.style.height=(Math.max(el.h,2)*z)+'px'; }
+  }
+  function onUp(ev) {
+    document.removeEventListener('pointermove', onMove);
+    document.removeEventListener('pointerup', onUp);
+    try { handle.releasePointerCapture(e.pointerId); } catch(err) {}
+    builderRenderPage(); builderRenderProps();
+  }
+  document.addEventListener('pointermove', onMove, { passive: false });
+  document.addEventListener('pointerup', onUp, { passive: false });
+}
+document.addEventListener('DOMContentLoaded', () => {
+  const pageEl = document.getElementById('builder-page');
+  if (pageEl) pageEl.addEventListener('pointerdown', e => { if (e.target === pageEl) { Builder.selectedId = null; builderRenderPage(); builderRenderProps(); } });
+});
+
+// ---- Properties panel ----
+function builderUpdateEl(id, patch) {
+  const el = builderFindEl(id); if (!el) return;
+  Object.assign(el, patch);
+  builderRenderPage(); builderRenderProps();
+}
+function builderRenderProps() {
+  const body = document.getElementById('builder-props-body');
+  if (!body) return;
+  const el = Builder.selectedId ? builderFindEl(Builder.selectedId) : null;
+  if (!el) { body.innerHTML = '<p style="font-size:12px;color:var(--text3)">Kisi element ko select karo (click karo) properties dekhne ke liye.</p>'; return; }
+
+  const posBlock = `<div class="grid-2" style="margin-bottom:10px">
+    <div><label>X (pt)</label><input type="number" value="${Math.round(el.x)}" onchange="builderUpdateEl('${el.id}',{x:clamp(parseFloat(this.value)||0,0,builderCurPage().w-el.w)})"></div>
+    <div><label>Y (pt)</label><input type="number" value="${Math.round(el.y)}" onchange="builderUpdateEl('${el.id}',{y:clamp(parseFloat(this.value)||0,0,builderCurPage().h-el.h)})"></div>
+    <div><label>Width</label><input type="number" value="${Math.round(el.w)}" onchange="builderUpdateEl('${el.id}',{w:clamp(parseFloat(this.value)||10,10,builderCurPage().w)})"></div>
+    <div><label>Height</label><input type="number" value="${Math.round(el.h)}" ${el.type==='line'?'disabled':''} onchange="builderUpdateEl('${el.id}',{h:clamp(parseFloat(this.value)||10,10,builderCurPage().h)})"></div>
+  </div>`;
+  const rotBlock = el.type !== 'watermark' ? `<div style="margin-bottom:10px">
+    <label>Rotation (drag) <span style="color:var(--accent3);font-family:'JetBrains Mono',monospace">${el.rotation||0}°</span></label>
+    <input type="range" min="-180" max="180" value="${el.rotation||0}" oninput="builderUpdateEl('${el.id}',{rotation:parseFloat(this.value)})">
+  </div>` : '';
+
+  let specific = '';
+  if (el.type === 'text') {
+    specific = `<label>Text</label><textarea rows="3" onchange="builderUpdateEl('${el.id}',{text:this.value})">${escapeHtml(el.text)}</textarea>
+      <div class="grid-2" style="margin-top:8px">
+        <div><label>Font Size</label><input type="number" value="${el.fontSize}" onchange="builderUpdateEl('${el.id}',{fontSize:parseFloat(this.value)||12})"></div>
+        <div><label>Color</label><input type="color" value="${el.color}" onchange="builderUpdateEl('${el.id}',{color:this.value})"></div>
+      </div>
+      <div class="grid-2" style="margin-top:8px">
+        <div><label>Font</label><select onchange="builderUpdateEl('${el.id}',{font:this.value})">
+          <option value="Helvetica" ${el.font==='Helvetica'?'selected':''}>Helvetica</option>
+          <option value="Times" ${el.font==='Times'?'selected':''}>Times</option>
+          <option value="Courier" ${el.font==='Courier'?'selected':''}>Courier</option>
+        </select></div>
+        <div><label>Align</label><select onchange="builderUpdateEl('${el.id}',{align:this.value})">
+          <option value="left" ${el.align==='left'?'selected':''}>Left</option>
+          <option value="center" ${el.align==='center'?'selected':''}>Center</option>
+          <option value="right" ${el.align==='right'?'selected':''}>Right</option>
+        </select></div>
+      </div>
+      <div style="display:flex;gap:14px;margin-top:8px">
+        <label class="checkbox-wrap"><input type="checkbox" ${el.bold?'checked':''} onchange="builderUpdateEl('${el.id}',{bold:this.checked})"><span>Bold</span></label>
+        <label class="checkbox-wrap"><input type="checkbox" ${el.italic?'checked':''} onchange="builderUpdateEl('${el.id}',{italic:this.checked})"><span>Italic</span></label>
+      </div>`;
+  } else if (el.type === 'watermark') {
+    const locked = el.locked !== false;
+    const lockUi = locked
+      ? `<div class="hint-banner">🔒 Locked — default "@HANUMAN SINGH". Password se unlock karo.</div>
+         <div style="display:flex;gap:6px;margin-bottom:10px">
+           <input type="text" id="bld-wm-pass-${el.id}" placeholder="Password" style="flex:1">
+           <button class="btn btn-secondary btn-sm" onclick="builderWmUnlock('${el.id}')">🔓</button>
+         </div>`
+      : `<button class="btn btn-secondary btn-xs" style="margin-bottom:10px" onclick="builderWmRelock('${el.id}')">🔒 Re-lock</button>`;
+    specific = lockUi + `<label>Text</label><input type="text" value="${escapeHtml(el.text)}" ${locked?'disabled':''} onchange="builderUpdateEl('${el.id}',{text:this.value})">
+      <div class="grid-2" style="margin-top:8px">
+        <div><label>Font Size</label><input type="number" value="${el.fontSize}" ${locked?'disabled':''} onchange="builderUpdateEl('${el.id}',{fontSize:parseFloat(this.value)||12})"></div>
+        <div><label>Color</label><input type="color" value="${el.color}" ${locked?'disabled':''} onchange="builderUpdateEl('${el.id}',{color:this.value})"></div>
+      </div>
+      <div class="grid-2" style="margin-top:8px">
+        <div><label>Opacity %</label><input type="number" value="${el.opacity}" min="5" max="100" ${locked?'disabled':''} onchange="builderUpdateEl('${el.id}',{opacity:clamp(parseFloat(this.value)||25,5,100)})"></div>
+        <div><label>Rotation ° (number)</label><input type="number" value="${el.rotation}" ${locked?'disabled':''} onchange="builderUpdateEl('${el.id}',{rotation:parseFloat(this.value)||0})"></div>
+      </div>
+      <div style="margin-top:8px">
+        <label>Rotation (drag slider) <span style="color:var(--accent3);font-family:'JetBrains Mono',monospace">${el.rotation}°</span></label>
+        <input type="range" min="-180" max="180" value="${el.rotation}" ${locked?'disabled':''} oninput="builderUpdateEl('${el.id}',{rotation:parseFloat(this.value)})">
+      </div>
+      <button class="btn btn-secondary btn-sm" style="margin-top:6px" onclick="builderApplyElToAllPages('${el.id}')">📋 Is watermark ko sab pages par copy karo</button>`;
+  } else if (el.type === 'pagenum') {
+    specific = `<label>Format</label><select onchange="builderUpdateEl('${el.id}',{format:this.value})">
+        <option value="{n}" ${el.format==='{n}'?'selected':''}>1, 2, 3…</option>
+        <option value="Page {n}" ${el.format==='Page {n}'?'selected':''}>Page 1…</option>
+        <option value="{n}/{total}" ${el.format==='{n}/{total}'?'selected':''}>1/12</option>
+        <option value="Page {n} of {total}" ${el.format==='Page {n} of {total}'?'selected':''}>Page 1 of 12</option>
+      </select>
+      <div class="grid-2" style="margin-top:8px">
+        <div><label>Font Size</label><input type="number" value="${el.fontSize}" onchange="builderUpdateEl('${el.id}',{fontSize:parseFloat(this.value)||10})"></div>
+        <div><label>Color</label><input type="color" value="${el.color}" onchange="builderUpdateEl('${el.id}',{color:this.value})"></div>
+      </div>
+      <button class="btn btn-secondary btn-sm" style="margin-top:8px" onclick="builderApplyElToAllPages('${el.id}')">📋 Sab pages par copy karo</button>`;
+  } else if (el.type === 'image') {
+    specific = `<p style="font-size:11.5px;color:var(--text2);margin-bottom:8px">Image ko corner-handle se drag karke resize karo.</p>
+      <button class="btn btn-secondary btn-sm" onclick="builderUpdateEl('${el.id}',{h: el.w * (el.naturalH/el.naturalW)})">📐 Reset Aspect Ratio</button>`;
+  } else if (el.type === 'rect') {
+    specific = `<div class="grid-2">
+        <div><label>Fill Color</label><input type="color" value="${el.fillColor}" onchange="builderUpdateEl('${el.id}',{fillColor:this.value})"></div>
+        <div><label>Fill Opacity %</label><input type="number" value="${el.fillOpacity}" onchange="builderUpdateEl('${el.id}',{fillOpacity:clamp(parseFloat(this.value)||0,0,100)})"></div>
+        <div><label>Border Color</label><input type="color" value="${el.borderColor}" onchange="builderUpdateEl('${el.id}',{borderColor:this.value})"></div>
+        <div><label>Border Width</label><input type="number" value="${el.borderWidth}" onchange="builderUpdateEl('${el.id}',{borderWidth:clamp(parseFloat(this.value)||0,0,20)})"></div>
+      </div>`;
+  } else if (el.type === 'line') {
+    specific = `<div class="grid-2">
+        <div><label>Color</label><input type="color" value="${el.borderColor}" onchange="builderUpdateEl('${el.id}',{borderColor:this.value})"></div>
+        <div><label>Thickness</label><input type="number" value="${el.borderWidth}" onchange="builderUpdateEl('${el.id}',{borderWidth:clamp(parseFloat(this.value)||1,1,20)})"></div>
+      </div>`;
+  } else if (el.type === 'table') {
+    specific = `<div class="grid-2">
+        <div><label>Rows</label><input type="number" min="1" max="20" value="${el.rows}" onchange="builderTableResize('${el.id}', parseInt(this.value)||1, ${el.cols})"></div>
+        <div><label>Cols</label><input type="number" min="1" max="10" value="${el.cols}" onchange="builderTableResize('${el.id}', ${el.rows}, parseInt(this.value)||1)"></div>
+      </div>
+      <div class="grid-2" style="margin-top:8px">
+        <div><label>Header BG</label><input type="color" value="${el.headerBg}" onchange="builderUpdateEl('${el.id}',{headerBg:this.value})"></div>
+        <div><label>Font Size</label><input type="number" value="${el.fontSize}" onchange="builderUpdateEl('${el.id}',{fontSize:parseFloat(this.value)||10})"></div>
+      </div>
+      <label style="margin-top:8px">Cell Content (click karke edit karo)</label>
+      <div id="bld-table-editor" style="max-height:220px;overflow:auto;margin-top:6px"></div>`;
+  }
+  body.innerHTML = posBlock + rotBlock + specific;
+  if (el.type === 'table') builderRenderTableEditor(el);
+}
+function builderTableResize(id, rows, cols) {
+  const el = builderFindEl(id); if (!el) return;
+  rows = clamp(rows,1,20); cols = clamp(cols,1,10);
+  const newData = Array.from({length:rows}, (_,r) => Array.from({length:cols}, (_,c) => (el.data[r] && el.data[r][c]) || (r===0?`Header ${c+1}`:'')));
+  el.rows = rows; el.cols = cols; el.data = newData;
+  builderRenderPage(); builderRenderProps();
+}
+function builderRenderTableEditor(el) {
+  const div = document.getElementById('bld-table-editor');
+  if (!div) return;
+  let html = '<table style="width:100%;border-collapse:collapse">';
+  for (let r=0;r<el.rows;r++) {
+    html += '<tr>';
+    for (let c=0;c<el.cols;c++) {
+      html += `<td style="padding:2px"><input type="text" value="${escapeHtml(el.data[r][c]||'')}" style="font-size:11px;padding:5px 6px" onchange="builderTableCellEdit('${el.id}',${r},${c},this.value)"></td>`;
+    }
+    html += '</tr>';
+  }
+  html += '</table>';
+  div.innerHTML = html;
+}
+function builderTableCellEdit(id, r, c, val) {
+  const el = builderFindEl(id); if (!el) return;
+  el.data[r][c] = val;
+  builderRenderPage();
+}
+function builderWmUnlock(id) {
+  const el = builderFindEl(id); if (!el) return;
+  const pass = document.getElementById('bld-wm-pass-' + id).value;
+  if (WM_PASSWORDS.includes(pass)) {
+    el.locked = false;
+    builderRenderProps();
+    toast('🔓 Watermark unlock ho gaya — customize kar sakte ho');
+  } else {
+    toast('❌ Galat password', 'error');
+  }
+}
+function builderWmRelock(id) {
+  const el = builderFindEl(id); if (!el) return;
+  el.locked = true;
+  el.text = WM_DEFAULT_TEXT; el.fontSize = 40; el.opacity = 30; el.rotation = -30; el.color = '#7c6af7';
+  builderRenderPage(); builderRenderProps();
+  toast('🔒 Watermark default par re-lock ho gaya');
+}
+function builderApplyElToAllPages(id) {
+  const el = builderFindEl(id); if (!el) return;
+  Builder.pages.forEach((p, i) => {
+    if (i === Builder.curPage) return;
+    const copy = JSON.parse(JSON.stringify(el));
+    copy.id = builderNewId();
+    p.elements.push(copy);
+  });
+  toast('✅ Sab pages par copy ho gaya');
+}
+function builderResetAll() {
+  Builder = { pages: [ { w: 595.28, h: 841.89, bgColor: '#ffffff', bgImageData: null, bgFit: 'cover', elements: [] } ], curPage: 0, selectedId: null, zoom: 1, nextId: 1 };
+  document.getElementById('builder-preview-wrap').innerHTML = '';
+  builderRefreshPageSelect();
+  builderRenderPage();
+  builderRenderProps();
+  toast('↺ Sab kuch reset ho gaya', 'info');
+}
+
+// ---- Generate the actual PDF via pdf-lib ----
+async function builderGeneratePdf(mode) {
+  if (!Builder.pages.length) { toast('Koi page nahi hai', 'error'); return; }
+  toast('⏳ PDF generate ho raha hai...', 'info');
+  try {
+    const { PDFDocument, rgb, StandardFonts, degrees } = PDFLib;
+    const pdfDoc = await PDFDocument.create();
+    const fontCache = {};
+    async function getFont(name, bold, italic) {
+      const key = name + (bold?'B':'') + (italic?'I':'');
+      if (fontCache[key]) return fontCache[key];
+      let std;
+      if (name === 'Times') std = bold && italic ? StandardFonts.TimesRomanBoldItalic : bold ? StandardFonts.TimesRomanBold : italic ? StandardFonts.TimesRomanItalic : StandardFonts.TimesRoman;
+      else if (name === 'Courier') std = bold && italic ? StandardFonts.CourierBoldOblique : bold ? StandardFonts.CourierBold : italic ? StandardFonts.CourierOblique : StandardFonts.Courier;
+      else std = bold && italic ? StandardFonts.HelveticaBoldOblique : bold ? StandardFonts.HelveticaBold : italic ? StandardFonts.HelveticaOblique : StandardFonts.Helvetica;
+      const f = await pdfDoc.embedFont(std);
+      fontCache[key] = f;
+      return f;
+    }
+    function hexToRgb01(hex) {
+      const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return m ? rgb(parseInt(m[1],16)/255, parseInt(m[2],16)/255, parseInt(m[3],16)/255) : rgb(0,0,0);
+    }
+    const imageCache = {};
+    async function embedImg(dataUrl) {
+      if (imageCache[dataUrl]) return imageCache[dataUrl];
+      const isPng = dataUrl.startsWith('data:image/png');
+      const base64 = dataUrl.split(',')[1];
+      const bytes = base64ToBytes(base64);
+      const img = isPng ? await pdfDoc.embedPng(bytes) : await pdfDoc.embedJpg(bytes).catch(async () => {
+        // if it's actually a non-jpeg/png (e.g. webp data URL), re-encode via canvas to PNG first
+        const reencoded = await reencodeToPngDataUrl(dataUrl);
+        const b2 = base64ToBytes(reencoded.split(',')[1]);
+        return pdfDoc.embedPng(b2);
+      });
+      imageCache[dataUrl] = img;
+      return img;
+    }
+    function reencodeToPngDataUrl(dataUrl) {
+      return new Promise(res => {
+        const img = new Image();
+        img.onload = () => { const c = document.createElement('canvas'); c.width=img.width; c.height=img.height; c.getContext('2d').drawImage(img,0,0); res(c.toDataURL('image/png')); };
+        img.src = dataUrl;
+      });
+    }
+
+    const total = Builder.pages.length;
+    for (let pi = 0; pi < total; pi++) {
+      const pg = Builder.pages[pi];
+      const page = pdfDoc.addPage([pg.w, pg.h]);
+      // background
+      if (pg.bgImageData) {
+        const img = await embedImg(pg.bgImageData);
+        const fit = pg.bgFit || 'cover';
+        const pageRatio = pg.w / pg.h, imgRatio = img.width / img.height;
+        let dw, dh, dx, dy;
+        if (fit === 'stretch') { dw = pg.w; dh = pg.h; dx = 0; dy = 0; }
+        else if (fit === 'contain') {
+          if (imgRatio > pageRatio) { dw = pg.w; dh = dw / imgRatio; } else { dh = pg.h; dw = dh * imgRatio; }
+          dx = (pg.w - dw) / 2; dy = (pg.h - dh) / 2;
+          page.drawRectangle({ x: 0, y: 0, width: pg.w, height: pg.h, color: hexToRgb01(pg.bgColor || '#ffffff') });
+        } else { // cover
+          if (imgRatio > pageRatio) { dh = pg.h; dw = dh * imgRatio; dx = (pg.w - dw) / 2; dy = 0; }
+          else { dw = pg.w; dh = dw / imgRatio; dx = 0; dy = (pg.h - dh) / 2; }
+        }
+        page.drawImage(img, { x: dx, y: dy, width: dw, height: dh });
+      } else if (pg.bgColor && pg.bgColor.toLowerCase() !== '#ffffff') {
+        page.drawRectangle({ x: 0, y: 0, width: pg.w, height: pg.h, color: hexToRgb01(pg.bgColor) });
+      }
+      for (const el of pg.elements) {
+        const topY = el.y; // top-left-origin y stored in element
+        const rotDeg = el.rotation || 0;
+        const cx = el.x + el.w/2, cyTop = topY + el.h/2; // center in top-left coords
+        if (el.type === 'text') {
+          const font = await getFont(el.font, el.bold, el.italic);
+          const lines = wrapTextToWidth(el.text, font, el.fontSize, el.w);
+          let cursorY = pg.h - topY - el.fontSize;
+          for (const line of lines) {
+            if (cursorY < -el.fontSize) break; // ran past bottom of box; stop silently
+            const lineWidth = font.widthOfTextAtSize(line, el.fontSize);
+            let drawX = el.x;
+            if (el.align === 'center') drawX = el.x + (el.w - lineWidth) / 2;
+            else if (el.align === 'right') drawX = el.x + el.w - lineWidth;
+            page.drawText(line, { x: drawX, y: cursorY, size: el.fontSize, font, color: hexToRgb01(el.color), rotate: rotDeg ? degrees(rotDeg) : undefined });
+            cursorY -= el.fontSize * 1.25;
+          }
+        } else if (el.type === 'watermark') {
+          const font = await getFont('Helvetica', true, false);
+          const tw = font.widthOfTextAtSize(el.text, el.fontSize);
+          const cx2 = el.x + el.w/2, cy = pg.h - topY - el.h/2;
+          page.drawText(el.text, { x: cx2 - tw/2, y: cy - el.fontSize/3, size: el.fontSize, font, color: hexToRgb01(el.color), opacity: el.opacity/100, rotate: degrees(el.rotation) });
+        } else if (el.type === 'pagenum') {
+          const font = await getFont('Helvetica', false, false);
+          const label = el.format.replace('{n}', String(pi+1)).replace('{total}', String(total));
+          const tw = font.widthOfTextAtSize(label, el.fontSize);
+          let drawX = el.x;
+          if (el.align === 'center') drawX = el.x + (el.w - tw)/2;
+          else if (el.align === 'right') drawX = el.x + el.w - tw;
+          page.drawText(label, { x: drawX, y: pg.h - topY - el.fontSize, size: el.fontSize, font, color: hexToRgb01(el.color), rotate: rotDeg ? degrees(rotDeg) : undefined });
+        } else if (el.type === 'image') {
+          page.drawImage(await embedImg(el.src), { x: el.x, y: pg.h - topY - el.h, width: el.w, height: el.h, rotate: rotDeg ? degrees(rotDeg) : undefined });
+        } else if (el.type === 'rect') {
+          page.drawRectangle({ x: el.x, y: pg.h - topY - el.h, width: el.w, height: el.h, color: hexToRgb01(el.fillColor), opacity: el.fillOpacity/100, borderColor: hexToRgb01(el.borderColor), borderWidth: el.borderWidth, rotate: rotDeg ? degrees(rotDeg) : undefined });
+        } else if (el.type === 'line') {
+          const yy = pg.h - topY;
+          if (!rotDeg) {
+            page.drawLine({ start: { x: el.x, y: yy }, end: { x: el.x + el.w, y: yy }, thickness: el.borderWidth, color: hexToRgb01(el.borderColor) });
+          } else {
+            const rad = rotDeg * Math.PI / 180;
+            const ccx = el.x + el.w/2, ccy = yy;
+            const half = el.w/2;
+            const sx = ccx - half*Math.cos(rad), sy = ccy - half*Math.sin(rad);
+            const ex = ccx + half*Math.cos(rad), ey = ccy + half*Math.sin(rad);
+            page.drawLine({ start: { x: sx, y: sy }, end: { x: ex, y: ey }, thickness: el.borderWidth, color: hexToRgb01(el.borderColor) });
+          }
+        } else if (el.type === 'table') {
+          const font = await getFont('Helvetica', false, false);
+          const fontBold = await getFont('Helvetica', true, false);
+          const rowH = el.h / el.rows, colW = el.w / el.cols;
+          for (let r = 0; r < el.rows; r++) {
+            for (let c = 0; c < el.cols; c++) {
+              const cellX = el.x + c*colW, cellTopY = topY + r*rowH;
+              const cellPdfY = pg.h - cellTopY - rowH;
+              const isHeader = r === 0;
+              if (isHeader) page.drawRectangle({ x: cellX, y: cellPdfY, width: colW, height: rowH, color: hexToRgb01(el.headerBg) });
+              page.drawRectangle({ x: cellX, y: cellPdfY, width: colW, height: rowH, borderColor: hexToRgb01(el.borderColor), borderWidth: 0.75 });
+              const txt = String(el.data[r][c] || '');
+              const f = isHeader ? fontBold : font;
+              const txtColor = isHeader ? hexToRgb01(el.headerColor) : rgb(0,0,0);
+              const clipped = clipTextToWidth(txt, f, el.fontSize, colW - 6);
+              page.drawText(clipped, { x: cellX + 3, y: cellPdfY + rowH/2 - el.fontSize/3, size: el.fontSize, font: f, color: txtColor });
+            }
+          }
+        }
+      }
+    }
+    const bytes = await pdfDoc.save();
+    const blob = new Blob([bytes], { type: 'application/pdf' });
+    if (mode === 'download') {
+      downloadBlob(blob, 'my-document.pdf');
+      toast('✅ PDF generate aur download ho gaya!');
+    } else {
+      const url = URL.createObjectURL(blob);
+      document.getElementById('builder-preview-wrap').innerHTML = `<div class="card"><div class="card-title">PREVIEW</div><iframe src="${url}" style="width:100%;height:600px;border:1px solid var(--border);border-radius:8px"></iframe></div>`;
+      toast('👁️ Preview ready');
+    }
+  } catch (e) {
+    toast('❌ Error: ' + e.message, 'error');
+    console.error(e);
+  }
+}
+function wrapTextToWidth(text, font, size, maxWidth) {
+  const paragraphs = String(text).split('\n');
+  const lines = [];
+  paragraphs.forEach(para => {
+    const words = para.split(' ');
+    let cur = '';
+    words.forEach(word => {
+      const test = cur ? cur + ' ' + word : word;
+      if (font.widthOfTextAtSize(test, size) > maxWidth && cur) { lines.push(cur); cur = word; }
+      else cur = test;
+    });
+    lines.push(cur);
+  });
+  return lines;
+}
+function clipTextToWidth(text, font, size, maxWidth) {
+  if (font.widthOfTextAtSize(text, size) <= maxWidth) return text;
+  let t = text;
+  while (t.length > 1 && font.widthOfTextAtSize(t + '…', size) > maxWidth) t = t.slice(0, -1);
+  return t + '…';
+}
+window.addEventListener('resize', () => { if (document.getElementById('panel-builder').classList.contains('active')) builderRenderPage(); });
+
+// ══════════════════════════════════════════
+//  IMG → PDF
+// ══════════════════════════════════════════
+let i2pFiles = [];
+async function onI2PFilesChange(input) {
+  if (!input.files.length) return;
+  const dz = input.closest('.dropzone'); if (dz) dz.classList.add('loading');
+  i2pFiles = i2pFiles.concat(Array.from(input.files));
+  renderI2PList();
+  if (dz) dz.classList.remove('loading');
+  input.value = '';
+}
+function renderI2PList() {
+  document.getElementById('i2p-loaded').style.display = i2pFiles.length ? 'block' : 'none';
+  document.getElementById('i2p-list').innerHTML = i2pFiles.map((f, i) =>
+    `<div class="file-list-row"><span style="font-size:16px">📷</span><span class="name">${escapeHtml(f.name)} <span style="color:var(--text3)">(${fmtSize(f.size)})</span></span>
+     <div class="order-btns"><button onclick="moveI2PFile(${i},-1)">▲</button><button onclick="moveI2PFile(${i},1)">▼</button></div>
+     <button class="btn btn-danger btn-sm" onclick="removeI2PFile(${i})">✕</button></div>`
+  ).join('');
+}
+function moveI2PFile(i, dir) { const j = i + dir; if (j < 0 || j >= i2pFiles.length) return; [i2pFiles[i], i2pFiles[j]] = [i2pFiles[j], i2pFiles[i]]; renderI2PList(); }
+function removeI2PFile(i) { i2pFiles.splice(i, 1); renderI2PList(); }
+function clearI2PList() { i2pFiles = []; renderI2PList(); }
+async function doI2P() {
+  if (!i2pFiles.length) { toast('Pehle images add karo', 'error'); return; }
+  const { jsPDF } = window.jspdf;
+  const sz = document.getElementById('i2p-size').value;
+  const orient = document.getElementById('i2p-orient').value;
+  const q = clampQuality(document.getElementById('i2p-q').value) / 100;
+  const PX_TO_MM = 25.4 / 96;
+  const sizes = { a4: [210, 297], a3: [297, 420], letter: [215.9, 279.4], legal: [215.9, 355.6] };
+  toast('⏳ PDF ban raha hai...', 'info');
+  try {
+    let pdf = null;
+    for (let i = 0; i < i2pFiles.length; i++) {
+      const img = await loadImageFromFile(i2pFiles[i]);
+      let pw, ph;
+      if (sz === 'fit') { pw = img.width * PX_TO_MM; ph = img.height * PX_TO_MM; }
+      else {
+        const base = sizes[sz] || sizes.a4;
+        const wantLandscape = orient === 'landscape' || (orient === 'auto' && img.width > img.height);
+        [pw, ph] = wantLandscape ? [Math.max(...base), Math.min(...base)] : [Math.min(...base), Math.max(...base)];
+      }
+      const o = ph >= pw ? 'p' : 'l';
+      if (!pdf) pdf = new jsPDF({ orientation: o, unit: 'mm', format: [pw, ph], compress: true });
+      else pdf.addPage([pw, ph], o);
+
+      const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+      c.getContext('2d').drawImage(img, 0, 0);
+      const imgData = c.toDataURL('image/jpeg', q);
+      const imgRatio = img.width / img.height, pageRatio = pw / ph;
+      let dw, dh;
+      if (imgRatio > pageRatio) { dw = pw; dh = pw / imgRatio; } else { dh = ph; dw = ph * imgRatio; }
+      pdf.addImage(imgData, 'JPEG', (pw - dw) / 2, (ph - dh) / 2, dw, dh);
+      if (i % 5 === 4) await yieldToUI();
+    }
+    const blob = pdf.output('blob');
+    downloadBlob(blob, 'images.pdf');
+    toast('✅ PDF Created! ' + fmtSize(blob.size));
+  } catch (e) { toast('Error: ' + e.message, 'error'); }
+}
+
+// ══════════════════════════════════════════
+//  PDF MERGE (lossless)
+// ══════════════════════════════════════════
+let pdfMergeFiles = [];
+async function onPdfMergeFilesChange(input) {
+  if (!input.files.length) return;
+  const dz = input.closest('.dropzone'); if (dz) dz.classList.add('loading');
+  pdfMergeFiles = pdfMergeFiles.concat(Array.from(input.files));
+  renderMergeList();
+  if (dz) dz.classList.remove('loading');
+  input.value = '';
+}
+function renderMergeList() {
+  document.getElementById('pdfm-list').innerHTML = pdfMergeFiles.map((f, i) =>
+    `<div class="file-list-row"><span style="font-size:16px">📄</span><span class="name">${escapeHtml(f.name)} <span style="color:var(--text3)">(${fmtSize(f.size)})</span></span>
+     <div class="order-btns"><button onclick="moveMergeFile(${i},-1)">▲</button><button onclick="moveMergeFile(${i},1)">▼</button></div>
+     <button class="btn btn-danger btn-sm" onclick="removeMergeFile(${i})">✕</button></div>`
+  ).join('');
+  document.getElementById('pdfm-btn').disabled = pdfMergeFiles.length < 2;
+}
+function moveMergeFile(i, dir) { const j = i + dir; if (j < 0 || j >= pdfMergeFiles.length) return; [pdfMergeFiles[i], pdfMergeFiles[j]] = [pdfMergeFiles[j], pdfMergeFiles[i]]; renderMergeList(); }
+function removeMergeFile(i) { pdfMergeFiles.splice(i, 1); renderMergeList(); }
+function clearMergeList() { pdfMergeFiles = []; renderMergeList(); }
+async function addWorkspacePdfToMerge() {
+  const ws = Workspace.pdf;
+  if (!ws || !ws.file) { toast('Pehle workspace mein PDF load karo', 'error'); return; }
+  pdfMergeFiles.push(ws.file);
+  renderMergeList();
+  toast('📥 Workspace PDF list mein add ho gayi');
+}
+async function doPdfMerge() {
+  if (pdfMergeFiles.length < 2) { toast('Kam se kam 2 PDFs chahiye', 'error'); return; }
+  toast('⏳ Merging (lossless)...', 'info');
+  try {
+    const { PDFDocument } = PDFLib;
+    const merged = await PDFDocument.create();
+    for (let file of pdfMergeFiles) {
+      const ab = await file.arrayBuffer();
+      const src = await PDFDocument.load(ab, { ignoreEncryption: true });
+      const pages = await merged.copyPages(src, src.getPageIndices());
+      pages.forEach(p => merged.addPage(p));
+      await yieldToUI();
+    }
+    const bytes = await merged.save();
+    const blob = new Blob([bytes], { type: 'application/pdf' });
+    downloadBlob(blob, 'merged.pdf');
+    toast('✅ PDFs merged (lossless)! ' + fmtSize(blob.size));
+  } catch (e) { toast('Error: ' + e.message, 'error'); }
+}
+
+// ══════════════════════════════════════════
+//  PDF SPLIT — now with multi-range support (point 10): "1-10, 13-50,
+//  67-90, 105-120" produces 4 separate output PDFs in a single click.
+// ══════════════════════════════════════════
+let pdfSplitTabMode = 'all', pdfSplitSelPages = new Set(), pdfSplitLastDoc = null;
+
+function switchSplitTab(mode, el) {
+  pdfSplitTabMode = mode;
+  document.querySelectorAll('#panel-pdf-split .tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('#panel-pdf-split .tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('st-' + mode).classList.add('active');
+}
+async function initPdfSplitFromWorkspace() {
+  const ws = Workspace.pdf;
+  document.getElementById('pdfs-stats').innerHTML = statHtml([
+    ['Pages', ws.pages.length, 'var(--text)'],
+    ['Size', fmtSize(ws.size), 'var(--text2)']
+  ]);
+  if (ws.doc !== pdfSplitLastDoc) {
+    pdfSplitLastDoc = ws.doc;
+    pdfSplitSelPages = new Set();
+    pdfSplitThumbsLoaded = 0;
+    document.getElementById('split-thumbs').innerHTML = '';
+    await renderSplitThumbsChunk();
+  }
+}
+// FIX (round 4): rendering ALL page thumbnails immediately for a 300-400
+// page document was the main driver of the "browser AND background apps
+// crashed" report — too many decode/render cycles back-to-back before the
+// browser/OS could reclaim memory. Now thumbnails load in chunks of 50,
+// with a "Load Next 50" button, exactly like you suggested.
+const SPLIT_THUMB_CHUNK = 50;
+let pdfSplitThumbsLoaded = 0;
+async function renderSplitThumbsChunk() {
+  const ws = Workspace.pdf;
+  const myGen = workspaceGen;
+  const thumbsDiv = document.getElementById('split-thumbs');
+  const moreWrap = document.getElementById('split-thumbs-more');
+  if (moreWrap) moreWrap.remove();
+  const thumbScale = ws.pages.length > 150 ? 0.18 : ws.pages.length > 60 ? 0.24 : 0.3;
+  const start = pdfSplitThumbsLoaded;
+  const end = Math.min(ws.pages.length, start + SPLIT_THUMB_CHUNK);
+  for (let i = start; i < end; i++) {
+    if (myGen !== workspaceGen) return; // a different file took over — abort
+    const pageObj = ws.pages[i];
+    const div = document.createElement('div');
+    div.className = 'pdf-page-thumb';
+    div.innerHTML = `<div class="sel-badge">✓</div><div class="pnum">p${pageObj.num}</div>`;
+    div.onclick = () => {
+      if (pdfSplitSelPages.has(i)) { pdfSplitSelPages.delete(i); div.classList.remove('selected'); }
+      else { pdfSplitSelPages.add(i); div.classList.add('selected'); }
+    };
+    const c = await renderPageToCanvasWithRotation(ws.doc, pageObj, thumbScale);
+    const img = document.createElement('img');
+    img.src = c.toDataURL('image/jpeg', 0.7);
+    freeCanvas(c);
+    div.prepend(img);
+    thumbsDiv.appendChild(div);
+    await yieldToUI();
+  }
+  pdfSplitThumbsLoaded = end;
+  if (pdfSplitThumbsLoaded < ws.pages.length) {
+    const wrap = document.createElement('div');
+    wrap.id = 'split-thumbs-more';
+    wrap.style.width = '100%';
+    wrap.style.marginTop = '10px';
+    wrap.innerHTML = `<button class="btn btn-secondary btn-sm" onclick="renderSplitThumbsChunk()">⬇️ Load Next ${Math.min(SPLIT_THUMB_CHUNK, ws.pages.length - pdfSplitThumbsLoaded)} (${ws.pages.length - pdfSplitThumbsLoaded} baaki)</button>`;
+    thumbsDiv.parentElement.appendChild(wrap);
+  }
+}
+// kept for compatibility with any old callers
+async function renderSplitThumbs() { pdfSplitThumbsLoaded = 0; document.getElementById('split-thumbs').innerHTML = ''; await renderSplitThumbsChunk(); }
+function parsePageRanges(input, maxPage) {
+  const parts = input.split(',').map(s => s.trim()).filter(Boolean);
+  const ranges = [], errors = [];
+  for (const part of parts) {
+    const m = /^(\d+)\s*-\s*(\d+)$/.exec(part) || /^(\d+)$/.exec(part);
+    if (!m) { errors.push(`"${part}" samajh nahi aaya`); continue; }
+    let from = parseInt(m[1]), to = m[2] ? parseInt(m[2]) : parseInt(m[1]);
+    if (from > to) [from, to] = [to, from];
+    if (from < 1 || to > maxPage) { errors.push(`"${part}" PDF range (1-${maxPage}) ke bahar hai`); continue; }
+    ranges.push([from, to]);
+  }
+  return { ranges, errors };
+}
+function parseSplitRangesPreview() {
+  const ws = Workspace.pdf; if (!ws) return;
+  const input = document.getElementById('split-ranges-input').value;
+  const { ranges, errors } = parsePageRanges(input, ws.pages.length);
+  const div = document.getElementById('split-ranges-preview');
+  let html = ranges.map(([f,t]) => `<span class="range-chip">📄 ${f===t?f:f+'–'+t} <span style="color:var(--text3)">(${t-f+1}p)</span></span>`).join('');
+  if (errors.length) html += `<div style="width:100%;color:var(--error);font-size:11.5px;margin-top:6px">${errors.join(' · ')}</div>`;
+  div.innerHTML = html || '<span style="font-size:12px;color:var(--text3)">Range type karo upar...</span>';
+}
+async function doPdfSplit() {
+  const ws = Workspace.pdf;
+  if (!ws) return;
+  const myGen = workspaceGen; // FIX (#3): capture generation, recheck before writing result
+  const resultsDiv = document.getElementById('pdfs-result');
+  resultsDiv.innerHTML = '<div style="color:var(--text2);font-size:13px">⏳ Splitting...</div>';
+
+  try {
+    const { PDFDocument, degrees } = PDFLib;
+    const ab = await ws.file.arrayBuffer();
+    const srcDoc = await PDFDocument.load(ab, { ignoreEncryption: true });
+    const blobs = [];
+
+    if (pdfSplitTabMode === 'ranges') {
+      const input = document.getElementById('split-ranges-input').value;
+      const { ranges, errors } = parsePageRanges(input, ws.pages.length);
+      if (errors.length) toast('⚠️ ' + errors.join(' · '), 'info');
+      if (!ranges.length) { toast('Koi valid range nahi mila', 'error'); resultsDiv.innerHTML = ''; return; }
+      for (const [from, to] of ranges) {
+        if (myGen !== workspaceGen) return; // a different file/clear happened — abort silently
+        const newDoc = await PDFDocument.create();
+        const pageObjs = ws.pages.slice(from - 1, to);
+        const positions = pageObjs.map(p => p.num - 1);
+        const copied = await newDoc.copyPages(srcDoc, positions);
+        copied.forEach((cp, idx) => {
+          const pageObj = pageObjs[idx];
+          if (pageObj && pageObj.rotation) cp.setRotation(degrees((cp.getRotation().angle || 0) + pageObj.rotation));
+          newDoc.addPage(cp);
+        });
+        const bytes = await newDoc.save();
+        blobs.push({ blob: new Blob([bytes], { type: 'application/pdf' }), name: `pages-${from}-${to}.pdf` });
+        await yieldToUI();
+      }
+    } else {
+      let positions = [];
+      if (pdfSplitTabMode === 'all') positions = ws.pages.map((_, i) => i);
+      else positions = [...pdfSplitSelPages].sort((a, b) => a - b);
+
+      if (!positions.length) { toast('Pages select karo', 'error'); resultsDiv.innerHTML=''; return; }
+
+      if (pdfSplitTabMode === 'all') {
+        for (let pos of positions) {
+          if (myGen !== workspaceGen) return;
+          const pageObj = ws.pages[pos];
+          const newDoc = await PDFDocument.create();
+          const [copied] = await newDoc.copyPages(srcDoc, [pageObj.num - 1]);
+          if (pageObj.rotation) copied.setRotation(degrees((copied.getRotation().angle || 0) + pageObj.rotation));
+          newDoc.addPage(copied);
+          const bytes = await newDoc.save();
+          blobs.push({ blob: new Blob([bytes], { type: 'application/pdf' }), name: `page-${pageObj.num}.pdf` });
+          await yieldToUI();
+        }
+      } else {
+        const newDoc = await PDFDocument.create();
+        const pageNums = positions.map(pos => ws.pages[pos].num - 1);
+        const copied = await newDoc.copyPages(srcDoc, pageNums);
+        copied.forEach((cp, idx) => {
+          const pageObj = ws.pages[positions[idx]];
+          if (pageObj.rotation) cp.setRotation(degrees((cp.getRotation().angle || 0) + pageObj.rotation));
+          newDoc.addPage(cp);
+        });
+        const bytes = await newDoc.save();
+        blobs.push({ blob: new Blob([bytes], { type: 'application/pdf' }), name: `selected-pages.pdf` });
+      }
+    }
+
+    if (myGen !== workspaceGen) return; // final guard before touching the DOM
+    resultsDiv.innerHTML = blobs.map((b, i) =>
+      `<div class="file-list-row"><span class="name">${b.name}</span><span style="font-size:11px;color:var(--text3)">${fmtSize(b.blob.size)}</span><button class="btn btn-success btn-sm" onclick="dlSplitAt(${i})">⬇️</button></div>`
+    ).join('') + (blobs.length>1?`<div class="btn-group"><button class="btn btn-success btn-sm" onclick="dlAllSplit()">⬇️ Download All (${blobs.length} files)</button></div>`:'');
+    window._splitBlobs = blobs;
+    toast('✅ ' + blobs.length + ' file(s) ban gayi (lossless)!');
+  } catch (e) { if (myGen === workspaceGen) { toast('Error: ' + e.message, 'error'); resultsDiv.innerHTML=''; } }
+}
+function dlSplitAt(i) { const { blob, name } = window._splitBlobs[i]; downloadBlob(blob, name); }
+function dlAllSplit() { window._splitBlobs.forEach((b, i) => setTimeout(() => downloadBlob(b.blob, b.name), i * 200)); }
+
+// ══════════════════════════════════════════
+//  BATCH: Split (multiple files). Doesn't even need pdf.js/canvas at all —
+//  splitting is pure pdf-lib page-copying, so it's naturally light on
+//  memory regardless of file size or page count.
+// ══════════════════════════════════════════
+async function coreSplitRanges(file, rangesStr) {
+  const { PDFDocument } = PDFLib;
+  const ab = await file.arrayBuffer();
+  const srcDoc = await PDFDocument.load(ab, { ignoreEncryption: true });
+  const maxPage = srcDoc.getPageCount();
+  const { ranges, errors } = parsePageRanges(rangesStr, maxPage);
+  if (errors.length && !ranges.length) throw new Error(errors.join(' · '));
+  const blobs = [];
+  for (const [from, to] of ranges) {
+    const newDoc = await PDFDocument.create();
+    const positions = []; for (let p = from; p <= to; p++) positions.push(p - 1);
+    const copied = await newDoc.copyPages(srcDoc, positions);
+    copied.forEach(cp => newDoc.addPage(cp));
+    const bytes = await newDoc.save();
+    blobs.push({ blob: new Blob([bytes], { type: 'application/pdf' }), name: `pages-${from}-${to}.pdf` });
+    await yieldToUI();
+  }
+  return blobs;
+}
+async function coreSplitAll(file, onProgress) {
+  const { PDFDocument } = PDFLib;
+  const ab = await file.arrayBuffer();
+  const srcDoc = await PDFDocument.load(ab, { ignoreEncryption: true });
+  const total = srcDoc.getPageCount();
+  const blobs = [];
+  for (let i = 0; i < total; i++) {
+    const newDoc = await PDFDocument.create();
+    const [copied] = await newDoc.copyPages(srcDoc, [i]);
+    newDoc.addPage(copied);
+    const bytes = await newDoc.save();
+    blobs.push({ blob: new Blob([bytes], { type: 'application/pdf' }), name: `page-${i+1}.pdf` });
+    if (onProgress) onProgress(i + 1, total);
+    await yieldToUI();
+  }
+  return blobs;
+}
+let splitBatchJobs = [], splitBatchIdCounter = 1;
+function splitBatchAddFiles(input) {
+  Array.from(input.files || []).forEach(file => {
+    splitBatchJobs.push({ id: splitBatchIdCounter++, file, name: file.name, size: file.size, mode: 'all', ranges: '', status: 'idle', resultBlobs: null });
+  });
+  input.value = '';
+  renderSplitBatchJobs();
+}
+function splitBatchRemoveJob(id) { splitBatchJobs = splitBatchJobs.filter(j => j.id !== id); renderSplitBatchJobs(); }
+function splitBatchSet(id, patch) { const j = splitBatchJobs.find(j=>j.id===id); if (j) Object.assign(j, patch); }
+function renderSplitBatchJobs() {
+  const wrap = document.getElementById('split-batch-jobs-wrap');
+  if (!wrap) return;
+  if (!splitBatchJobs.length) { wrap.innerHTML = '<p style="font-size:12px;color:var(--text3)">Koi file add nahi ki abhi.</p>'; return; }
+  wrap.innerHTML = splitBatchJobs.map(j => `
+    <div class="card" style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60%">${escapeHtml(j.name)} <span style="color:var(--text3);font-weight:400">(${fmtSize(j.size)})</span></div>
+        <button class="btn btn-danger btn-xs" onclick="splitBatchRemoveJob(${j.id})">✕ Remove</button>
+      </div>
+      <div class="mode-toggle" style="margin-bottom:10px">
+        <div class="mode-btn ${j.mode==='all'?'active':''}" onclick="splitBatchSet(${j.id},{mode:'all'});renderSplitBatchJobs()">Every Page Separate</div>
+        <div class="mode-btn ${j.mode==='ranges'?'active':''}" onclick="splitBatchSet(${j.id},{mode:'ranges'});renderSplitBatchJobs()">Ranges</div>
+      </div>
+      ${j.mode==='ranges' ? `<label>Ranges</label><input type="text" placeholder="e.g. 1-10, 13-50" value="${escapeHtml(j.ranges)}" onchange="splitBatchSet(${j.id},{ranges:this.value})">` : ''}
+      <div class="btn-group" style="margin-top:10px">
+        <button class="btn btn-primary btn-sm" onclick="splitBatchRunJob(${j.id})" ${j.status==='running'?'disabled':''}>${j.status==='running'?'⏳ Running...':'✂️ Split'}</button>
+        ${j.resultBlobs ? `<button class="btn btn-success btn-sm" onclick="splitBatchDownload(${j.id})">⬇️ Download All (${j.resultBlobs.length} files)</button>` : ''}
+      </div>
+      <div id="split-batch-prog-${j.id}" style="display:${j.status==='running'?'block':'none'};margin-top:10px">
+        <div class="progress-label"><span id="split-batch-prog-label-${j.id}">${j.progressLabel||'Starting...'}</span><span id="split-batch-prog-pct-${j.id}">${j.progressPct||0}%</span></div>
+        <div class="progress-bar"><div class="progress-bar-fill" id="split-batch-prog-fill-${j.id}" style="width:${j.progressPct||0}%"></div></div>
+      </div>
+      ${j.status==='error' ? `<p style="color:var(--error);font-size:11.5px;margin-top:6px">${escapeHtml(j.errorMsg||'Error')}</p>` : ''}
+    </div>
+  `).join('');
+}
+function updateSplitBatchProgress(id, pct, label) {
+  const job = splitBatchJobs.find(j => j.id === id);
+  if (job) { job.progressPct = pct; job.progressLabel = label; }
+  const fill = document.getElementById('split-batch-prog-fill-' + id);
+  const lbl = document.getElementById('split-batch-prog-label-' + id);
+  const pctEl = document.getElementById('split-batch-prog-pct-' + id);
+  if (fill) fill.style.width = pct + '%';
+  if (lbl) lbl.textContent = label;
+  if (pctEl) pctEl.textContent = pct + '%';
+}
+async function splitBatchRunJob(id) {
+  const job = splitBatchJobs.find(j => j.id === id);
+  if (!job) return;
+  job.status = 'running'; job.progressPct = 0; job.progressLabel = 'Shuru ho raha hai...'; renderSplitBatchJobs();
+  try {
+    let blobs;
+    if (job.mode === 'ranges') {
+      if (!job.ranges.trim()) throw new Error('Ranges daalo pehle');
+      blobs = await coreSplitRanges(job.file, job.ranges);
+    } else {
+      blobs = await coreSplitAll(job.file, (done, total) => updateSplitBatchProgress(id, Math.round(done/total*100), `Page ${done}/${total}`));
+    }
+    job.resultBlobs = blobs;
+    job.status = 'done';
+    toast(`✅ ${job.name}: ${blobs.length} file(s) ban gayi!`);
+  } catch (e) {
+    job.status = 'error'; job.errorMsg = e.message;
+    toast('❌ ' + job.name + ': ' + e.message, 'error');
+  }
+  renderSplitBatchJobs();
+}
+function splitBatchDownload(id) {
+  const job = splitBatchJobs.find(j => j.id === id);
+  if (!job || !job.resultBlobs) return;
+  job.resultBlobs.forEach((b, i) => setTimeout(() => downloadBlob(b.blob, b.name), i * 150));
+}
+async function splitBatchRunAll() {
+  for (const job of splitBatchJobs) { if (job.status !== 'done' && job.status !== 'running') await splitBatchRunJob(job.id); }
+}
+function splitBatchDownloadAll() { splitBatchJobs.filter(j=>j.resultBlobs).forEach(j => splitBatchDownload(j.id)); }
+function setSplitTopMode(mode) {
+  document.getElementById('split-top-mode-single').classList.toggle('active', mode==='single');
+  document.getElementById('split-top-mode-batch').classList.toggle('active', mode==='batch');
+  document.getElementById('split-single-section').style.display = mode==='single' ? 'block' : 'none';
+  document.getElementById('split-batch-section').style.display = mode==='batch' ? 'block' : 'none';
+  if (mode === 'batch') renderSplitBatchJobs();
+}
+// ══════════════════════════════════════════
+//  PDF ROTATE / REORDER (lossless)
+// ══════════════════════════════════════════
+let pdfrSel = new Set(), pdfrLastDoc = null;
+const ROTATE_THUMB_CHUNK = 50;
+let pdfrThumbsLoaded = 0;
+
+async function initPdfRotateFromWorkspace() {
+  const ws = Workspace.pdf;
+  if (ws.doc !== pdfrLastDoc) {
+    pdfrLastDoc = ws.doc; pdfrSel = new Set(); pdfrThumbsLoaded = 0;
+    document.getElementById('pdfr-thumbs').innerHTML = '';
+    await renderPdfrThumbsChunk();
+  }
+}
+// FIX (round 4): same chunked loading as Split — never auto-render
+// hundreds of pages at once. Also: rotateSel() no longer triggers a full
+// pdf.js re-render of every visible thumbnail (which was very heavy
+// repeated per click on a big doc) — it now just applies a CSS rotation
+// to the already-rendered thumbnail image instantly.
+async function renderPdfrThumbsChunk() {
+  const ws = Workspace.pdf;
+  const myGen = workspaceGen;
+  const div = document.getElementById('pdfr-thumbs');
+  const moreWrap = document.getElementById('pdfr-thumbs-more');
+  if (moreWrap) moreWrap.remove();
+  const thumbScale = ws.pages.length > 150 ? 0.2 : ws.pages.length > 60 ? 0.28 : 0.35;
+  const start = pdfrThumbsLoaded;
+  const end = Math.min(ws.pages.length, start + ROTATE_THUMB_CHUNK);
+  for (let i = start; i < end; i++) {
+    if (myGen !== workspaceGen) return;
+    const pageObj = ws.pages[i];
+    const c = await renderPageToCanvasWithRotation(ws.doc, pageObj, thumbScale);
+    const imgUrl = c.toDataURL('image/jpeg', 0.7);
+    freeCanvas(c);
+    const thumb = document.createElement('div');
+    thumb.className = 'pdf-page-thumb' + (pdfrSel.has(i) ? ' selected' : '');
+    thumb.dataset.idx = i;
+    thumb.innerHTML = `<img src="${imgUrl}" style="transition:none"><div class="sel-badge">✓</div><div class="pnum">p${pageObj.num}${pageObj.rotation ? ' (' + pageObj.rotation + '°)' : ''}</div>
+      <div class="mini-actions"><button onclick="event.stopPropagation();movePage(${i},-1)">▲</button><button onclick="event.stopPropagation();movePage(${i},1)">▼</button></div>`;
+    thumb.onclick = () => {
+      if (pdfrSel.has(i)) { pdfrSel.delete(i); thumb.classList.remove('selected'); }
+      else { pdfrSel.add(i); thumb.classList.add('selected'); }
+    };
+    div.appendChild(thumb);
+    await yieldToUI();
+  }
+  pdfrThumbsLoaded = end;
+  if (pdfrThumbsLoaded < ws.pages.length) {
+    const wrap = document.createElement('div');
+    wrap.id = 'pdfr-thumbs-more';
+    wrap.style.width = '100%';
+    wrap.style.marginTop = '10px';
+    wrap.innerHTML = `<button class="btn btn-secondary btn-sm" onclick="renderPdfrThumbsChunk()">⬇️ Load Next ${Math.min(ROTATE_THUMB_CHUNK, ws.pages.length - pdfrThumbsLoaded)} (${ws.pages.length - pdfrThumbsLoaded} baaki)</button>`;
+    div.parentElement.appendChild(wrap);
+  }
+}
+function renderPdfrThumbs() { pdfrThumbsLoaded = 0; document.getElementById('pdfr-thumbs').innerHTML = ''; return renderPdfrThumbsChunk(); }
+// Resets the chunk to however many were already loaded — avoids
+// re-rendering the WHOLE document again after a structural change
+// (delete/reverse), only re-renders what was already on screen.
+function refreshLoadedRotateThumbs() {
+  const wasLoaded = pdfrThumbsLoaded;
+  pdfrThumbsLoaded = 0;
+  document.getElementById('pdfr-thumbs').innerHTML = '';
+  const target = Math.min(wasLoaded || ROTATE_THUMB_CHUNK, Workspace.pdf.pages.length);
+  (async () => { while (pdfrThumbsLoaded < target) await renderPdfrThumbsChunk(); })();
+}
+function movePage(i, dir) {
+  const arr = Workspace.pdf.pages;
+  const j = i + dir; if (j < 0 || j >= arr.length) return;
+  [arr[i], arr[j]] = [arr[j], arr[i]];
+  pdfrSel = new Set([...pdfrSel].map(s => s === i ? j : (s === j ? i : s)));
+  refreshLoadedRotateThumbs();
+}
+function rotateSel(deg) {
+  if (!pdfrSel.size) { toast('Pages select karo pehle', 'info'); return; }
+  pdfrSel.forEach(i => {
+    const p = Workspace.pdf.pages[i];
+    p.rotation = ((p.rotation + deg) % 360 + 360) % 360;
+    // Instant CSS-only visual update — no pdf.js re-render needed.
+    const thumb = document.querySelector(`.pdf-page-thumb[data-idx="${i}"]`);
+    if (thumb) {
+      const img = thumb.querySelector('img');
+      if (img) img.style.transform = `rotate(${p.rotation}deg)`;
+      const pnum = thumb.querySelector('.pnum');
+      if (pnum) pnum.textContent = `p${p.num}${p.rotation ? ' (' + p.rotation + '°)' : ''}`;
+    }
+  });
+}
+function deleteSel() {
+  if (!pdfrSel.size) { toast('Pages select karo pehle', 'info'); return; }
+  Workspace.pdf.pages = Workspace.pdf.pages.filter((_, i) => !pdfrSel.has(i));
+  pdfrSel = new Set();
+  refreshLoadedRotateThumbs();
+}
+function selectAllPages() {
+  Workspace.pdf.pages.forEach((_, i) => {
+    pdfrSel.add(i);
+    const thumb = document.querySelector(`.pdf-page-thumb[data-idx="${i}"]`);
+    if (thumb) thumb.classList.add('selected');
+  });
+  toast('All loaded pages selected (aur "Load Next" karne pe unko bhi manually select karo)', 'info');
+}
+function reversePageOrder() { Workspace.pdf.pages.reverse(); pdfrSel = new Set(); refreshLoadedRotateThumbs(); toast('🔁 Order reversed', 'info'); }
+async function doPdfRotate() {
+  const ws = Workspace.pdf;
+  if (!ws || !ws.pages.length) { toast('PDF mein pages nahi hai', 'error'); return; }
+  toast('⏳ Building PDF (lossless)...', 'info');
+  try {
+    const { PDFDocument, degrees } = PDFLib;
+    const ab = await ws.file.arrayBuffer();
+    const srcDoc = await PDFDocument.load(ab, { ignoreEncryption: true });
+    const outDoc = await PDFDocument.create();
+    let count = 0;
+    for (const pageObj of ws.pages) {
+      const [copied] = await outDoc.copyPages(srcDoc, [pageObj.num - 1]);
+      if (pageObj.rotation) copied.setRotation(degrees(((copied.getRotation().angle || 0) + pageObj.rotation) % 360));
+      outDoc.addPage(copied);
+      if (++count % 10 === 0) await yieldToUI();
+    }
+    const bytes = await outDoc.save();
+    const blob = new Blob([bytes], { type: 'application/pdf' });
+    downloadBlob(blob, 'rotated.pdf');
+    toast('✅ PDF downloaded (lossless)!');
+  } catch (e) { toast('Error: ' + e.message, 'error'); }
+}
+
+// ══════════════════════════════════════════
+//  PDF COMPRESS — REWRITTEN AGAIN (issues #4 & #6 from round 2).
+//
+//  Round-1 fix rasterized EVERY page into a JPEG. That guarantees size
+//  control for scanned/image PDFs, but for a "digital" (text-based) PDF it
+//  was actively harmful: a crisp vector text page that was originally a
+//  few KB got turned into a multi-megapixel JPEG screenshot, so a 3MB
+//  200-page text PDF could balloon to 12-30MB — exactly what was reported.
+//  It also rendered all 200 pages at high scale up front, which is the
+//  real source of the crash on big text documents.
+//
+//  Fix: classify each page FIRST using pdf.js's operator list —
+//  paintImageXObject / paintJpegXObject / paintImageMaskXObject ops mean
+//  the page actually contains a raster image worth compressing.
+//   - Pages with NO image ops (pure text/vector) are copied through
+//     losslessly via pdf-lib (near-zero cost, no rendering, no memory
+//     spike) — so digital PDFs now shrink only as much as pdf-lib's own
+//     stream re-compression allows, never grow, and never need to
+//     rasterize 200 pages of text (fixes the crash too).
+//   - Pages WITH images are rasterized at a quality-driven scale, same as
+//     before, so scanned PDFs can still be pushed from 5MB down to under
+//     100KB — quality drops gracefully (renderScale floor raised so text
+//     inside scans stays legible even at low quality) rather than
+//     degrading into mush.
+// ══════════════════════════════════════════
+let pdfcMode = 'quality';
+function setPdfcTopMode(mode) {
+  document.getElementById('pdfc-top-mode-single').classList.toggle('active', mode==='single');
+  document.getElementById('pdfc-top-mode-batch').classList.toggle('active', mode==='batch');
+  document.getElementById('pdfc-single-section').style.display = mode==='single' ? 'block' : 'none';
+  document.getElementById('pdfc-batch-section').style.display = mode==='batch' ? 'block' : 'none';
+  if (mode === 'batch') renderBatchJobs();
+}
+function setPdfcMode(mode) {
+  pdfcMode = mode;
+  document.getElementById('pdfc-mode-quality').classList.toggle('active', mode==='quality');
+  document.getElementById('pdfc-mode-target').classList.toggle('active', mode==='target');
+  document.getElementById('pdfc-quality-block').style.display = mode==='quality' ? 'block' : 'none';
+  document.getElementById('pdfc-target-block').style.display = mode==='target' ? 'block' : 'none';
+}
+function syncPdfcQNum(v) { const q = clampQuality(v); document.getElementById('pdfc-q-num').value = q; document.getElementById('pdfc-q-val').textContent = q+'%'; }
+function syncPdfcQSlider(v) { const q = clampQuality(v); document.getElementById('pdfc-q').value = q; document.getElementById('pdfc-q-num').value = q; document.getElementById('pdfc-q-val').textContent = q+'%'; }
+function initPdfCompressFromWorkspace() {
+  const ws = Workspace.pdf;
+  document.getElementById('pdfc-stats').innerHTML = statHtml([
+    ['Pages', ws.pages.length, 'var(--text)'],
+    ['Size', fmtSize(ws.size), 'var(--text2)']
+  ]);
+  document.getElementById('pdfc-result').style.display = 'none';
+}
+function applyPdfPreset(preset) {
+  const map = { screen: 20, ebook: 45, print: 75, high: 95 };
+  if (map[preset]) { document.getElementById('pdfc-q').value = map[preset]; syncPdfcQNum(map[preset]); }
+}
+// quality (1-100) -> [jpegQuality, renderScale]. renderScale floor raised
+// from 0.25 to 0.45 so even at quality=1 a scanned page's text stays
+// readable instead of turning into illegible mush — size still drops hard
+// because JPEG quality goes all the way down to 0.08 at the low end.
+function qualityToParams(q) {
+  const t = clampQuality(q) / 100;
+  return { jpegQuality: 0.08 + t * 0.87, renderScale: 0.45 + t * 1.85 };
+}
+// Detect whether a pdf.js page actually paints a raster image. Cached per
+// (doc,pageNum) on the workspace object so repeated target-size binary
+// search iterations don't re-run this detection every time.
+async function pageHasRasterImage(ws, pageObj) {
+  if (!ws._imgPageCache) ws._imgPageCache = {};
+  if (pageObj.num in ws._imgPageCache) return ws._imgPageCache[pageObj.num];
+  let has = false;
+  try {
+    const page = await ws.doc.getPage(pageObj.num);
+    const opList = await page.getOperatorList();
+    const OPS = pdfjsLib.OPS;
+    for (const fn of opList.fnArray) {
+      if (fn === OPS.paintImageXObject || fn === OPS.paintJpegXObject || fn === OPS.paintImageMaskXObject || fn === OPS.paintInlineImageXObject) { has = true; break; }
+    }
+  } catch (e) { has = true; } // if detection fails, be safe and treat as image page
+  ws._imgPageCache[pageObj.num] = has;
+  return has;
+}
+// Cache the pdf-lib-parsed source document on the ws object so repeated
+// calls (7 binary-search iterations per job in Target Size mode) don't
+// re-read the whole file + re-parse it from scratch every single time.
+// ROOT CAUSE OF THE CRASH: previously every iteration did
+// `ws.file.arrayBuffer()` + `PDFDocument.load()` again — for a 200MB file
+// or 5-7 files in target mode that's up to 7x duplicate full-file parses
+// piling up in memory before the GC can catch up. Now it's parsed once.
+async function getCachedSrcDoc(ws) {
+  if (!ws._srcDocPromise) {
+    ws._srcDocPromise = (async () => {
+      const ab = await ws.file.arrayBuffer();
+      return PDFLib.PDFDocument.load(ab, { ignoreEncryption: true });
+    })();
+  }
+  return ws._srcDocPromise;
+}
+// canvas -> JPEG bytes via toBlob (binary) instead of toDataURL (base64
+// text). base64 round-tripping roughly doubles the memory needed for that
+// page's data transiently — meaningful at 200MB-file page sizes, multiplied
+// across many pages/iterations. toBlob avoids that entirely.
+function canvasToJpegBytesFast(canvas, quality) {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(blob => {
+      if (!blob) { reject(new Error('Canvas → JPEG conversion fail hui (page shayad bahut bada hai)')); return; }
+      blob.arrayBuffer().then(buf => resolve(new Uint8Array(buf))).catch(reject);
+    }, 'image/jpeg', quality);
+  });
+}
+async function rasterCompressPdf(ws, jpegQuality, renderScale, myGen, onProgress) {
+  const { PDFDocument, degrees } = PDFLib;
+  const outDoc = await PDFDocument.create();
+  const srcDoc = await getCachedSrcDoc(ws); // FIX: parsed once, reused
+  const total = ws.pages.length;
+  for (let i = 0; i < total; i++) {
+    if (myGen !== undefined && myGen !== workspaceGen) return null; // abort stale job
+    const pageObj = ws.pages[i];
+    const hasImg = await pageHasRasterImage(ws, pageObj);
+    if (!hasImg) {
+      // Pure text/vector page — copy losslessly, no rasterization at all.
+      const [copied] = await outDoc.copyPages(srcDoc, [pageObj.num - 1]);
+      if (pageObj.rotation) copied.setRotation(degrees(((copied.getRotation().angle || 0) + pageObj.rotation) % 360));
+      outDoc.addPage(copied);
+    } else {
+      const canvas = await renderPageToCanvasWithRotation(ws.doc, pageObj, Math.max(0.25, renderScale));
+      const jpegBytes = await canvasToJpegBytesFast(canvas, jpegQuality);
+      freeCanvas(canvas);
+      const img = await outDoc.embedJpg(jpegBytes);
+      const srcPage = await ws.doc.getPage(pageObj.num);
+      const baseVp = srcPage.getViewport({ scale: 1, rotation: pageObj.rotation });
+      const newPage = outDoc.addPage([baseVp.width, baseVp.height]);
+      newPage.drawImage(img, { x: 0, y: 0, width: baseVp.width, height: baseVp.height });
+    }
+    if (onProgress) onProgress(i + 1, total);
+    await yieldToUI(); // yield every page — keeps 200+ page docs from freezing/crashing
+  }
+  return await outDoc.save({ useObjectStreams: true });
+}
+function setPdfcProgress(pct, label) {
+  const wrap = document.getElementById('pdfc-progress');
+  wrap.style.display = 'block';
+  document.getElementById('pdfc-progress-fill').style.width = pct + '%';
+  document.getElementById('pdfc-progress-pct').textContent = pct + '%';
+  document.getElementById('pdfc-progress-label').textContent = label;
+}
+async function doPdfCompress() {
+  const ws = Workspace.pdf;
+  if (!ws) { toast('Pehle PDF load karo', 'error'); return; }
+  const myGen = workspaceGen; // FIX (#3): race-condition guard
+  setPdfcProgress(0, 'Pages scan ho rahe hain (text vs image)...');
+  try {
+    let resultBytes;
+    if (pdfcMode === 'target') {
+      const targetKb = parseInt(document.getElementById('pdfc-target-kb').value);
+      if (!targetKb || targetKb <= 0) { toast('Target KB daalo', 'error'); document.getElementById('pdfc-progress').style.display='none'; return; }
+      const targetBytes = targetKb * 1024;
+      let lo = 1, hi = 100, best = null;
+      for (let i = 0; i < 7; i++) {
+        if (myGen !== workspaceGen) return;
+        const mid = Math.round((lo + hi) / 2);
+        const { jpegQuality, renderScale } = qualityToParams(mid);
+        setPdfcProgress(Math.round((i/7)*85), `Trying quality ${mid}%...`);
+        const bytes = await rasterCompressPdf(ws, jpegQuality, renderScale, myGen);
+        if (bytes === null) return; // aborted mid-run
+        if (bytes.byteLength <= targetBytes) { best = bytes; lo = mid + 1; } else hi = mid - 1;
+        await yieldToUI();
+      }
+      if (!best) {
+        const { jpegQuality, renderScale } = qualityToParams(1);
+        best = await rasterCompressPdf(ws, jpegQuality, renderScale, myGen);
+        if (best === null) return;
+      }
+      resultBytes = best;
+    } else {
+      const q = clampQuality(document.getElementById('pdfc-q').value);
+      const { jpegQuality, renderScale } = qualityToParams(q);
+      resultBytes = await rasterCompressPdf(ws, jpegQuality, renderScale, myGen, (done, total) => setPdfcProgress(Math.round(done/total*100), `Pages process ho rahe hain... (${done}/${total})`));
+      if (resultBytes === null) return;
+    }
+    if (myGen !== workspaceGen) return;
+    document.getElementById('pdfc-progress').style.display = 'none';
+    let pdfBlob = new Blob([resultBytes], { type: 'application/pdf' });
+    // Safety net: if our rebuild ever comes out LARGER than the original
+    // (can happen on an already heavily-optimized digital PDF with no
+    // images at all — there's nothing left to compress), just keep the
+    // original bytes instead of handing back a bigger file.
+    if (pdfBlob.size >= ws.size) {
+      pdfBlob = ws.file.slice(0, ws.file.size, 'application/pdf');
+      toast('ℹ️ Yeh PDF already optimized hai — original size hi best hai', 'info');
+    }
+    const ratio = ((1 - pdfBlob.size / ws.size) * 100).toFixed(1);
+    document.getElementById('pdfc-result').style.display = 'block';
+    document.getElementById('pdfc-result-stats').innerHTML = statHtml([
+      ['Original', fmtSize(ws.size), 'var(--text2)'],
+      ['Compressed', fmtSize(pdfBlob.size), 'var(--success)'],
+      ['Change', (ratio >= 0 ? '-' : '+') + Math.abs(ratio) + '%', 'var(--accent)']
+    ]);
+    document.getElementById('pdfc-dl-btn').onclick = () => { downloadBlob(pdfBlob, 'compressed.pdf'); toast('⬇️ PDF Downloaded!'); };
+    document.getElementById('pdfc-print-btn').onclick = () => printBlob(pdfBlob);
+    document.getElementById('pdfc-apply-btn').onclick = () => setWorkspacePdf(new File([pdfBlob], 'compressed.pdf', { type: 'application/pdf' })).then(()=>toast('✅ Compressed PDF ab workspace mein hai'));
+    toast('✅ PDF Compressed! ' + ratio + '% change');
+  } catch (e) {
+    if (myGen === workspaceGen) {
+      document.getElementById('pdfc-progress').style.display = 'none';
+      toast('❌ Error: ' + e.message, 'error');
+    }
+  }
+}
+
+// ══════════════════════════════════════════
+//  BATCH COMPRESS — multiple independent files/sessions (new feature
+//  requested: "5-10 files compress karna ho to ek complete hone ka wait na
+//  karna pade"). Each batch row is fully independent: its own file, own
+//  quality/target settings, own run button and own result — like adding
+//  pages in the Builder. Doesn't touch the single-file Workspace flow.
+// ══════════════════════════════════════════
+let batchJobs = [];
+let batchJobIdCounter = 1;
+function batchAddJob(file) {
+  const job = { id: batchJobIdCounter++, file, name: file.name, size: file.size, mode: 'quality', quality: 70, targetKb: 100, status: 'idle', resultBlob: null };
+  batchJobs.push(job);
+  renderBatchJobs();
+  if (file.size > 150 * 1024 * 1024) {
+    toast('⚠️ ' + file.name + ' bahut badi hai (150MB+) — browser ki memory limited hoti hai, isliye yeh slow ya fail ho sakta hai. Ek-ek karke try karo agar issue aaye.', 'info');
+  }
+}
+function batchAddFiles(input) {
+  const files = Array.from(input.files || []);
+  files.forEach(f => batchAddJob(f));
+  input.value = '';
+}
+function batchRemoveJob(id) { batchJobs = batchJobs.filter(j => j.id !== id); renderBatchJobs(); }
+function batchSetMode(id, mode) { const j = batchJobs.find(j=>j.id===id); if (j) { j.mode = mode; renderBatchJobs(); } }
+function batchSetQuality(id, v) { const j = batchJobs.find(j=>j.id===id); if (j) j.quality = clampQuality(v); }
+function batchSetTarget(id, v) { const j = batchJobs.find(j=>j.id===id); if (j) j.targetKb = parseInt(v)||100; }
+function renderBatchJobs() {
+  const wrap = document.getElementById('batch-jobs-wrap');
+  if (!wrap) return;
+  if (!batchJobs.length) { wrap.innerHTML = '<p style="font-size:12px;color:var(--text3)">Koi file add nahi ki abhi — "+ Add Files" se shuru karo.</p>'; return; }
+  wrap.innerHTML = batchJobs.map(j => `
+    <div class="card" style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60%">${escapeHtml(j.name)} <span style="color:var(--text3);font-weight:400">(${fmtSize(j.size)})</span></div>
+        <button class="btn btn-danger btn-xs" onclick="batchRemoveJob(${j.id})" ${j.status==='running'?'disabled':''}>✕ Remove</button>
+      </div>
+      <div class="mode-toggle" style="margin-bottom:10px">
+        <div class="mode-btn ${j.mode==='quality'?'active':''}" onclick="batchSetMode(${j.id},'quality')">🎛️ Quality</div>
+        <div class="mode-btn ${j.mode==='target'?'active':''}" onclick="batchSetMode(${j.id},'target')">🎯 Target KB</div>
+      </div>
+      ${j.mode==='quality' ? `<label>Quality <span style="color:var(--accent3)">${j.quality}%</span></label><input type="range" min="1" max="100" value="${j.quality}" oninput="batchSetQuality(${j.id},this.value); this.previousElementSibling.querySelector('span').textContent=this.value+'%'">`
+        : `<label>Target Size (KB)</label><input type="number" min="1" value="${j.targetKb}" onchange="batchSetTarget(${j.id},this.value)">`}
+      <div class="btn-group" style="margin-top:10px">
+        <button class="btn btn-primary btn-sm" onclick="batchRunJob(${j.id})" ${j.status==='running'?'disabled':''}>${j.status==='running'?'⏳ Running...':'⚡ Compress'}</button>
+        ${j.resultBlob ? `<button class="btn btn-success btn-sm" onclick="batchDownload(${j.id})">⬇️ Download (${fmtSize(j.resultBlob.size)})</button>` : ''}
+      </div>
+      <div id="batch-prog-${j.id}" style="display:${j.status==='running'?'block':'none'};margin-top:10px">
+        <div class="progress-label"><span id="batch-prog-label-${j.id}">${j.progressLabel||'Starting...'}</span><span id="batch-prog-pct-${j.id}">${j.progressPct||0}%</span></div>
+        <div class="progress-bar"><div class="progress-bar-fill" id="batch-prog-fill-${j.id}" style="width:${j.progressPct||0}%"></div></div>
+      </div>
+      ${j.status==='error' ? `<p style="color:var(--error);font-size:11.5px;margin-top:6px">${escapeHtml(j.errorMsg||'Error')}</p>` : ''}
+    </div>
+  `).join('');
+}
+// Direct DOM update (no full re-render) for smooth per-page progress
+// without re-creating the whole job list on every page tick.
+function updateBatchJobProgress(id, pct, label) {
+  const job = batchJobs.find(j => j.id === id);
+  if (job) { job.progressPct = pct; job.progressLabel = label; }
+  const fill = document.getElementById('batch-prog-fill-' + id);
+  const lbl = document.getElementById('batch-prog-label-' + id);
+  const pctEl = document.getElementById('batch-prog-pct-' + id);
+  if (fill) fill.style.width = pct + '%';
+  if (lbl) lbl.textContent = label;
+  if (pctEl) pctEl.textContent = pct + '%';
+}
+async function batchRunJob(id) {
+  const job = batchJobs.find(j => j.id === id);
+  if (!job) return;
+  job.status = 'running'; job.progressPct = 0; job.progressLabel = 'Shuru ho raha hai...'; renderBatchJobs();
+  let fakeWs = null;
+  try {
+    const ab = await job.file.arrayBuffer();
+    const doc = await pdfjsLib.getDocument({ data: ab }).promise;
+    fakeWs = {
+      name: job.name, size: job.size, file: job.file, doc,
+      pages: Array.from({ length: doc.numPages }, (_, i) => ({ num: i + 1, rotation: 0 }))
+    };
+    let resultBytes;
+    if (job.mode === 'target') {
+      const targetBytes = job.targetKb * 1024;
+      let lo = 1, hi = 100, best = null;
+      for (let i = 0; i < 6; i++) {
+        const mid = Math.round((lo + hi) / 2);
+        const { jpegQuality, renderScale } = qualityToParams(mid);
+        updateBatchJobProgress(id, Math.round((i/6)*15), `Trying quality ${mid}% (attempt ${i+1}/6)...`);
+        const bytes = await rasterCompressPdf(fakeWs, jpegQuality, renderScale, undefined, (done, total) => updateBatchJobProgress(id, Math.round((i/6)*85 + (done/total)*(85/6)), `Attempt ${i+1}/6 — page ${done}/${total}`));
+        if (bytes.byteLength <= targetBytes) { best = bytes; lo = mid + 1; } else hi = mid - 1;
+        await yieldToUI();
+      }
+      resultBytes = best || await (async () => { const p = qualityToParams(1); return rasterCompressPdf(fakeWs, p.jpegQuality, p.renderScale); })();
+    } else {
+      const { jpegQuality, renderScale } = qualityToParams(job.quality);
+      resultBytes = await rasterCompressPdf(fakeWs, jpegQuality, renderScale, undefined, (done, total) => updateBatchJobProgress(id, Math.round(done/total*100), `Page ${done}/${total}`));
+    }
+    let blob = new Blob([resultBytes], { type: 'application/pdf' });
+    if (blob.size >= job.size) blob = job.file.slice(0, job.file.size, 'application/pdf');
+    job.resultBlob = blob;
+    job.status = 'done';
+    toast(`✅ ${job.name} compressed!`);
+  } catch (e) {
+    job.status = 'error'; job.errorMsg = e.message;
+    toast('❌ ' + job.name + ': ' + e.message, 'error');
+  } finally {
+    // FIX (crash root cause): pdf.js keeps decoded page/image caches alive
+    // per document until explicitly destroyed. Across 5-7 files in a batch
+    // this was the memory that accumulated and eventually crashed the tab.
+    // Each batch job's pdfjs doc is private to that job (never shared with
+    // other panels), so it's always safe to destroy once the job is done.
+    if (fakeWs && fakeWs.doc) { try { await fakeWs.doc.destroy(); } catch(e) {} }
+    if (fakeWs) fakeWs._srcDocPromise = null;
+  }
+  renderBatchJobs();
+}
+function batchDownload(id) {
+  const job = batchJobs.find(j => j.id === id);
+  if (!job || !job.resultBlob) return;
+  downloadBlob(job.resultBlob, job.name.replace(/\.pdf$/i, '') + '-compressed.pdf');
+}
+async function batchRunAll() {
+  for (const job of batchJobs) {
+    if (job.status === 'done' || job.status === 'running') continue;
+    await batchRunJob(job.id);
+  }
+}
+function batchDownloadAll() {
+  batchJobs.filter(j => j.resultBlob).forEach((j, i) => setTimeout(() => batchDownload(j.id), i * 250));
+}
+
+// ══════════════════════════════════════════
+//  PDF → IMAGES
+// ══════════════════════════════════════════
+function initP2IFromWorkspace() { document.getElementById('p2i-results').innerHTML = ''; document.getElementById('p2i-progress').style.display='none'; }
+// Core conversion logic extracted so both the single-workspace flow AND
+// the batch (multi-file) flow below can share it without duplicating code.
+async function coreP2I(ws, fmt, scale, q, onProgress, myGen) {
+  const blobs = [];
+  for (let i = 0; i < ws.pages.length; i++) {
+    if (myGen !== undefined && myGen !== workspaceGen) return null;
+    const c = await renderPageToCanvasWithRotation(ws.doc, ws.pages[i], scale);
+    const mime = fmt === 'png' ? 'image/png' : fmt === 'webp' ? 'image/webp' : 'image/jpeg';
+    const blob = await new Promise(res => c.toBlob(res, mime, q));
+    freeCanvas(c);
+    blobs.push({ blob, name: `page-${ws.pages[i].num}.${fmt}` });
+    if (onProgress) onProgress(i + 1, ws.pages.length);
+    await yieldToUI();
+  }
+  return blobs;
+}
+async function doP2I() {
+  const ws = Workspace.pdf; if (!ws) { toast('Pehle PDF load karo', 'error'); return; }
+  const myGen = workspaceGen; // FIX (#3): race-condition guard
+  const fmt = document.getElementById('p2i-fmt').value;
+  const scale = parseFloat(document.getElementById('p2i-dpi').value);
+  const q = clampQuality(document.getElementById('p2i-q').value) / 100;
+  const resultsDiv = document.getElementById('p2i-results');
+  resultsDiv.innerHTML = '';
+  const progWrap = document.getElementById('p2i-progress');
+  progWrap.style.display = 'block';
+
+  const blobs = await coreP2I(ws, fmt, scale, q, (done, total) => {
+    const pct = Math.round((done/total)*100);
+    document.getElementById('p2i-progress-fill').style.width = pct+'%';
+    document.getElementById('p2i-progress-pct').textContent = pct+'%';
+    document.getElementById('p2i-progress-label').textContent = `Page ${done}/${total}...`;
+  }, myGen);
+  if (blobs === null) return; // aborted (different file took over)
+  if (myGen !== workspaceGen) return;
+  progWrap.style.display = 'none';
+  resultsDiv.innerHTML = `<div class="btn-group" style="margin-top:0;margin-bottom:12px"><button class="btn btn-success" onclick="dlAllPages()">⬇️ Download All</button></div>` +
+    blobs.map((b, i) => `<div class="file-list-row"><span class="name">${b.name} (${fmtSize(b.blob.size)})</span><button class="btn btn-success btn-sm" onclick="dlP2IAt(${i})">⬇️</button></div>`).join('');
+  window._p2iBlobs = blobs;
+  toast('✅ ' + blobs.length + ' pages converted!');
+}
+function dlP2IAt(i) { const { blob, name } = window._p2iBlobs[i]; downloadBlob(blob, name); }
+function dlAllPages() { window._p2iBlobs.forEach((b, i) => setTimeout(() => downloadBlob(b.blob, b.name), i * 200)); }
+
+// ══════════════════════════════════════════
+//  BATCH: PDF → Images (multiple files, same pattern as Compress batch)
+// ══════════════════════════════════════════
+let p2iBatchJobs = [], p2iBatchIdCounter = 1;
+function p2iBatchAddFiles(input) {
+  Array.from(input.files || []).forEach(file => {
+    p2iBatchJobs.push({ id: p2iBatchIdCounter++, file, name: file.name, size: file.size, fmt: 'jpeg', dpi: 2, quality: 92, status: 'idle', resultBlobs: null });
+  });
+  input.value = '';
+  renderP2iBatchJobs();
+}
+function p2iBatchRemoveJob(id) { p2iBatchJobs = p2iBatchJobs.filter(j => j.id !== id); renderP2iBatchJobs(); }
+function p2iBatchSet(id, patch) { const j = p2iBatchJobs.find(j=>j.id===id); if (j) Object.assign(j, patch); }
+function renderP2iBatchJobs() {
+  const wrap = document.getElementById('p2i-batch-jobs-wrap');
+  if (!wrap) return;
+  if (!p2iBatchJobs.length) { wrap.innerHTML = '<p style="font-size:12px;color:var(--text3)">Koi file add nahi ki abhi.</p>'; return; }
+  wrap.innerHTML = p2iBatchJobs.map(j => `
+    <div class="card" style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60%">${escapeHtml(j.name)} <span style="color:var(--text3);font-weight:400">(${fmtSize(j.size)})</span></div>
+        <button class="btn btn-danger btn-xs" onclick="p2iBatchRemoveJob(${j.id})">✕ Remove</button>
+      </div>
+      <div class="grid-2">
+        <div><label>Format</label><select onchange="p2iBatchSet(${j.id},{fmt:this.value})">
+          <option value="jpeg" ${j.fmt==='jpeg'?'selected':''}>JPEG</option>
+          <option value="png" ${j.fmt==='png'?'selected':''}>PNG</option>
+          <option value="webp" ${j.fmt==='webp'?'selected':''}>WEBP</option>
+        </select></div>
+        <div><label>DPI Scale</label><select onchange="p2iBatchSet(${j.id},{dpi:parseFloat(this.value)})">
+          <option value="1" ${j.dpi==1?'selected':''}>72 DPI</option>
+          <option value="2" ${j.dpi==2?'selected':''}>144 DPI</option>
+          <option value="3" ${j.dpi==3?'selected':''}>216 DPI</option>
+        </select></div>
+      </div>
+      <div class="btn-group" style="margin-top:10px">
+        <button class="btn btn-primary btn-sm" onclick="p2iBatchRunJob(${j.id})" ${j.status==='running'?'disabled':''}>${j.status==='running'?'⏳ Running...':'🖼️ Convert'}</button>
+        ${j.resultBlobs ? `<button class="btn btn-success btn-sm" onclick="p2iBatchDownload(${j.id})">⬇️ Download All (${j.resultBlobs.length} pages)</button>` : ''}
+      </div>
+      <div id="p2i-batch-prog-${j.id}" style="display:${j.status==='running'?'block':'none'};margin-top:10px">
+        <div class="progress-label"><span id="p2i-batch-prog-label-${j.id}">${j.progressLabel||'Starting...'}</span><span id="p2i-batch-prog-pct-${j.id}">${j.progressPct||0}%</span></div>
+        <div class="progress-bar"><div class="progress-bar-fill" id="p2i-batch-prog-fill-${j.id}" style="width:${j.progressPct||0}%"></div></div>
+      </div>
+      ${j.status==='error' ? `<p style="color:var(--error);font-size:11.5px;margin-top:6px">${escapeHtml(j.errorMsg||'Error')}</p>` : ''}
+    </div>
+  `).join('');
+}
+function updateP2iBatchJobProgress(id, pct, label) {
+  const job = p2iBatchJobs.find(j => j.id === id);
+  if (job) { job.progressPct = pct; job.progressLabel = label; }
+  const fill = document.getElementById('p2i-batch-prog-fill-' + id);
+  const lbl = document.getElementById('p2i-batch-prog-label-' + id);
+  const pctEl = document.getElementById('p2i-batch-prog-pct-' + id);
+  if (fill) fill.style.width = pct + '%';
+  if (lbl) lbl.textContent = label;
+  if (pctEl) pctEl.textContent = pct + '%';
+}
+async function p2iBatchRunJob(id) {
+  const job = p2iBatchJobs.find(j => j.id === id);
+  if (!job) return;
+  job.status = 'running'; job.progressPct = 0; job.progressLabel = 'Shuru ho raha hai...'; renderP2iBatchJobs();
+  let doc = null;
+  try {
+    const ab = await job.file.arrayBuffer();
+    doc = await pdfjsLib.getDocument({ data: ab }).promise;
+    const fakeWs = { doc, pages: Array.from({ length: doc.numPages }, (_, i) => ({ num: i + 1, rotation: 0 })) };
+    const blobs = await coreP2I(fakeWs, job.fmt, job.dpi, 0.92, (done, total) => updateP2iBatchJobProgress(id, Math.round(done/total*100), `Page ${done}/${total}`));
+    job.resultBlobs = blobs;
+    job.status = 'done';
+    toast(`✅ ${job.name}: ${blobs.length} pages converted!`);
+  } catch (e) {
+    job.status = 'error'; job.errorMsg = e.message;
+    toast('❌ ' + job.name + ': ' + e.message, 'error');
+  } finally {
+    if (doc) { try { await doc.destroy(); } catch(e) {} } // FIX: release pdf.js memory after each file
+  }
+  renderP2iBatchJobs();
+}
+function p2iBatchDownload(id) {
+  const job = p2iBatchJobs.find(j => j.id === id);
+  if (!job || !job.resultBlobs) return;
+  job.resultBlobs.forEach((b, i) => setTimeout(() => downloadBlob(b.blob, job.name.replace(/\.pdf$/i,'') + '-' + b.name), i * 150));
+}
+async function p2iBatchRunAll() {
+  for (const job of p2iBatchJobs) { if (job.status !== 'done' && job.status !== 'running') await p2iBatchRunJob(job.id); }
+}
+function p2iBatchDownloadAll() { p2iBatchJobs.filter(j=>j.resultBlobs).forEach(j => p2iBatchDownload(j.id)); }
+function setP2iTopMode(mode) {
+  document.getElementById('p2i-top-mode-single').classList.toggle('active', mode==='single');
+  document.getElementById('p2i-top-mode-batch').classList.toggle('active', mode==='batch');
+  document.getElementById('p2i-single-section').style.display = mode==='single' ? 'block' : 'none';
+  document.getElementById('p2i-batch-section').style.display = mode==='batch' ? 'block' : 'none';
+  if (mode === 'batch') renderP2iBatchJobs();
+}
+
+// ══════════════════════════════════════════
+//  PDF → TEXT EXTRACT — fixed crash + freeze on long files (point 8).
+// ══════════════════════════════════════════
+let pdfTextCancelled = false;
+function initPdfTextFromWorkspace() {
+  document.getElementById('pdftext-result').innerHTML = '';
+  document.getElementById('pdftext-progress').style.display = 'none';
+  document.getElementById('pdftext-cancel-btn').style.display = 'none';
+}
+function cancelPdfTextExtract() { pdfTextCancelled = true; }
+async function doPdfTextExtract() {
+  const ws = Workspace.pdf;
+  if (!ws) { toast('Pehle PDF load karo', 'error'); return; }
+  const myGen = workspaceGen; // FIX (#3)
+  pdfTextCancelled = false;
+  const runBtn = document.getElementById('pdftext-run-btn');
+  const cancelBtn = document.getElementById('pdftext-cancel-btn');
+  const progWrap = document.getElementById('pdftext-progress');
+  runBtn.disabled = true; cancelBtn.style.display = 'inline-flex';
+  progWrap.style.display = 'block';
+  document.getElementById('pdftext-result').innerHTML = '';
+
+  let fullText = '';
+  let questionMarkCount = 0, totalCharCount = 0;
+  const total = ws.pages.length;
+  try {
+    for (let i = 0; i < total; i++) {
+      if (pdfTextCancelled) { toast('⏹ Cancel ho gaya', 'info'); break; }
+      if (myGen !== workspaceGen) return; // different file took over — abort
+      const pct = Math.round((i/total)*100);
+      document.getElementById('pdftext-progress-fill').style.width = pct+'%';
+      document.getElementById('pdftext-progress-pct').textContent = pct+'%';
+      document.getElementById('pdftext-progress-label').textContent = `Page ${i+1}/${total}...`;
+
+      const pageObj = ws.pages[i];
+      const page = await ws.doc.getPage(pageObj.num);
+      const content = await page.getTextContent();
+      const pageText = content.items.map(it => it.str).join(' ');
+      questionMarkCount += (pageText.match(/\?/g) || []).length;
+      totalCharCount += pageText.length;
+      fullText += `--- Page ${pageObj.num} ---\n${pageText}\n\n`;
+
+      await yieldToUI();
+    }
+  } catch (e) {
+    if (myGen === workspaceGen) toast('❌ Error during extraction: ' + e.message, 'error');
+  }
+  if (myGen !== workspaceGen) return;
+
+  progWrap.style.display = 'none';
+  runBtn.disabled = false; cancelBtn.style.display = 'none';
+  const finalText = fullText.trim();
+  const garbledRatio = totalCharCount > 0 ? questionMarkCount / totalCharCount : 0;
+
+  let warningHtml = '';
+  if (garbledRatio > 0.05) {
+    warningHtml = `<div class="warn-banner">⚠️ Is text mein kaafi "?" characters hain (${(garbledRatio*100).toFixed(1)}%). Yeh isliye hota hai kyunki PDF ke font mein character-mapping data missing/broken hai — yeh app ki limitation nahi, PDF file ki hi kami hai. <b>Behtar result ke liye "PDF → Searchable (OCR)"</b> tool try karo.</div>`;
+  }
+  document.getElementById('pdftext-result').innerHTML = warningHtml + (finalText ? `<div class="card"><div class="card-title">EXTRACTED TEXT (${total} pages)</div>
+    <textarea id="pdftext-area" style="width:100%;min-height:300px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.6">${escapeHtml(finalText)}</textarea>
+    <div class="btn-group">
+      <button class="btn btn-success btn-sm" onclick="downloadExtractedText()">⬇️ Download .txt</button>
+      <button class="btn btn-secondary btn-sm" onclick="copyExtractedText()">📄 Copy All</button>
+    </div></div>` : '<p style="font-size:13px;color:var(--text2)">Koi text nahi mila.</p>');
+  if (finalText) toast('✅ Text extracted!');
+}
+function downloadExtractedText() {
+  const text = document.getElementById('pdftext-area')?.value; if (!text) return;
+  downloadBlob(new Blob([text], { type: 'text/plain' }), 'extracted-text.txt');
+  toast('⬇️ .txt downloaded');
+}
+function copyExtractedText() {
+  const text = document.getElementById('pdftext-area')?.value; if (!text) return;
+  navigator.clipboard && navigator.clipboard.writeText(text);
+  toast('📄 Copy ho gaya clipboard mein');
+}
+
+// ══════════════════════════════════════════
+//  PDF → SEARCHABLE (OCR fallback). Improved (issue #6): higher default
+//  render scale + optional B&W/contrast pre-processing step, both of which
+//  meaningfully improve Tesseract accuracy on small/blurry source text.
+// ══════════════════════════════════════════
+function initPdfOcrFromWorkspace() {
+  document.getElementById('pdfocr-result').innerHTML = '';
+  document.getElementById('pdfocr-progress').style.display = 'none';
+}
+function parseSinglePageRange(input, maxPage) {
+  if (!input || !input.trim()) return Array.from({length:maxPage}, (_,i)=>i+1);
+  const { ranges } = parsePageRanges(input, maxPage);
+  const set = new Set();
+  ranges.forEach(([f,t]) => { for (let n=f;n<=t;n++) set.add(n); });
+  return [...set].sort((a,b)=>a-b);
+}
+function preprocessCanvasBW(canvas) {
+  const c = document.createElement('canvas'); c.width = canvas.width; c.height = canvas.height;
+  const ctx = c.getContext('2d');
+  ctx.drawImage(canvas, 0, 0);
+  const imgData = ctx.getImageData(0, 0, c.width, c.height);
+  const d = imgData.data;
+  for (let i = 0; i < d.length; i += 4) {
+    const gray = 0.299*d[i] + 0.587*d[i+1] + 0.114*d[i+2];
+    // simple contrast stretch around midpoint
+    const boosted = clamp((gray - 128) * 1.5 + 128, 0, 255);
+    d[i] = d[i+1] = d[i+2] = boosted;
+  }
+  ctx.putImageData(imgData, 0, 0);
+  return c;
+}
+async function doPdfOcr() {
+  const ws = Workspace.pdf; if (!ws) { toast('Pehle PDF load karo', 'error'); return; }
+  if (typeof Tesseract === 'undefined') { toast('OCR engine load nahi hua — internet check karo', 'error'); return; }
+  const lang = document.getElementById('pdfocr-lang').value;
+  const pagesInput = document.getElementById('pdfocr-pages').value;
+  const scale = parseFloat(document.getElementById('pdfocr-scale').value) || 3;
+  const preprocess = document.getElementById('pdfocr-preprocess').value;
+  const pageNums = parseSinglePageRange(pagesInput, ws.pages.length);
+  if (!pageNums.length) { toast('Koi valid page nahi mila', 'error'); return; }
+
+  const btn = document.getElementById('pdfocr-run-btn');
+  const progWrap = document.getElementById('pdfocr-progress');
+  btn.disabled = true; progWrap.style.display = 'block';
+  document.getElementById('pdfocr-result').innerHTML = '';
+  let fullText = '';
+  try {
+    for (let i = 0; i < pageNums.length; i++) {
+      const pageNum = pageNums[i];
+      const pageObj = ws.pages.find(p => p.num === pageNum) || { num: pageNum, rotation: 0 };
+      const basePct = Math.round((i/pageNums.length)*100);
+      document.getElementById('pdfocr-progress-fill').style.width = basePct+'%';
+      document.getElementById('pdfocr-progress-pct').textContent = basePct+'%';
+      document.getElementById('pdfocr-progress-label').textContent = `Page ${pageNum} ko render kar rahe hain...`;
+      let canvas = await renderPageToCanvasWithRotation(ws.doc, pageObj, scale);
+      if (preprocess === 'bw') canvas = preprocessCanvasBW(canvas);
+      document.getElementById('pdfocr-progress-label').textContent = `Page ${pageNum} OCR ho raha hai...`;
+      const result = await Tesseract.recognize(canvas, lang, {
+        logger: m => {
+          if (m.status && typeof m.progress === 'number') {
+            document.getElementById('pdfocr-progress-label').textContent = `Page ${pageNum}: ${m.status.replace(/_/g,' ')}`;
+          }
+        }
+      });
+      const text = (result?.data?.text || '').trim();
+      fullText += `--- Page ${pageNum} ---\n${text}\n\n`;
+      await yieldToUI();
+    }
+  } catch (e) {
+    toast('❌ OCR error: ' + e.message, 'error');
+  }
+  progWrap.style.display = 'none';
+  btn.disabled = false;
+  const finalText = fullText.trim();
+  document.getElementById('pdfocr-result').innerHTML = finalText ? `<div class="card"><div class="card-title">OCR TEXT (${pageNums.length} pages)</div>
+    <textarea id="pdfocr-area" style="width:100%;min-height:300px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.6">${escapeHtml(finalText)}</textarea>
+    <div class="btn-group">
+      <button class="btn btn-success btn-sm" onclick="downloadOcrPdfText()">⬇️ Download .txt</button>
+      <button class="btn btn-secondary btn-sm" onclick="copyOcrPdfText()">📄 Copy All</button>
+    </div></div>` : '<p style="font-size:13px;color:var(--text2)">Koi text detect nahi hua.</p>';
+  if (finalText) toast('✅ OCR complete!');
+}
+function downloadOcrPdfText() { const t = document.getElementById('pdfocr-area')?.value; if (!t) return; downloadBlob(new Blob([t], {type:'text/plain'}), 'ocr-text.txt'); toast('⬇️ Downloaded'); }
+function copyOcrPdfText() { const t = document.getElementById('pdfocr-area')?.value; if (!t) return; navigator.clipboard && navigator.clipboard.writeText(t); toast('📄 Copied'); }
+
+// ══════════════════════════════════════════
+//  PDF STAMP — text watermark, image/logo watermark, page numbers.
+//  Issue #5 fix: there used to be TWO separate watermark mechanisms (a
+//  freely-editable "Text Watermark" tab AND a separate "Fixed Watermark"
+//  tab/lock). Consolidated into ONE tab: it's locked by default showing
+//  "@HANUMAN SINGH" auto-applied; either password unlocks the same fields
+//  so you can then customize text/rotation/color/etc. Re-lock restores the
+//  default text. Live preview added (issue #7).
+// ══════════════════════════════════════════
+let stampTab = 'wm', stampImgData = null;
+let wmLocked = true;
+const WM_PASSWORDS = ['qchahiye', '1234567890'];
+const WM_DEFAULT_TEXT = '@HANUMAN SINGH';
+const WM_LOCKED_FIELD_IDS = ['pst-text','pst-fs','pst-op','pst-rot','pst-color','pst-rot-slider'];
+
+function initStampFromWorkspace() {
+  document.getElementById('pstamp-result').innerHTML = '';
+  wmApplyLockUI();
+  renderStampPreview();
+}
+function wmApplyLockUI() {
+  WM_LOCKED_FIELD_IDS.forEach(id => { const el = document.getElementById(id); if (el) el.disabled = wmLocked; });
+  const banner = document.getElementById('wm-lock-banner');
+  const lockRow = document.getElementById('wm-lock-row');
+  const relockBtn = document.getElementById('wm-relock-btn');
+  if (banner) banner.style.display = wmLocked ? 'flex' : 'none';
+  if (lockRow) lockRow.style.display = wmLocked ? 'flex' : 'none';
+  if (relockBtn) relockBtn.style.display = wmLocked ? 'none' : 'block';
+}
+function wmUnlock() {
+  const pass = document.getElementById('wm-unlock-pass').value;
+  if (WM_PASSWORDS.includes(pass)) {
+    wmLocked = false;
+    wmApplyLockUI();
+    toast('🔓 Watermark unlock ho gaya — ab customize kar sakte ho');
+  } else {
+    toast('❌ Galat password', 'error');
+  }
+}
+function wmRelock() {
+  wmLocked = true;
+  document.getElementById('pst-text').value = WM_DEFAULT_TEXT;
+  document.getElementById('pst-fs').value = 48;
+  document.getElementById('pst-op').value = 30;
+  document.getElementById('pst-rot').value = -30;
+  document.getElementById('pst-rot-slider').value = -30;
+  document.getElementById('pst-rot-val').textContent = '-30°';
+  document.getElementById('pst-color').value = '#7c6af7';
+  wmApplyLockUI();
+  renderStampPreview();
+  toast('🔒 Watermark default ("@HANUMAN SINGH") par re-lock ho gaya');
+}
+function switchStampTab(tab, el) {
+  stampTab = tab;
+  document.querySelectorAll('#panel-pdf-stamp .tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('#panel-pdf-stamp .tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('stamp-' + tab).classList.add('active');
+  renderStampPreview();
+}
+function syncRotFromSlider(v) {
+  document.getElementById('pst-rot').value = v;
+  document.getElementById('pst-rot-val').textContent = v + '°';
+  renderStampPreview();
+}
+function syncRotFromNumber() {
+  const v = clamp(parseFloat(document.getElementById('pst-rot').value)||0, -180, 180);
+  document.getElementById('pst-rot-slider').value = v;
+  document.getElementById('pst-rot-val').textContent = v + '°';
+  renderStampPreview();
+}
+function loadStampImage(input) {
+  const file = input.files[0]; if (!file) return;
+  loadImageFromFile(file).then(img => {
+    stampImgData = img.src;
+    document.getElementById('pst-img-label').textContent = '✅ ' + file.name;
+    renderStampPreview();
+  });
+}
+function hexToRgb01(hex) {
+  const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return m ? [parseInt(m[1],16)/255, parseInt(m[2],16)/255, parseInt(m[3],16)/255] : [0.49,0.42,0.97];
+}
+
+// ---- Live preview: renders page 1 to canvas + draws an HTML overlay that
+// mirrors exactly what buildStampedPdfBytes() will produce, so users see
+// the watermark/page-number/rotation BEFORE downloading (issue #7).
+async function renderStampPreview() {
+  const ws = Workspace.pdf;
+  const wrap = document.getElementById('stamp-preview-wrap');
+  if (!ws || !wrap) return;
+  try {
+    const pageObj = ws.pages[0];
+    const canvas = await renderPageToCanvasWithRotation(ws.doc, pageObj, Math.min(1.4, 700 / (await ws.doc.getPage(pageObj.num)).getViewport({scale:1}).width));
+    const pw = canvas.width, ph = canvas.height;
+    const holder = document.createElement('div');
+    holder.style.position = 'relative';
+    holder.style.width = pw + 'px';
+    holder.style.height = ph + 'px';
+    holder.appendChild(canvas);
+    canvas.style.display = 'block';
+    canvas.style.width = '100%';
+
+    function overlay(html) {
+      const d = document.createElement('div');
+      d.style.position = 'absolute'; d.style.inset = '0'; d.style.pointerEvents = 'none';
+      d.innerHTML = html;
+      holder.appendChild(d);
+    }
+    if (stampTab === 'wm') {
+      const text = document.getElementById('pst-text').value || '';
+      const fs = parseInt(document.getElementById('pst-fs').value) || 48;
+      const op = (parseInt(document.getElementById('pst-op').value) || 25) / 100;
+      const rot = parseInt(document.getElementById('pst-rot').value) || 0;
+      const color = document.getElementById('pst-color').value;
+      overlay(`<div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(${rot}deg);font-size:${fs*(pw/(await ws.doc.getPage(pageObj.num)).getViewport({scale:1}).width)}px;color:${color};opacity:${op};font-weight:700;white-space:nowrap;font-family:sans-serif">${escapeHtml(text)}</div>`);
+    } else if (stampTab === 'img' && stampImgData) {
+      const sizePct = (parseInt(document.getElementById('pst-img-size').value) || 20) / 100;
+      const op = (parseInt(document.getElementById('pst-img-op').value) || 80) / 100;
+      const pos = document.getElementById('pst-img-pos').value;
+      const posCss = { center: 'left:50%;top:50%;transform:translate(-50%,-50%)', tl: 'left:10px;top:10px', tr: 'right:10px;top:10px', bl: 'left:10px;bottom:10px', br: 'right:10px;bottom:10px' };
+      overlay(`<img src="${stampImgData}" style="position:absolute;${posCss[pos]||posCss.center};width:${sizePct*100}%;opacity:${op}">`);
+    } else if (stampTab === 'num') {
+      const fmt = document.getElementById('psn-fmt').value;
+      const pos = document.getElementById('psn-pos').value;
+      const fs = parseInt(document.getElementById('psn-fs').value) || 22;
+      const label = fmt.replace('{n}','1').replace('{total}', String(ws.pages.length));
+      const posCss = { bc: 'left:50%;bottom:14px;transform:translateX(-50%)', br: 'right:24px;bottom:14px', bl: 'left:24px;bottom:14px', tc: 'left:50%;top:14px;transform:translateX(-50%)' };
+      overlay(`<div style="position:absolute;${posCss[pos]||posCss.bc};font-size:${fs*0.8}px;color:#333;font-family:sans-serif">${label}</div>`);
+    }
+    wrap.innerHTML = '';
+    wrap.appendChild(holder);
+  } catch (e) { /* preview is best-effort */ }
+}
+
+async function buildStampedPdfBytes() {
+  const ws = Workspace.pdf;
+  const { PDFDocument, degrees, rgb } = PDFLib;
+  const ab = await ws.file.arrayBuffer();
+  const srcDoc = await PDFDocument.load(ab, { ignoreEncryption: true });
+  const outDoc = await PDFDocument.create();
+  const total = ws.pages.length;
+  const font = await outDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
+  let stampImg = null;
+  if (stampTab === 'img' && stampImgData) {
+    const isPng = stampImgData.startsWith('data:image/png');
+    const base64 = stampImgData.split(',')[1];
+    const bytes = base64ToBytes(base64);
+    stampImg = isPng ? await outDoc.embedPng(bytes) : await outDoc.embedJpg(bytes);
+  }
+  for (let i = 0; i < total; i++) {
+    const pageObj = ws.pages[i];
+    const [copied] = await outDoc.copyPages(srcDoc, [pageObj.num - 1]);
+    if (pageObj.rotation) copied.setRotation(degrees(((copied.getRotation().angle || 0) + pageObj.rotation) % 360));
+    outDoc.addPage(copied);
+    const { width: pw, height: ph } = copied.getSize();
+    if (stampTab === 'wm') {
+      const text = document.getElementById('pst-text').value || '';
+      const fs = parseInt(document.getElementById('pst-fs').value) || 48;
+      const op = (parseInt(document.getElementById('pst-op').value) || 25) / 100;
+      const rotDeg = parseInt(document.getElementById('pst-rot').value) || 0;
+      const [r,g,b] = hexToRgb01(document.getElementById('pst-color').value);
+      const tw = font.widthOfTextAtSize(text, fs);
+      copied.drawText(text, { x: pw/2 - tw/2, y: ph/2, size: fs, font, color: rgb(r,g,b), opacity: op, rotate: degrees(rotDeg) });
+    } else if (stampTab === 'img' && stampImg) {
+      const sizePct = (parseInt(document.getElementById('pst-img-size').value) || 20) / 100;
+      const op = (parseInt(document.getElementById('pst-img-op').value) || 80) / 100;
+      const pos = document.getElementById('pst-img-pos').value;
+      const iw = pw * sizePct, ih = iw * (stampImg.height / stampImg.width);
+      const positions = {
+        center: [(pw-iw)/2, (ph-ih)/2], tl: [20, ph-ih-20], tr: [pw-iw-20, ph-ih-20], bl: [20,20], br: [pw-iw-20,20]
+      };
+      const [ix, iy] = positions[pos] || positions.center;
+      copied.drawImage(stampImg, { x: ix, y: iy, width: iw, height: ih, opacity: op });
+    } else if (stampTab === 'num') {
+      const fmt = document.getElementById('psn-fmt').value;
+      const pos = document.getElementById('psn-pos').value;
+      const fs = parseInt(document.getElementById('psn-fs').value) || 22;
+      const start = parseInt(document.getElementById('psn-start').value) || 1;
+      const n = start + i;
+      const label = fmt.replace('{n}', n).replace('{total}', total);
+      const tw = font.widthOfTextAtSize(label, fs);
+      const positions = { bc: [pw/2 - tw/2, 24], br: [pw - tw - 36, 24], bl: [36, 24], tc: [pw/2 - tw/2, ph - fs - 18] };
+      const [px, py] = positions[pos] || positions.bc;
+      copied.drawText(label, { x: px, y: py, size: fs, font, color: rgb(0,0,0) });
+    }
+    await yieldToUI();
+  }
+  return await outDoc.save();
+}
+async function doPdfStamp() {
+  const ws = Workspace.pdf;
+  if (!ws) { toast('Pehle PDF load karo', 'error'); return; }
+  if (stampTab === 'img' && !stampImgData) { toast('Pehle logo image upload karo', 'error'); return; }
+  toast('⏳ Stamp lagaya ja raha hai (lossless)...', 'info');
+  try {
+    const bytes = await buildStampedPdfBytes();
+    const blob = new Blob([bytes], { type: 'application/pdf' });
+    document.getElementById('pstamp-result').innerHTML = `<div class="btn-group" style="margin-top:0">
+      <button class="btn btn-success" id="pst-dl">⬇️ Download</button>
+      <button class="btn btn-secondary" id="pst-print">🖨️ Print</button></div>`;
+    document.getElementById('pst-dl').onclick = () => downloadBlob(blob, 'stamped.pdf');
+    document.getElementById('pst-print').onclick = () => printBlob(blob);
+    toast('✅ Stamp applied (lossless)!');
+  } catch (e) { toast('Error: ' + e.message, 'error'); }
+}
+async function applyStampToWorkspace() {
+  const ws = Workspace.pdf;
+  if (!ws) { toast('Pehle PDF load karo', 'error'); return; }
+  if (stampTab === 'img' && !stampImgData) { toast('Pehle logo image upload karo', 'error'); return; }
+  toast('⏳ Applying...', 'info');
+  try {
+    const bytes = await buildStampedPdfBytes();
+    const blob = new Blob([bytes], { type: 'application/pdf' });
+    await setWorkspacePdf(new File([blob], 'stamped.pdf', { type: 'application/pdf' }));
+    toast('✅ Stamped PDF ab workspace mein hai');
+  } catch (e) { toast('Error: ' + e.message, 'error'); }
+}
+
+// ══════════════════════════════════════════
+//  PRINT STUDIO (point 13)
+// ══════════════════════════════════════════
+let printMode = 'default';
+const PRINT_ITEM_SIZES_MM = { passport: [35,45], stamp: [25,25], emitra: [35,45] };
+const PRINT_SHEET_SIZES_IN = { '4x6': [4,6], '5x7': [5,7], a4: [8.27,11.69] };
+function setPrintMode(mode) {
+  printMode = mode;
+  document.getElementById('pprint-mode-default').classList.toggle('active', mode==='default');
+  document.getElementById('pprint-mode-custom').classList.toggle('active', mode==='custom');
+  document.getElementById('pprint-default-block').style.display = mode==='default' ? 'block' : 'none';
+  document.getElementById('pprint-custom-block').style.display = mode==='custom' ? 'block' : 'none';
+}
+function initPrintStudioFromWorkspace() {
+  document.getElementById('pprint-itemsize').onchange = function() {
+    document.getElementById('pprint-custom-size-row').style.display = this.value === 'custom' ? 'grid' : 'none';
+  };
+}
+async function buildPrintSheetCanvas() {
+  const ws = Workspace.pdf;
+  const dpi = 300;
+  const page = await ws.doc.getPage(ws.pages[0].num);
+  const vp = page.getViewport({ scale: dpi/72, rotation: ws.pages[0].rotation });
+  const srcCanvas = document.createElement('canvas');
+  srcCanvas.width = vp.width; srcCanvas.height = vp.height;
+  await page.render({ canvasContext: srcCanvas.getContext('2d'), viewport: vp }).promise;
+
+  const [sw_in, sh_in] = PRINT_SHEET_SIZES_IN[document.getElementById('pprint-sheetsize').value];
+  const sheetW = Math.round(sw_in * dpi), sheetH = Math.round(sh_in * dpi);
+  const itemSizeKey = document.getElementById('pprint-itemsize').value;
+  const mmToPx = dpi / 25.4;
+  let pw_mm, ph_mm;
+  if (itemSizeKey === 'custom') { pw_mm = parseFloat(document.getElementById('pprint-custom-w').value)||35; ph_mm = parseFloat(document.getElementById('pprint-custom-h').value)||45; }
+  else [pw_mm, ph_mm] = PRINT_ITEM_SIZES_MM[itemSizeKey];
+  const pw = Math.round(pw_mm * mmToPx), ph = Math.round(ph_mm * mmToPx);
+  const copies = parseInt(document.getElementById('pprint-copies').value);
+  const gap = Math.round(0.08 * dpi);
+  const cols = Math.max(1, Math.floor((sheetW + gap) / (pw + gap)));
+  const rows = Math.ceil(copies / cols);
+
+  const sheet = document.createElement('canvas');
+  sheet.width = sheetW; sheet.height = sheetH;
+  const ctx = sheet.getContext('2d');
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0,sheetW,sheetH);
+  const totalW = cols*pw + (cols-1)*gap, totalH = rows*ph + (rows-1)*gap;
+  const startX = Math.max(0, (sheetW-totalW)/2), startY = Math.max(0, (sheetH-totalH)/2);
+  const srcRatio = srcCanvas.width / srcCanvas.height, dstRatio = pw/ph;
+  let sx,sy,sw,sh;
+  if (srcRatio > dstRatio) { sh = srcCanvas.height; sw = sh*dstRatio; sx=(srcCanvas.width-sw)/2; sy=0; }
+  else { sw = srcCanvas.width; sh = sw/dstRatio; sx=0; sy=(srcCanvas.height-sh)/2; }
+  for (let i=0;i<copies;i++) {
+    const col = i%cols, row = Math.floor(i/cols);
+    const x = startX + col*(pw+gap), y = startY + row*(ph+gap);
+    ctx.drawImage(srcCanvas, sx, sy, sw, sh, x, y, pw, ph);
+    ctx.strokeStyle = '#cccccc'; ctx.lineWidth = 1; ctx.strokeRect(x,y,pw,ph);
+  }
+  return sheet;
+}
+async function doPrintStudio() {
+  const ws = Workspace.pdf; if (!ws) { toast('Pehle PDF load karo', 'error'); return; }
+  if (printMode === 'default') { printWorkspacePdf(); return; }
+  toast('⏳ Print sheet ban raha hai...', 'info');
+  try {
+    const sheet = await buildPrintSheetCanvas();
+    sheet.toBlob(async blob => {
+      const { jsPDF } = window.jspdf;
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+      img.onload = () => {
+        const pdf = new jsPDF({ unit: 'px', format: [sheet.width, sheet.height] });
+        pdf.addImage(img, 'PNG', 0, 0, sheet.width, sheet.height);
+        printBlob(pdf.output('blob'));
+        URL.revokeObjectURL(url);
+      };
+      img.src = url;
+    }, 'image/png');
+  } catch (e) { toast('Error: ' + e.message, 'error'); }
+}
+async function doPrintStudioDownload() {
+  const ws = Workspace.pdf; if (!ws) { toast('Pehle PDF load karo', 'error'); return; }
+  if (printMode === 'default') { toast('Standard mode mein PDF already available hai workspace mein', 'info'); return; }
+  toast('⏳ Sheet PDF ban raha hai...', 'info');
+  try {
+    const sheet = await buildPrintSheetCanvas();
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ unit: 'px', format: [sheet.width, sheet.height] });
+    pdf.addImage(sheet.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, sheet.width, sheet.height);
+    downloadBlob(pdf.output('blob'), 'print-sheet.pdf');
+    toast('✅ Sheet PDF downloaded!');
+  } catch (e) { toast('Error: ' + e.message, 'error'); }
+}
+
+// ══════════════════════════════════════════
+//  PDF LOCK / UNLOCK — FIXED "Maximum call stack size exceeded" (issue #8).
+//  Root cause: doPdfLockReal/doPdfUnlockReal used
+//  `String.fromCharCode(...encrypted)` / `btoa(String.fromCharCode(...))`
+//  which spreads the ENTIRE byte array as individual function arguments.
+//  V8 (and other engines) have an argument-count limit far below the byte
+//  count of any real PDF (even ~70KB blows it), so this threw "Maximum call
+//  stack size exceeded" on virtually any real file. Fixed by routing both
+//  encode and decode through bytesToBase64()/base64ToBytes(), which chunk
+//  the conversion instead of spreading the whole array at once.
+// ══════════════════════════════════════════
+function strToKeyBytes(str) {
+  const enc = new TextEncoder().encode(str);
+  let seed = 0; for (const b of enc) seed = (seed * 31 + b) >>> 0;
+  const key = new Uint8Array(256);
+  for (let i = 0; i < 256; i++) { seed = (seed * 1103515245 + 12345) >>> 0; key[i] = seed & 0xff; }
+  return key;
+}
+function xorBuffer(buf, keyBytes) {
+  const out = new Uint8Array(buf);
+  for (let i = 0; i < out.length; i++) out[i] ^= keyBytes[i % keyBytes.length];
+  return out;
+}
+async function doPdfLockReal() {
+  const ws = Workspace.pdf;
+  const pass = document.getElementById('pdflock-pass').value;
+  if (!ws) { toast('Pehle PDF load karo', 'error'); return; }
+  if (!pass) { toast('Password daalo', 'error'); return; }
+  toast('⏳ Encrypting...', 'info');
+  try {
+    const { PDFDocument } = PDFLib;
+    const ab = await ws.file.arrayBuffer();
+    const doc = await PDFDocument.load(ab, { ignoreEncryption: true });
+    const bytes = await doc.save({ useObjectStreams: true });
+    const key = strToKeyBytes(pass);
+    const encrypted = xorBuffer(bytes, key);
+    const payload = { v: 1, kind: 'pdf', name: ws.name, data: bytesToBase64(encrypted) };
+    const outBlob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+    downloadBlob(outBlob, (ws.name.replace(/\.[^.]+$/, '') || 'document') + '.lockpdf');
+    toast('🔐 PDF lock ho gayi! .lockpdf file download ho gayi');
+  } catch (e) { toast('Error: ' + e.message, 'error'); }
+}
+async function doPdfUnlockReal() {
+  const fileInput = document.getElementById('pdfunlock-input');
+  const pass = document.getElementById('pdfunlock-pass').value;
+  const resDiv = document.getElementById('pdfunlock-result');
+  if (!fileInput.files[0]) { toast('.lockpdf file select karo', 'error'); return; }
+  if (!pass) { toast('Password daalo', 'error'); return; }
+  try {
+    const text = await fileInput.files[0].text();
+    const payload = JSON.parse(text);
+    const encBytes = base64ToBytes(payload.data);
+    const key = strToKeyBytes(pass);
+    const decBytes = xorBuffer(encBytes, key);
+    const header = String.fromCharCode(decBytes[0], decBytes[1], decBytes[2], decBytes[3]);
+    if (header !== '%PDF') throw new Error('Galat password');
+    const blob = new Blob([decBytes], { type: 'application/pdf' });
+    resDiv.innerHTML = `<div class="btn-group" style="margin-top:0">
+      <button class="btn btn-success btn-sm" onclick="downloadBlob(window._unlockedPdfBlob,'${escapeHtml(payload.name||'unlocked.pdf')}')">⬇️ Download Unlocked PDF</button></div>`;
+    window._unlockedPdfBlob = blob;
+    toast('🔓 PDF unlock ho gayi!');
+  } catch (e) {
+    resDiv.innerHTML = '<p style="color:var(--error);font-size:12px">Galat password ya corrupt file.</p>';
+    toast('❌ Unlock fail — password check karo', 'error');
+  }
+}
+</script>
+</body>
+</html>
