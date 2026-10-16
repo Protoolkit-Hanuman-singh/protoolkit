@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Let's Crack Rajasthan CET-2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Hind:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg1:#e9f1ff;--bg2:#f6e9ff;--ink:#0f1630;--mute:#4b5578;
+  --glass:rgba(255,255,255,.42);--glass2:rgba(255,255,255,.62);--edge:rgba(255,255,255,.75);--shadow:rgba(40,60,140,.18);
+  --b1:#5b8cff;--b2:#b46cff;--b3:#ff7ab8;--b4:#35d6c6;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg1:#070b1c;--bg2:#150a2b;--ink:#f1f4ff;--mute:#a4aed3;
+  --glass:rgba(255,255,255,.08);--glass2:rgba(255,255,255,.14);--edge:rgba(255,255,255,.22);--shadow:rgba(0,0,0,.5);}}
+:root[data-theme="dark"]{
+  --bg1:#070b1c;--bg2:#150a2b;--ink:#f1f4ff;--mute:#a4aed3;
+  --glass:rgba(255,255,255,.08);--glass2:rgba(255,255,255,.14);--edge:rgba(255,255,255,.22);--shadow:rgba(0,0,0,.5);}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100vh;color:var(--ink);font-family:"Hind","Poppins",system-ui,-apple-system,sans-serif;
+  background:linear-gradient(160deg,var(--bg1),var(--bg2));background-attachment:fixed;overflow-x:hidden;
+  padding-bottom:calc(110px + env(safe-area-inset-bottom,0px))}
+h1,h2,h3,.pop{font-family:"Poppins","Hind",system-ui,sans-serif}
+/* live background blobs */
+.blobs{position:fixed;inset:0;z-index:-1;overflow:hidden}
+.blobs i{position:absolute;border-radius:50%;filter:blur(60px);opacity:.75;animation:float 18s ease-in-out infinite}
+.blobs i:nth-child(1){width:60vmax;height:60vmax;left:-20vmax;top:-18vmax;background:var(--b1)}
+.blobs i:nth-child(2){width:50vmax;height:50vmax;right:-18vmax;top:18vh;background:var(--b2);animation-delay:-6s}
+.blobs i:nth-child(3){width:46vmax;height:46vmax;left:-10vmax;bottom:-16vmax;background:var(--b3);animation-delay:-11s;opacity:.55}
+.blobs i:nth-child(4){width:34vmax;height:34vmax;right:8vmax;bottom:-8vmax;background:var(--b4);animation-delay:-3s;opacity:.5}
+@keyframes float{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(6vmax,4vmax) scale(1.1)}66%{transform:translate(-4vmax,7vmax) scale(.94)}}
+.wrap{max-width:760px;margin:0 auto;padding:14px 16px}
+/* glass */
+.glass{background:var(--glass);backdrop-filter:blur(26px) saturate(190%);-webkit-backdrop-filter:blur(26px) saturate(190%);
+  border:1px solid var(--edge);border-radius:28px;box-shadow:0 10px 34px var(--shadow),inset 0 1px 0 rgba(255,255,255,.55),inset 0 -1px 0 rgba(255,255,255,.12);position:relative}
+.glass::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(135deg,rgba(255,255,255,.5),transparent 38%,transparent 70%,rgba(255,255,255,.18));mix-blend-mode:soft-light}
+/* top bar */
+.top{position:sticky;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:20;display:flex;align-items:center;justify-content:space-between;padding:10px 14px 10px 18px;border-radius:999px;margin-top:8px}
+.top b{font-size:14px;letter-spacing:.2px}
+.pill{border:0;cursor:pointer;color:var(--ink);font:600 13px "Poppins",sans-serif;padding:8px 14px;border-radius:999px;background:var(--glass2);border:1px solid var(--edge);transition:transform .25s}
+.pill:active{transform:scale(.92)}
+/* hero */
+.hero{margin-top:18px;padding:30px 22px 26px;text-align:center;overflow:hidden}
+.tag{display:inline-block;font:600 12px "Poppins",sans-serif;padding:6px 12px;border-radius:999px;background:var(--glass2);border:1px solid var(--edge);margin-bottom:14px}
+h1{margin:0;font-size:clamp(30px,8.4vw,52px);line-height:1.08;font-weight:800;letter-spacing:-.5px}
+h1 span{background:linear-gradient(100deg,var(--b1),var(--b2) 50%,var(--b3));-webkit-background-clip:text;background-clip:text;color:transparent;background-size:200% 100%;animation:shine 6s linear infinite}
+@keyframes shine{to{background-position:200% 0}}
+.hero p{color:var(--mute);margin:12px auto 20px;max-width:46ch;font-size:16px;line-height:1.55}
+.cta{display:inline-block;text-decoration:none;color:#fff;font:700 15px "Poppins",sans-serif;padding:14px 26px;border-radius:999px;
+  background:linear-gradient(135deg,var(--b1),var(--b2));box-shadow:0 10px 26px rgba(91,140,255,.45),inset 0 1px 0 rgba(255,255,255,.5);transition:transform .25s cubic-bezier(.3,1.6,.5,1)}
+.cta:active{transform:scale(.94)}
+/* sections */
+.sec{margin-top:34px}
+.sec>h2{margin:0 4px 4px;font-size:22px}
+.sec>small{display:block;margin:0 4px 14px;color:var(--mute)}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.stat{padding:18px 16px;text-align:center}
+.stat b{display:block;font:800 30px "Poppins",sans-serif;background:linear-gradient(120deg,var(--b1),var(--b2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.stat span{font-size:13px;color:var(--mute)}
+.scheme{margin-top:12px;padding:16px 18px;font-size:14.5px;line-height:1.6}
+.grid{display:grid;grid-template-columns:1fr;gap:14px}
+@media(min-width:620px){.grid{grid-template-columns:1fr 1fr}.stats{grid-template-columns:repeat(4,1fr)}}
+/* cards */
+.card{padding:18px;transition:transform .35s cubic-bezier(.3,1.4,.5,1)}
+.card:active{transform:scale(.975)}
+.row{display:flex;align-items:center;gap:14px;width:100%;background:none;border:0;color:inherit;text-align:left;cursor:pointer;padding:0;font:inherit}
+.ico{flex:none;width:54px;height:54px;border-radius:18px;display:grid;place-items:center;font-size:27px;
+  background:linear-gradient(145deg,var(--c1),var(--c2));box-shadow:0 8px 18px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.6)}
+.row h3{margin:0;font-size:17px}.row p{margin:2px 0 0;font-size:13px;color:var(--mute)}
+.chev{margin-left:auto;font-size:20px;color:var(--mute);transition:transform .4s}
+.card.open .chev{transform:rotate(90deg)}
+.body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .45s cubic-bezier(.3,.9,.3,1)}
+.card.open .body{grid-template-rows:1fr}
+.body>div{overflow:hidden}
+.body ul{margin:14px 0 6px;padding-left:20px;font-size:14.5px;line-height:1.65;color:var(--ink)}
+.body li{margin-bottom:3px}
+.go{display:inline-block;margin:8px 0 2px;font:600 13px "Poppins",sans-serif;text-decoration:none;color:var(--ink);padding:9px 15px;border-radius:999px;background:var(--glass2);border:1px solid var(--edge)}
+/* notes */
+.note{padding:18px;margin-bottom:12px}
+.note h3{margin:0 0 8px;font-size:16px}
+.note ol,.note ul{margin:0;padding-left:20px;font-size:14.5px;line-height:1.65;color:var(--ink)}
+.en{color:var(--mute);font-size:13px}
+footer{margin-top:34px;text-align:center;padding:22px;font:600 14px "Poppins",sans-serif}
+footer small{display:block;font:400 12.5px "Hind",sans-serif;color:var(--mute);margin-top:6px}
+/* floating tab bar */
+nav{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:30;display:flex;gap:4px;padding:7px;border-radius:999px;width:min(92vw,430px)}
+nav a{flex:1;text-align:center;text-decoration:none;color:var(--mute);font:600 11px "Poppins",sans-serif;padding:8px 2px;border-radius:999px;transition:all .3s}
+nav a em{display:block;font-style:normal;font-size:19px;margin-bottom:1px}
+nav a.on{color:var(--ink);background:var(--glass2);box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 4px 12px var(--shadow)}
+/* reveal */
+.rv{opacity:0;transform:translateY(26px) scale(.98);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.8,.2,1)}
+.rv.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.rv{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<div class="blobs"><i></i><i></i><i></i><i></i></div>
+<div class="wrap">
+  <header class="top glass">
+    <b>🎯 CET-2026 &nbsp;·&nbsp; Hanuman Singh 😎</b>
+    <button class="pill" id="theme" aria-label="Theme">🌗</button>
+  </header>
+
+  <section class="hero glass rv" id="home">
+    <span class="tag">समान पात्रता परीक्षा · सीनियर सैकण्डरी स्तर</span>
+    <h1>Let's Crack<br><span>Rajasthan CET-2026</span></h1>
+    <p>पूरा सिलेबस, एक ही जगह। विज्ञान, गणित, राजस्थान GK, कंप्यूटर और रीजनिंग — सब कुछ आसान और स्मूद अंदाज़ में।</p>
+    <a class="cta" href="#subjects">शुरू करो 🚀</a>
+  </section>
+
+  <section class="sec rv" id="scheme">
+    <h2>📝 परीक्षा की स्कीम</h2>
+    <small>Exam Scheme at a glance</small>
+    <div class="stats">
+      <div class="glass stat"><b>120</b><span>प्रश्न</span></div>
+      <div class="glass stat"><b>240</b><span>कुल अंक</span></div>
+      <div class="glass stat"><b>2:30</b><span>घंटे</span></div>
+      <div class="glass stat"><b>−⅓</b><span>नेगेटिव मार्किंग</span></div>
+    </div>
+    <div class="glass scheme">सभी प्रश्न बहुविकल्पीय होंगे और सभी प्रश्नों के अंक समान होंगे। गलत उत्तर पर उस प्रश्न के पूर्णांक का एक-तिहाई (1/3) भाग काटा जाएगा।
+      <div class="en">All questions are multiple choice with equal marks. 1/3 negative marking for each wrong answer.</div></div>
+  </section>
+
+  <section class="sec" id="subjects">
+    <h2 class="rv">📚 मुख्य विषय</h2><small class="rv">Tap करके पूरा सिलेबस खोलो</small>
+    <div class="grid" id="g1"></div>
+  </section>
+
+  <section class="sec" id="rgk">
+    <h2 class="rv">🏜️ राजस्थान GK</h2><small class="rv">इतिहास · कला-संस्कृति · भूगोल · राजनीति · अर्थव्यवस्था</small>
+    <div class="grid" id="g2"></div>
+  </section>
+
+  <section class="sec" id="extra">
+    <h2 class="rv">✨ और भी सिलेबस में है</h2><small class="rv">PDF के अतिरिक्त विषय</small>
+    <div class="grid" id="g3"></div>
+  </section>
+
+  <section class="sec rv" id="rules">
+    <h2>⚠️ OMR के ज़रूरी नियम</h2><small>Important OMR instructions</small>
+    <div class="glass note"><ol>
+      <li>हर प्रश्न के 5 विकल्प A, B, C, D, E होंगे। नीले बॉल पेन से केवल एक गोला गहरा भरना है।</li>
+      <li>हर प्रश्न के लिए केवल एक विकल्प भरना अनिवार्य है।</li>
+      <li>प्रश्न हल नहीं करना हो तो विकल्प <b>E</b> भरो। कोई भी गोला न भरने पर उस प्रश्न के 1/3 अंक कटेंगे।</li>
+      <li>पेपर के बाद गोले जाँचने के लिए <b>10 मिनट</b> अतिरिक्त समय मिलेगा।</li>
+      <li>10% से ज़्यादा प्रश्नों में कोई गोला न भरा हो तो अभ्यर्थी अयोग्य घोषित होगा।</li>
+    </ol></div>
+  </section>
+
+  <footer class="glass rv">Made with 💙 by Hanuman Singh 😎<small>Let's Crack Rajasthan CET-2026 · Content जल्द ही upload होगा</small></footer>
+</div>
+
+<nav class="glass" id="nav">
+  <a href="#home" class="on"><em>🏠</em>Home</a>
+  <a href="#scheme"><em>📝</em>Scheme</a>
+  <a href="#subjects"><em>📚</em>Subjects</a>
+  <a href="#rgk"><em>🏜️</em>Raj GK</a>
+  <a href="#rules"><em>⚠️</em>Rules</a>
+</nav>
+
+<script>
+const D={
+g1:[
+["🔬","विज्ञान","Everyday Science","#5b8cff","#35d6c6",["भौतिक एवं रासायनिक परिवर्तन, ऑक्सीकरण-अपचयन, उत्प्रेरक","धातु, अधातु एवं उनके प्रमुख यौगिक","कार्बन व उसके यौगिक, हाइड्रोकार्बन, कार्बन के अपररूप, CFC/फ्रिऑन, CNG, बहुलक, साबुन एवं अपमार्जक","प्रकाश का परावर्तन, वर्ण विक्षेपण, लेंस के प्रकार, दृष्टि दोष व निवारण","अंतरिक्ष एवं सूचना प्रौद्योगिकी, भारत का अंतरिक्ष अनुसंधान कार्यक्रम","आनुवंशिकी: मेंडल के नियम, गुणसूत्रों की संरचना, न्यूक्लिक अम्ल, प्रोटीन संश्लेषण, लिंग निर्धारण","पर्यावरण अध्ययन: पारिस्थितिकी तंत्र, ऊर्जा प्रवाह, जैव भू रासायनिक चक्र","जैव प्रौद्योगिकी: जैव-पेटेन्ट, नई पादप किस्में, ट्रांसजेनिक जीव","जन्तुओं एवं पादपों का आर्थिक महत्व","रक्त समूह, रक्ताधान, Rh कारक, रोगाणु, कुपोषण, मानव रोग: कारण एवं निवारण"]],
+["➗","गणित","Mathematics","#ff9a5b","#ff5b8a",["लघुत्तम समापवर्त्य (LCM) एवं महत्तम समापवर्त्य (HCF)","औसत, लाभ-हानि, प्रतिशत","साधारण ब्याज, चक्रवृद्धि ब्याज","अनुपात-समानुपात","समय, चाल, दूरी, कार्य एवं समय","त्रिभुज, वृत्त, दीर्घवृत्त, आयत, गोले और बेलन का क्षेत्रफल","गोले, बेलन, घन और शंकु का आयतन","आंकड़ों का चित्रों द्वारा निरूपण (आलेख, स्तंभचित्र, वृत्तचित्र, रेखा आलेख)"]],
+["🧠","रीजनिंग","Logical Reasoning","#b46cff","#5b8cff",["रक्त संबंध","संख्या श्रेणी, अक्षर श्रेणी","घड़ी, कैलेंडर","कोड और डिकोड","बैठने की व्यवस्था","मानसिक योग्यता और विश्लेषणात्मक योग्यता"]],
+["💻","कंप्यूटर","Computer Knowledge","#35d6c6","#5b8cff",["कंप्यूटर की विशेषताएं और उपयोग","कंप्यूटर संगठन: मेमोरी (RAM, ROM), फ़ाइल सिस्टम, इनपुट व आउटपुट डिवाइस","MS Office: MS Word, MS Excel/Spreadsheet, MS PowerPoint"]]],
+g2:[
+["🏰","राजस्थान का इतिहास","History of Rajasthan","#ffb347","#ff6b6b",["प्रमुख प्राचीन सभ्यताएँ और पुरातात्विक स्थल","प्रमुख शासक और उनकी उपलब्धियाँ","1857 का विद्रोह, किसान आंदोलन, जनजाति आंदोलन, प्रजामंडल आंदोलन और राजस्थान का एकीकरण","प्रमुख ऐतिहासिक व्यक्तित्व"]],
+["🎭","कला और संस्कृति","Art & Culture","#ff7ab8","#b46cff",["स्थापत्य एवं चित्रकला","लोक संगीत, वाद्य यंत्र, नृत्य, नाटक","प्रमुख धार्मिक पंथ एवं लोक देवता","वेशभूषा, आभूषण, मेले, त्योहार, रीति-रिवाज और परंपराएँ","भाषा, बोलियाँ और साहित्य","कला और संस्कृति के क्षेत्र में प्रमुख व्यक्तित्व"]],
+["🗺️","भूगोल (भारत + राजस्थान)","Geography","#35d6c6","#4cd964",["भारत: भौतिक स्वरूप (पर्वत, पठार, मरुस्थल, मैदान), नदियां, बांध, झीलें, सागर, वन्य जीव एवं अभयारण्य, आपदा प्रबन्धन एवं जलवायु परिवर्तन","राजस्थान: भौतिक स्वरूप, जलवायु, प्राकृतिक वनस्पति, मृदाएं","नदियां, बांध एवं झीलें","खनिज, वन एवं जल संसाधन, पशु सम्पदा","वन्य जीव, अभयारण्य एवं संरक्षण","जनसंख्या: वितरण, वृद्धि, घनत्व, साक्षरता, लिंगानुपात","प्रमुख जनजातियाँ, राजस्थान में पर्यटन"]],
+["🏛️","राजनीति विज्ञान","Political Science","#5b8cff","#b46cff",["भारतीय संविधान की प्रकृति, प्रस्तावना, मौलिक अधिकार, राज्य के नीति निदेशक तत्व","राष्ट्रपति, प्रधानमंत्री एवं मंत्रिपरिषद, संसद, उच्चतम न्यायालय, निर्वाचन आयोग","राजस्थान: राज्यपाल, मुख्यमंत्री, विधानसभा, उच्च न्यायालय, RPSC, राज्य निर्वाचन/सूचना/मानव अधिकार आयोग, मुख्य सचिव, जिला प्रशासन","स्थानीय स्व-शासन एवं पंचायती राज"]],
+["💰","राजस्थान की अर्थव्यवस्था","Economy of Rajasthan","#ffd24c","#ff9a5b",["उद्योग, कृषि, पशुपालन एवं खनिज क्षेत्र की भूमिका","अर्थव्यवस्था की विशेषताएं और समस्याएं","राज्य की आय एवं बजट की अवधारणा","हस्तशिल्प उद्योग, बेरोजगारी, सूखा और अकाल","कल्याणकारी योजनायें व अधिनियम, विकास संस्थायें, लघु उद्यम, वित्तीय संस्थायें, पंचायती राज की भूमिका","MGNREGA, विकसित भारत – रोजगार एवं आजीविका गारंटी मिशन (ग्रामीण) (VB-G RAM G)"]]],
+g3:[
+["📰","समसामयिक घटनाएं","Current Affairs","#ff5b8a","#ff9a5b",["राज्य एवं राष्ट्रीय स्तर की प्रमुख घटनाएं: राजनीतिक, आर्थिक, सामाजिक, सांस्कृतिक, प्रौद्योगिकी, भौगोलिक, पारिस्थितिकी, खेल-कूद","प्रसिद्ध व्यक्तित्व","राजस्थान राज्य एवं राष्ट्रीय कार्यक्रम एवं नीतियां","नागरिक कर्तव्य: मूल कर्तव्य एवं नैतिक मूल्य","राजस्थान सार्वजनिक परीक्षा (भर्ती में अनुचित साधनों की रोकथाम के अध्युपाय) अधिनियम, 2022 के मुख्य प्रावधान"]],
+["🩺","जन स्वास्थ्य","Public Health","#4cd964","#35d6c6",["प्राथमिक चिकित्सा (First aid) की बुनियादी बातें, CPR","नशीले पदार्थों के दुरुपयोग के प्रकार और बचाव के उपाय","युवाओं की शारीरिक और मानसिक फिटनेस","सोशल मीडिया की लत से स्वास्थ्य जोखिम एवं निवारक उपाय"]],
+["✍️","सामान्य हिन्दी","General Hindi","#ff9a5b","#ffd24c",["संज्ञा, सर्वनाम, विशेषण, अव्यय, क्रिया","सन्धि और संधि विच्छेद","सामासिक पदों की रचना और समास-विग्रह","उपसर्ग, प्रत्यय","पर्यायवाची, विपरीतार्थक (विलोम), अनेकार्थक शब्द, शब्द-युग्म","शब्द-शुद्धि, वाक्य-शुद्धि","वाक्यांश के लिए एक सार्थक शब्द","मुहावरे और लोकोक्तियाँ","अंग्रेजी के पारिभाषिक शब्दों के हिन्दी समानार्थक","कार्यालयी पत्र: कार्यालय आदेश, परिपत्र, अधिसूचना, अर्द्धशासकीय पत्र, निविदा, प्रेस विज्ञप्ति"]],
+["🔤","सामान्य अंग्रेजी","General English","#5b8cff","#35d6c6",["Tenses / Sequence of Tenses","Voice: Active and Passive","Narration: Direct and Indirect","Articles, Determiners and Prepositions","Translation of simple sentences: Hindi ↔ English","Glossary of official, technical terms (with Hindi versions)","Synonyms, Antonyms, One word substitution","Comprehension of a given passage","Letter writing: Official, Demi Official, Informal"]]]};
+for(const g in D){
+  const box=document.getElementById(g);
+  D[g].forEach(([i,t,s,c1,c2,l])=>{
+    const el=document.createElement('article');el.className='glass card rv';
+    el.style.setProperty('--c1',c1);el.style.setProperty('--c2',c2);
+    el.innerHTML=`<button class="row" aria-expanded="false"><span class="ico">${i}</span><span><h3>${t}</h3><p>${s}</p></span><span class="chev">›</span></button>
+    <div class="body"><div><ul>${l.map(x=>`<li>${x}</li>`).join('')}</ul><a class="go" href="#">सामग्री जल्द आएगी →</a></div></div>`;
+    el.querySelector('.row').onclick=e=>{const o=el.classList.toggle('open');e.currentTarget.setAttribute('aria-expanded',o)};
+    box.appendChild(el);
+  });
+}
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.12});
+document.querySelectorAll('.rv').forEach((el,i)=>{el.style.transitionDelay=(i%4)*70+'ms';io.observe(el)});
+// nav highlight
+const links=[...document.querySelectorAll('#nav a')];
+const so=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){links.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id))}}),{rootMargin:'-40% 0px -50% 0px'});
+links.forEach(a=>{const t=document.querySelector(a.getAttribute('href'));t&&so.observe(t)});
+// theme
+const r=document.documentElement;
+document.getElementById('theme').onclick=()=>{
+  const dark=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches;
+  r.dataset.theme=dark?'light':'dark';
+};
+</script>
+</body>
+</html>
