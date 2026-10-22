@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="hi"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Jankari Form</title>
+<style>
+body{font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;padding:16px;background:#f5f6f8}
+h2{margin:0 0 8px}
+label{display:block;margin:12px 0 4px;font-size:14px;font-weight:600}
+input,textarea{width:100%;box-sizing:border-box;padding:10px;border:1px solid #bbb;border-radius:8px;font-size:16px}
+button{width:100%;margin-top:16px;padding:12px;font-size:16px;border:0;border-radius:8px;background:#0a7d4b;color:#fff}
+button:disabled{opacity:.5}
+#msg{margin-top:12px;padding:10px;border-radius:8px;display:none}
+.ok{background:#d8f5e3;color:#075}.err{background:#fde0e0;color:#a00}
+.c{font-weight:400;display:flex;gap:8px;align-items:flex-start}
+.c input{width:auto;margin-top:3px}
+.hp{position:absolute;left:-9999px}
+</style></head><body>
+<h2>Jankari bhariye</h2>
+<form id="f" novalidate>
+<label>Naam</label><input id="name" maxlength="80" autocomplete="name">
+<label>Phone (10 digit)</label><input id="phone" maxlength="10" inputmode="numeric" autocomplete="tel">
+<label>Email</label><input id="email" type="email" maxlength="100" autocomplete="email">
+<label>Height (cm)</label><input id="height" inputmode="decimal" maxlength="5">
+<label>Weight (kg)</label><input id="weight" inputmode="decimal" maxlength="5">
+<label>Note (optional)</label><textarea id="note" maxlength="500" rows="3"></textarea>
+<label>Image (JPG/PNG)</label><input id="img" type="file" accept="image/jpeg,image/png">
+<label>PDF (max 2 MB)</label><input id="pdf" type="file" accept="application/pdf">
+<div class="hp"><input id="website" tabindex="-1" autocomplete="off"></div>
+<label class="c"><input type="checkbox" id="ok"> Main apni jankari aur files jama karne ki sahmati deta/deti hoon.</label>
+<button id="btn" type="submit">Submit</button>
