@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="hi"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Admin</title>
+<style>
+body{font-family:system-ui,sans-serif;max-width:640px;margin:0 auto;padding:12px;background:#f5f6f8}
+input{width:100%;box-sizing:border-box;padding:10px;margin:6px 0;border:1px solid #bbb;border-radius:8px;font-size:16px}
+button{padding:9px 12px;margin:3px 3px 3px 0;font-size:14px;border:0;border-radius:8px;background:#0a7d4b;color:#fff}
+button.r{background:#c0392b}button.g{background:#555}
+.card{background:#fff;border-radius:10px;padding:10px;margin:8px 0;font-size:14px;word-break:break-word}
+.card b{display:inline-block;min-width:64px}
+#st{margin:8px 0;font-size:14px;color:#075}
+#panel{display:none}
+</style></head><body>
+<div id="login"><h3>Admin Login</h3>
+<input id="em" type="email" placeholder="Email" autocomplete="username">
+<input id="pw" type="password" placeholder="Password" autocomplete="current-password">
+<button id="lb">Login</button></div>
+<div id="panel">
+<div><button id="rf">Refresh</button><button id="zp">ZIP download</button><button id="cs">CSV (sab)</button><button class="g" id="lo">Logout</button></div>
+<div id="st"></div><div id="list"></div><button id="more" class="g">Aur dikhao</button>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+const SB_URL="https://caltdexduajdoflyaaed.supabase.co",SB_KEY="sb_publishable_RSvb0KLkgixqdMJN_8NLNw_RGKYaK9i";
+const sb=supabase.createClient(SB_URL,SB_KEY);
+const $=id=>document.getElementById(id);
+const st=t=>$('st').textContent=t;
