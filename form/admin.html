@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="hi"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Admin</title>
+<style>
+body{font-family:system-ui,sans-serif;max-width:640px;margin:0 auto;padding:12px;background:#f5f6f8}
+input{width:100%;box-sizing:border-box;padding:10px;margin:6px 0;border:1px solid #bbb;border-radius:8px;font-size:16px}
+button{padding:9px 12px;margin:3px 3px 3px 0;font-size:14px;border:0;border-radius:8px;background:#0a7d4b;color:#fff}
+button.r{background:#c0392b}button.g{background:#555}
+.card{background:#fff;border-radius:10px;padding:10px;margin:8px 0;font-size:14px;word-break:break-word}
+.card b{display:inline-block;min-width:64px}
+#st{margin:8px 0;font-size:14px;color:#075}
+#panel{display:none}
+</style></head><body>
+<div id="login"><h3>Admin Login</h3>
+<input id="em" type="email" placeholder="Email" autocomplete="username">
+<input id="pw" type="password" placeholder="Password" autocomplete="current-password">
+<button id="lb">Login</button><div id="le" style="color:#c00;margin-top:8px;font-size:14px"></div></div>
+<div id="panel">
+<div><button id="rf">Refresh</button><button id="zp">ZIP download</button><button id="cs">CSV (sab)</button><button class="g" id="lo">Logout</button></div>
+<div id="st"></div><div id="list"></div><button id="more" class="g">Aur dikhao</button>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+const SB_URL="https://caltdexduajdoflyaaed.supabase.co",SB_KEY="sb_publishable_RSvb0KLkgixqdMJN_8NLNw_RGKYaK9i";
+const sb=supabase.createClient(SB_URL,SB_KEY);
+const $=id=>document.getElementById(id);
+const st=t=>$('st').textContent=t;
+const PS=50;let page=0;
+const F=['name','phone','email','height','weight','note'];
+async function init(){const{data}=await sb.auth.getSession();if(data.session)open_()}
+function open_(){$('login').style.display='none';$('panel').style.display='block';reload()}
+$('lb').onclick=async()=>{const le=$('le'),b=$('lb');le.textContent='Login ho raha hai...';b.disabled=true;
+try{const{error}=await sb.auth.signInWithPassword({email:$('em').value.trim(),password:$('pw').value});
+if(error)le.textContent='Login fail: '+error.message;else{le.textContent='';open_()}}
+catch(e){le.textContent='Error: '+(e.message||e)}b.disabled=false};
+$('lo').onclick=async()=>{await sb.auth.signOut();location.reload()};
+$('rf').onclick=reload;$('more').onclick=()=>{page++;load()};
+function reload(){page=0;$('list').innerHTML='';load()}
+async function load(){
+st('Load ho raha hai...');
+const{data,error}=await sb.from('submissions').select('*').order('created_at',{ascending:false}).range(page*PS,page*PS+PS-1);
+if(error){st('Error: '+error.message);return}
+data.forEach(add);
+st(data.length?'Dikh rahe: '+$('list').children.length:'Aur entries nahi hain');
+$('more').style.display=data.length<PS?'none':'inline-block';
+}
+function add(r){
+const c=document.createElement('div');c.className='card';
+const t=document.createElement('div');t.textContent=new Date(r.created_at).toLocaleString();t.style.color='#888';c.appendChild(t);
+F.forEach(k=>{const p=document.createElement('div');const b=document.createElement('b');b.textContent=k+': ';p.appendChild(b);p.appendChild(document.createTextNode(r[k]||''));c.appendChild(p)});
+const mk=(l,cl,fn)=>{const b=document.createElement('button');b.textContent=l;if(cl)b.className=cl;b.onclick=fn;c.appendChild(b)};
+mk('Image',0,()=>view(r.file_path));
+mk('PDF',0,()=>view(r.pdf_path));
+mk('Delete','r',async()=>{
+if(!confirm('Pakka delete karna hai?'))return;
+await sb.storage.from('docs').remove([r.file_path,r.pdf_path].filter(Boolean));
+const{error}=await sb.from('submissions').delete().eq('id',r.id);
+if(error)alert(error.message);else c.remove()});
+$('list').appendChild(c);
+}
+async function view(p){
+if(!p)return alert('File nahi hai');
+const w=window.open('','_blank');
+const{data,error}=await sb.storage.from('docs').createSignedUrl(p,120);
+if(error){if(w)w.close();return alert(error.message)}
+if(w)w.location=data.signedUrl;else location.href=data.signedUrl;
+}
+async function all(){
+let out=[],from=0;
+for(;;){const{data,error}=await sb.from('submissions').select('*').order('created_at',{ascending:false}).range(from,from+999);
+if(error)throw error;out=out.concat(data);if(data.length<1000)break;from+=1000}
+return out}
+function csv(rows){
+const cols=['id','created_at',...F,'file_path','pdf_path'];
+const q=v=>{v=String(v??'');if(/^[=+\-@]/.test(v))v="'"+v;return '"'+v.replace(/"/g,'""')+'"'};
+return '\ufeff'+[cols.join(',')].concat(rows.map(r=>cols.map(c=>q(r[c])).join(','))).join('\n')}
+function save(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove()}
+$('cs').onclick=async()=>{try{st('CSV ban rahi hai...');const r=await all();save(new Blob([csv(r)],{type:'text/csv'}),'data.csv');st('CSV ho gayi: '+r.length+' entries')}catch(e){st('Error: '+e.message)}};
+$('zp').onclick=async()=>{
+const n=parseInt(prompt('Kitni latest entries ka ZIP? (max 300)','100'),10);
+if(!n||n<1)return;
+try{
+const rows=(await all()).slice(0,Math.min(n,300));
+const z=new JSZip();z.file('data.csv',csv(rows));
+let done=0;
+const get=async(p,name)=>{if(!p)return;const{data,error}=await sb.storage.from('docs').download(p);if(!error)z.file(name,data)};
+for(let i=0;i<rows.length;i+=4){
+await Promise.all(rows.slice(i,i+4).map(r=>{const b=(r.name||'x').replace(/[^\w]+/g,'_').slice(0,20)+'_'+r.id.slice(0,6);return Promise.all([get(r.file_path,b+'_photo.jpg'),get(r.pdf_path,b+'_doc.pdf')])}));
+done=Math.min(i+4,rows.length);st('Files le rahe: '+done+'/'+rows.length)}
+st('ZIP ban rahi hai...');
+save(await z.generateAsync({type:'blob'}),'submissions.zip');st('ZIP ho gayi');
+}catch(e){st('Error: '+e.message)}};
+init();
+</script></body></html>
